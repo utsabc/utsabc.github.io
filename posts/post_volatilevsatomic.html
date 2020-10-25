@@ -1,0 +1,364 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Volatile vs Atomic</title>
+		<meta name="author" content="name">
+    <meta name="description" content="description here">
+		<meta name="keywords" content="keywords,here">
+		<link href="https://unpkg.com/tailwindcss/dist/tailwind.min.css" rel="stylesheet"> <!--Replace with your tailwind.css once created-->
+		<link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css" rel="stylesheet">
+	<style>
+	.smooth {transition: box-shadow 0.3s ease-in-out;}
+	::selection{background-color: aliceblue}
+	</style>
+	<style>
+	
+	table {
+  	font-family: arial, sans-serif;
+  	border-collapse: collapse;
+ 	 width: 300px;
+	}
+
+	td, th {
+  	border: 1px solid #dddddd;
+  	text-align: left;
+ 	 padding: 8px;
+	}
+
+	tr:nth-child(even) {
+  	background-color: #dddddd;
+	}
+	</style>
+	
+</head>
+<body class="bg-white font-sans leading-normal tracking-normal">
+
+	<!--Nav-->
+	<nav class="bg-gray-900 p-4 mt-0 w-full">
+        <div class="container mx-auto flex items-center">
+		    <div class="flex text-white font-extrabold">
+				<a class="flex text-white text-base font-semibold no-underline hover:text-white hover:no-underline" href="/index.html"> 
+					 <span class="hidden w-0 md:w-auto md:block pl-1">Reveries</span>
+				</a>
+            </div>
+			<div class="flex pl-4 text-sm">
+				<ul class="list-reset flex justify-between flex-1 md:flex-none items-center">
+				  <li class="mr-2">
+					<a class="inline-block py-2 px-2 text-white no-underline" href="/index.html">HOME</a>
+				  </li>
+					<li class="mr-2">
+					<a class="inline-block text-gray-600 no-underline hover:text-gray-200 hover:text-underline py-2 px-2" href="/about.html">ABOUT</a>
+				  </li>
+				</ul>
+			</div>
+        </div>
+	</nav>
+	
+	<!--slide in nav-->
+	<div id="header" class="bg-white fixed w-full z-10 top-0 hidden animated" style="opacity: .95;">
+		<div class="bg-white">
+			<div class="flex flex-wrap items-center content-center">
+				<div class="flex w-1/2 justify-start text-white font-bold">
+					<a class="flex text-gray-900 no-underline hover:text-gray-900 hover:no-underline pl-2" href="#">
+						 <span class="hidden w-0 md:w-auto md:block pl-1">Volatile vs Atomic</span>
+					</a>
+				</div>
+				<div class="flex w-1/2 justify-end content-center">		
+					  <p class="hidden sm:block mr-3 text-center h-14 p-4 text-xs"><span class="pr-2">Share this</span> 👉</p>
+						<a class="inline-block text-white no-underline hover:text-white hover:text-underline text-center h-10 w-10 p-2 md:h-auto md:w-16 md:p-4" href="https://twitter.com/intent/tweet?url=#" style="background-color:#33b1ff;">
+							<svg class="fill-current text-white h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M30.063 7.313c-.813 1.125-1.75 2.125-2.875 2.938v.75c0 1.563-.188 3.125-.688 4.625a15.088 15.088 0 0 1-2.063 4.438c-.875 1.438-2 2.688-3.25 3.813a15.015 15.015 0 0 1-4.625 2.563c-1.813.688-3.75 1-5.75 1-3.25 0-6.188-.875-8.875-2.625.438.063.875.125 1.375.125 2.688 0 5.063-.875 7.188-2.5-1.25 0-2.375-.375-3.375-1.125s-1.688-1.688-2.063-2.875c.438.063.813.125 1.125.125.5 0 1-.063 1.5-.25-1.313-.25-2.438-.938-3.313-1.938a5.673 5.673 0 0 1-1.313-3.688v-.063c.813.438 1.688.688 2.625.688a5.228 5.228 0 0 1-1.875-2c-.5-.875-.688-1.813-.688-2.75 0-1.063.25-2.063.75-2.938 1.438 1.75 3.188 3.188 5.25 4.25s4.313 1.688 6.688 1.813a5.579 5.579 0 0 1 1.5-5.438c1.125-1.125 2.5-1.688 4.125-1.688s3.063.625 4.188 1.813a11.48 11.48 0 0 0 3.688-1.375c-.438 1.375-1.313 2.438-2.563 3.188 1.125-.125 2.188-.438 3.313-.875z"></path></svg>
+						</a>
+						<a class="inline-block text-white no-underline hover:text-white hover:text-underline text-center h-10 w-10 p-2 md:h-auto md:w-16 md:p-4" href="https://www.facebook.com/sharer/sharer.php?u=#" style="background-color:#005e99">
+							<svg class="fill-current text-white h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M19 6h5V0h-5c-3.86 0-7 3.14-7 7v3H8v6h4v16h6V16h5l1-6h-6V7c0-.542.458-1 1-1z"></path></svg>
+						</a>
+				</div>
+			</div>
+			
+		</div>
+		<!--Progress bar-->
+		<div id="progress" class="h-1 bg-white shadow" style="background:linear-gradient(to right, #4dc0b5 var(--scroll), transparent 0);"></div>
+    </div>
+	
+	
+	<!--Title-->
+	<div class="text-center pt-16 md:pt-32">
+		<p class="text-sm md:text-base text-teal-500 font-bold">14 September 2020 <span class="text-gray-900">/</span> PROGRAMMING</p>
+		<h1 class="font-bold break-normal text-3xl md:text-5xl">Volatile vs Atomic</h1>
+	</div>
+
+	<!--image-->
+	<div class="container w-full max-w-6xl mx-auto bg-white bg-cover mt-8 rounded" style="background-image:url('/asset/ref-img-1.jpg'); height: 110vh;"></div>
+	
+	<!--Container-->
+	<div class="container max-w-5xl mx-auto -mt-32">
+		
+		<div class="mx-0 sm:mx-6">
+			
+			<div class="bg-white w-full p-8 md:p-24 text-xl md:text-2xl text-gray-800 leading-normal" style="font-family:Georgia,serif;">
+				
+				<!--Post Content-->
+				
+
+				<!--Lead Para-->
+				<p class="text-2xl md:text-3xl mb-5">
+					Let us consider a simple piece of code which is running on two threads.
+				</p>
+				
+				<pre class="bg-gray-900 rounded text-gray-200 font-mono text-sm p-4">
+					<code class="break-words whitespace-pre-wrap">
+boolean flag = true
+
+//Thread 1 
+flag = flase
+						
+//Thread 2
+while(flag){
+//Operations
+}
+				</code>
+				</pre>
+
+				<p class="py-6">
+					Now we change the value of flag to false from true from thread 1 and say our expectation  is that the execution of while loop in thread 2 to stop because of this change. But according to Java specifications this code will not work, because of "Visibility Problem". 
+					<br>
+					To understand this let us first understand the CPU caching structure:
+				</p>
+				
+					<table style="margin-left: auto; margin-right: auto;">
+						<tr>
+						  <th>Thread 1</th>
+						  <th>Thread 2</th>
+						</tr>
+						<tr>
+						  <td>#core#</td>
+						  <td>#core#</td>
+						</tr>
+						<tr>
+							<td>local-cache</td>
+							<td>local-cache</td>
+						</tr>
+						<tr>
+							<td>Shared</td>
+							<td>Cache</td>
+							
+						</tr>
+					  </table>
+				<p class="py-6">
+					Consider a CPU with 2 cores where 2 threads are running and both of them have seperate local cache where seperate copy flag variable is stored,so even when the flag is changed true to false in thread 1, the change is not reflected in thread 2 hence our code fails. Hence the change is not visible in thread 2
+				</p>
+				<p class="py-6">
+					Solution:
+					<pre class="bg-gray-900 rounded text-gray-200 font-mono text-sm p-4">
+						<code class="break-words whitespace-pre-wrap">
+volatile int value = 1
+					</code>
+					</pre>
+				</p>
+				
+				<p>
+					<br>
+					<table style="margin-left: auto; margin-right: auto;">
+						<tr>
+						  <th>Thread 1</th>
+						  <th>Thread 2</th>
+						</tr>
+						<tr>
+						  <td>value++</td>
+						  <td>value++</td>
+						</tr>
+					  </table>
+				</p>
+				
+				</p>
+				<p class="py-6">
+					In this piece of code we are expecting that the value will be 1 at thread1 and 2 in thread2, but to our dismay this will not work even when we are using volatile.
+				</p>
+				<p class="py-6">
+					Let us check the execution:
+					<br>
+					The operation:<span class ="text-2xl font-mono text-gray-600">value++</span> --> Correponds to 2 steps <span class ="text-2xl font-mono text-gray-600">#readValue(=1)</span> and <span class ="text-2xl font-mono text-gray-600">#addAndWrite(=2)</span>
+				</p>
+				<p>
+					<table style="margin-left: auto; margin-right: auto;">
+						<tr>
+						  <th>Steps</th>
+						  <th>Thread 1</th>
+						  <th>Thread 2</th>
+						</tr>
+						<tr>
+						  <td>1</td>
+						  <td><span class ="text-2xl font-mono text-gray-600">#readValue(=1)</span></td>
+						  <td> - </td>
+						</tr>
+						<tr>
+							<td>2</td>
+							<td> - </td>
+							<td><span class ="text-2xl font-mono text-gray-600">#readValue(=1)</span></td>
+						</tr>
+						<tr>
+							<td>3</td>
+							<td><span class ="text-2xl font-mono text-gray-600">#addAndWrite(=2)</span></td>
+							<td> - </td>
+						</tr>
+						<tr>
+							<td>4</td>
+							<td> - </td>
+							<td><span class ="text-2xl font-mono text-gray-600">#addAndWrite(=2)</span></td>
+						</tr>
+					  </table>
+				</p>
+
+				<p class="py-6">
+					In both the thread initially the values will read as 1 because none of the 2 threads has updated the value yet. At step 3 lets say thread1 updates the value from 1->2. Now after thisstep any thread reading the value will get 2. Unfortunately thread2 has already read the value and the next possible operation done by thread2 is adding 1.
+				</p>
+				<p class="py-6">
+					This happens because we have compound operations, not atomic operations. Read then Write. Since our CPU has multiple cores or we can never be sure of JVM scheduling of threads it is possible that the operations of these two threads are interlined.
+					<br>
+					So this problem is a "Synchronization Problem"
+				</p>
+				<p class="py-6">
+					Solution:
+				</p>
+				<p>
+					<table style="margin-left: auto; margin-right: auto;">
+						<tr>
+						  <th>Thread 1</th>
+						  <th>Thread 2 (active)</th>
+						</tr>
+						<tr>
+						  <td><span class ="text-2xl font-mono text-gray-600">synchronized(obj){value++}</span></td>
+						  <td><span class ="text-2xl font-mono text-gray-600">synchronized(obj){value++}</span></td>
+						</tr>
+					  </table>
+				</p>
+				<p class="py-6">
+					We can use synchronized block which will allow only one thread to be active and execute the code
+					<br>
+					Solution #2:
+					<br>
+					<span class ="text-2xl font-mono text-gray-600">AtomicInteger value = new AtomicInteger(1)</span>
+				</p>
+				<p>
+					<table style="margin-left: auto; margin-right: auto;">
+						<tr>
+						  <th>Thread 1</th>
+						  <th>Thread 2</th>
+						</tr>
+						<tr>
+						  <td><span class ="text-2xl font-mono text-gray-600">value.increment() = 2</span></td>
+						  <td>-</span></td>
+						</tr>
+						<tr>
+							<td>-</span></td>
+							<td><span class ="text-2xl font-mono text-gray-600">value.increment() = 3</span></td>
+						  </tr>
+					  </table>
+				</p>
+				<p class="py-6">
+					Using AtomicInteger allows us to do the compound operation as single atomic operation, and hence making our operation thread-safe.
+					<br>
+					More Reference : <a href="https://docs.oracle.com/javase/tutorial/essential/concurrency/sync.html" style="text-decoration: underline;">Oracle Docs</a>
+				</p>
+
+												
+				<!--/ Post Content-->
+						
+			</div>
+			
+			
+				
+	
+				<!--Author-->
+				<div class="flex w-full items-center font-sans p-8 md:p-24">
+					<img class="w-10 h-10 rounded-full mr-4" src="/asset/avatar.jpg" alt="Avatar of Author">
+					<div class="flex-1">
+						<p class="text-base font-bold text-base md:text-xl leading-none">Utsab Chowdhury</p>
+						<p class="text-gray-600 text-xs md:text-base">Read <a class="text-gray-800 hover:text-teal-500 no-underline border-b-2 border-teal-500" href="/index.html">more</a> posts by this author. </p>
+					</div>
+					
+				</div>
+				<!--/Author-->
+			
+		</div>
+	
+
+	</div>
+
+
+
+
+
+
+
+	<footer class="bg-gray-900">	
+		<div class="container max-w-6xl mx-auto flex items-center px-2 py-8">
+
+			<div class="w-full mx-auto flex flex-wrap items-center">
+				<div class="flex w-full md:w-1/2 justify-center md:justify-start text-white font-normal">
+					<a class="text-gray-900 no-underline hover:text-gray-900 hover:no-underline" href="#">
+						 <span class="text-base text-gray-200">Reveries © 2020</span>
+					</a>
+				</div>
+				<div class="flex w-full pt-2 content-center justify-between md:w-1/2 md:justify-end">
+					<ul class="list-reset flex justify-center flex-1 md:flex-none items-center">
+					  <li>
+						<a class="inline-block py-2 px-3 text-white no-underline" href="index.html">Latest posts</a>
+					  </li>
+					  <li>
+						<a class="inline-block text-gray-600 no-underline hover:text-gray-200 hover:underline py-2 px-3" href="about.html">About</a>
+					  </li>
+					  <li>
+						<a class="inline-block text-gray-600 no-underline hover:text-gray-200 hover:underline py-2 px-3" href="https://github.com/tailwindtoolbox/Ghostwind">Ghostwind</a>
+					  </li>
+					</ul>
+				</div>
+			</div>
+        
+
+		
+		</div>
+	</footer>
+
+<script>
+	/* Progress bar */
+	//Source: https://alligator.io/js/progress-bar-javascript-css-variables/
+	var h = document.documentElement,
+		  b = document.body,
+		  st = 'scrollTop',
+		  sh = 'scrollHeight',
+		  progress = document.querySelector('#progress'),
+		  scroll;
+	var scrollpos = window.scrollY;
+	var header = document.getElementById("header");
+
+	document.addEventListener('scroll', function() {
+
+		/*Refresh scroll % width*/
+		scroll = (h[st]||b[st]) / ((h[sh]||b[sh]) - h.clientHeight) * 100;
+		progress.style.setProperty('--scroll', scroll + '%');
+
+		/*Apply classes for slide in bar*/
+		scrollpos = window.scrollY;
+
+    if(scrollpos > 100){
+      header.classList.remove("hidden");
+	  header.classList.remove("fadeOutUp");
+	  header.classList.add("slideInDown");
+    }
+    else {
+	  header.classList.remove("slideInDown");
+      header.classList.add("fadeOutUp");
+	  header.classList.add("hidden");
+    }
+
+	});
+
+</script>
+
+</body>
+</html>
