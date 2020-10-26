@@ -160,7 +160,19 @@ volatile int value = 1
 					</code>
 					</pre>
 				</p>
-				
+				<p class="py-6">
+					So how does this work? 
+					<br>
+					Upon adding volatile keyword to the flag variable, whenever we are updating its value the data is flushed through the local cache of thread 1 to the shared cache and refreshed back to thread 2. Hence this time the code runs, as thread 2 has now updated value of flag.
+				</p>
+				<p class="py-6">
+					Now let us consider a very simple piece of code
+				</p>
+				<pre class="bg-gray-900 rounded text-gray-200 font-mono text-sm p-4">
+					<code class="break-words whitespace-pre-wrap">
+volatile int value = 1
+				</code>
+				</pre>
 				<p>
 					<br>
 					<table style="margin-left: auto; margin-right: auto;">
@@ -215,7 +227,7 @@ volatile int value = 1
 				</p>
 
 				<p class="py-6">
-					In both the thread initially the values will read as 1 because none of the 2 threads has updated the value yet. At step 3 lets say thread1 updates the value from 1->2. Now after thisstep any thread reading the value will get 2. Unfortunately thread2 has already read the value and the next possible operation done by thread2 is adding 1.
+					In both the thread initially the values will read as 1 because none of the 2 threads has updated the value yet. At step 3 lets say thread1 updates the value from 1->2. Now after this step any thread reading the value will get 2. Unfortunately thread2 has already read the value and the next possible operation done by thread2 is adding 1.
 				</p>
 				<p class="py-6">
 					This happens because we have compound operations, not atomic operations. Read then Write. Since our CPU has multiple cores or we can never be sure of JVM scheduling of threads it is possible that the operations of these two threads are interlined.
