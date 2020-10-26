@@ -1,0 +1,285 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Some books that I have read</title>
+		<meta name="author" content="name">
+    <meta name="description" content="description here">
+        <meta name="keywords" content="keywords,here">
+        <link rel="shortcut icon" type="image/png" href="/asset/favicon-icon.png">
+		<link href="https://unpkg.com/tailwindcss/dist/tailwind.min.css" rel="stylesheet"> <!--Replace with your tailwind.css once created-->
+		<link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css" rel="stylesheet">
+	<style>
+	.smooth {transition: box-shadow 0.3s ease-in-out;}
+	::selection{background-color: aliceblue}
+	</style>
+</head>
+<body class="bg-white font-sans leading-normal tracking-normal">
+
+	<!--Nav-->
+	<nav class="bg-gray-900 p-4 mt-0 w-full">
+        <div class="container mx-auto flex items-center">
+		    <div class="flex text-white font-extrabold">
+				<a class="flex text-white text-base font-semibold no-underline hover:text-white hover:no-underline" href="/index.html"> 
+					 <span class="hidden w-0 md:w-auto md:block pl-1">Reveries</span>
+				</a>
+            </div>
+			<div class="flex pl-4 text-sm">
+				<ul class="list-reset flex justify-between flex-1 md:flex-none items-center">
+				  <li class="mr-2">
+					<a class="inline-block py-2 px-2 text-white no-underline" href="/index.html">HOME</a>
+				  </li>
+					<li class="mr-2">
+					<a class="inline-block text-gray-600 no-underline hover:text-gray-200 hover:text-underline py-2 px-2" href="/about.html">ABOUT</a>
+				  </li>
+				</ul>
+			</div>
+        </div>
+	</nav>
+	
+	<!--slide in nav-->
+	<div id="header" class="bg-white fixed w-full z-10 top-0 hidden animated" style="opacity: .95;">
+		<div class="bg-white">
+			<div class="flex flex-wrap items-center content-center">
+				<div class="flex w-1/2 justify-start text-white font-bold">
+					<a class="flex text-gray-900 no-underline hover:text-gray-900 hover:no-underline pl-2" href="#">
+						 <span class="hidden w-0 md:w-auto md:block pl-1">Some books that I have read</span>
+					</a>
+				</div>
+				<div class="flex w-1/2 justify-end content-center">		
+					  <p class="hidden sm:block mr-3 text-center h-14 p-4 text-xs"><span class="pr-2">Share this</span> 👉</p>
+						<a class="inline-block text-white no-underline hover:text-white hover:text-underline text-center h-10 w-10 p-2 md:h-auto md:w-16 md:p-4" href="https://twitter.com/intent/tweet?url=#" style="background-color:#33b1ff;">
+							<svg class="fill-current text-white h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M30.063 7.313c-.813 1.125-1.75 2.125-2.875 2.938v.75c0 1.563-.188 3.125-.688 4.625a15.088 15.088 0 0 1-2.063 4.438c-.875 1.438-2 2.688-3.25 3.813a15.015 15.015 0 0 1-4.625 2.563c-1.813.688-3.75 1-5.75 1-3.25 0-6.188-.875-8.875-2.625.438.063.875.125 1.375.125 2.688 0 5.063-.875 7.188-2.5-1.25 0-2.375-.375-3.375-1.125s-1.688-1.688-2.063-2.875c.438.063.813.125 1.125.125.5 0 1-.063 1.5-.25-1.313-.25-2.438-.938-3.313-1.938a5.673 5.673 0 0 1-1.313-3.688v-.063c.813.438 1.688.688 2.625.688a5.228 5.228 0 0 1-1.875-2c-.5-.875-.688-1.813-.688-2.75 0-1.063.25-2.063.75-2.938 1.438 1.75 3.188 3.188 5.25 4.25s4.313 1.688 6.688 1.813a5.579 5.579 0 0 1 1.5-5.438c1.125-1.125 2.5-1.688 4.125-1.688s3.063.625 4.188 1.813a11.48 11.48 0 0 0 3.688-1.375c-.438 1.375-1.313 2.438-2.563 3.188 1.125-.125 2.188-.438 3.313-.875z"></path></svg>
+						</a>
+						<a class="inline-block text-white no-underline hover:text-white hover:text-underline text-center h-10 w-10 p-2 md:h-auto md:w-16 md:p-4" href="https://www.facebook.com/sharer/sharer.php?u=#" style="background-color:#005e99">
+							<svg class="fill-current text-white h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M19 6h5V0h-5c-3.86 0-7 3.14-7 7v3H8v6h4v16h6V16h5l1-6h-6V7c0-.542.458-1 1-1z"></path></svg>
+						</a>
+				</div>
+			</div>
+			
+		</div>
+		<!--Progress bar-->
+		<div id="progress" class="h-1 bg-white shadow" style="background:linear-gradient(to right, #4dc0b5 var(--scroll), transparent 0);"></div>
+    </div>
+	
+	
+	<!--Title-->
+	<div class="text-center pt-16 md:pt-32">
+		<p class="text-sm md:text-base text-teal-500 font-bold">26 October 2020 <span class="text-gray-900">/</span> IDEAS</p>
+		<h1 class="font-bold break-normal text-3xl md:text-5xl">Some books that I have read</h1>
+	</div>
+
+	<!--image-->
+	<div class="container w-full max-w-6xl mx-auto bg-white bg-cover mt-8 rounded" style="background-image:url('/asset/booksP1020786-2000px.jpg'); height: 170vh;"></div>
+	
+	<!--Container-->
+	<div class="container max-w-5xl mx-auto -mt-32">
+		
+		<div class="mx-0 sm:mx-6">
+			
+			<div class="bg-white w-full p-8 md:p-24 text-xl md:text-2xl text-gray-800 leading-normal" style="font-family:Georgia,serif;">
+				
+				<!--Post Content-->
+				<p class="py-6">
+                   This a documentation of small snippets of my openions and views on some books that I have read, will continually update as I read more..
+                </p>
+                <div style="padding: 50px;">
+                    <p style="font-size: 20px; font-family: fantasy;">
+                        <a href="https://www.goodreads.com/book/show/7937178-nocturnes" style="float: left; padding-right: 20px"><img border="0" alt="Nocturnes: Five Stories of Music and Nightfall" src="https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1328468257l/7937178._SX98_.jpg" /></a><a href="https://www.goodreads.com/book/show/7937178-nocturnes">Nocturnes: Five Stories of Music and Nightfall</a> by <a href="https://www.goodreads.com/author/show/4280.Kazuo_Ishiguro">Kazuo Ishiguro</a><br/>
+                            My rating: <a href="https://www.goodreads.com/review/show/2559683228">3 of 5 stars</a>
+                            <br>
+                            Five stories about the mundane lives, where if one might find small implosions in human emotions, feelings, in suffering, joy, and love.
+                    </p>
+                </div>    
+                <div style="padding: 50px;">
+                    <p style="font-size: 20px; font-family: fantasy;">
+                        <a href="https://www.goodreads.com/book/show/40611510-the-last-lecture" style="float: left; padding-right: 20px"><img border="0" alt="The Last Lecture" src="https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1529682044l/40611510._SX98_.jpg" /></a><a href="https://www.goodreads.com/book/show/40611510-the-last-lecture">The Last Lecture</a> by <a href="https://www.goodreads.com/author/show/287960.Randy_Pausch">Randy Pausch</a><br/>
+                            My rating: <a href="https://www.goodreads.com/review/show/2559622634">4 of 5 stars</a><br /><br />
+                            How could you go through the process of leaving?<br />When you don't want to.<br />But you have to. This is not the book you'd read for spiritual guide, neither philosophical paths for accepting the evident.<br /><br />I guess Logan, Dylan, and Chloe had their father beside them all these years. Even though he couldn't   
+                    </p>
+                </div>
+
+                <div style="padding: 50px;">
+                    <p style="font-size: 20px; font-family: fantasy;">
+                    <a href="https://www.goodreads.com/book/show/2312936.The_Art_of_Dying" style="float: left; padding-right: 20px"><img border="0" alt="The Art of Dying" src="https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1334317570l/2312936._SX98_.jpg" /></a><a href="https://www.goodreads.com/book/show/2312936.The_Art_of_Dying">The Art of Dying</a> by <a href="https://www.goodreads.com/author/show/2856822.Osho">Osho</a><br/>
+                        My rating: <a href="https://www.goodreads.com/review/show/2403151293">2 of 5 stars</a><br /><br />
+                        The book is a gray area drafting banalities between the real psychological approach to understanding living and the anxiety of dying and accepting it and the spiritual way of this acceptance. There are lots of points one can make that doesn't actually lead a person to a truly aware, and true acceptance of the "END" that lies in front of him, rather persuades in making a connection to the continuation through universal consciousness.                   
+                    </p>
+                </div>
+                        
+                <div style="padding: 50px;">
+                    <p style="font-size: 20px; font-family: fantasy;">
+                    <a href="https://www.goodreads.com/book/show/25776132-the-brain" style="float: left; padding-right: 20px"><img border="0" alt="The Brain: The Story of You" src="https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1442830952l/25776132._SX98_.jpg" /></a><a href="https://www.goodreads.com/book/show/25776132-the-brain">The Brain: The Story of You</a> by <a href="https://www.goodreads.com/author/show/2883386.David_Eagleman">David Eagleman</a><br/>
+                        My rating: <a href="https://www.goodreads.com/review/show/2291886812">4 of 5 stars</a><br />
+                        Educative, for anyone who wants to know the basic engineering of the machine behind your eyes it is a perfect book to get started.                                   
+                    </p>
+                </div>
+                <div style="padding: 50px;">
+                    <p style="font-size: 20px; font-family: fantasy;">
+                        <a href="https://www.goodreads.com/book/show/5107.The_Catcher_in_the_Rye" style="float: left; padding-right: 20px"><img border="0" alt="The Catcher in the Rye" src="https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1398034300l/5107._SX98_.jpg" /></a><a href="https://www.goodreads.com/book/show/5107.The_Catcher_in_the_Rye">The Catcher in the Rye</a> by <a href="https://www.goodreads.com/author/show/819789.J_D_Salinger">J.D. Salinger</a><br/>
+                        My rating: <a href="https://www.goodreads.com/review/show/2240153081">4 of 5 stars</a><br /><br />
+                        Old Holden was in pain and he told me he felt lonely as hell. He was there with me but always a bit far away maybe a few steps away but he was there. I never met him again, maybe he ran away ,maybe he graduated, I don't know, it was a long time ago maybe he's not there anymore, and now I miss him even more.
+                    </p>
+                </div>
+                <div style="padding: 50px;">
+                    <p style="font-size: 20px; font-family: fantasy;">
+                        <a href="https://www.goodreads.com/book/show/88815.The_Reluctant_Fundamentalist" style="float: left; padding-right: 20px"><img border="0" alt="The Reluctant Fundamentalist" src="https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1441985417l/88815._SX98_.jpg" /></a><a href="https://www.goodreads.com/book/show/88815.The_Reluctant_Fundamentalist">The Reluctant Fundamentalist</a> by <a href="https://www.goodreads.com/author/show/16902.Mohsin_Hamid">Mohsin Hamid</a><br/>
+                        My rating: <a href="https://www.goodreads.com/review/show/2223611799">4 of 5 stars</a><br /><br />
+                        Strife between the roots of home, culture, identity, and the westernized tomb of success. A story unfolding the series of events that took place in Changez's life as a Pakistani first-generation migrant as he pushed to the epitome of success in the states to an unknown listener.<br />As the reader takes the position of this unknown listener and succumbs into a direct first-person conversation it makes a unique experience from the dusty tea-stalls of Lahore to the sunny-afternoons of Manhattan.
+                    </p>
+                </div>
+                <div style="padding: 50px;">
+                    <p style="font-size: 20px; font-family: fantasy;">
+                        <a href="https://www.goodreads.com/book/show/172732.The_Motorcycle_Diaries" style="float: left; padding-right: 20px"><img border="0" alt="The Motorcycle Diaries: Notes on a Latin American Journey" src="https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1354902593l/172732._SX98_.jpg" /></a><a href="https://www.goodreads.com/book/show/172732.The_Motorcycle_Diaries">The Motorcycle Diaries: Notes on a Latin American Journey</a> by <a href="https://www.goodreads.com/author/show/76172.Ernesto_Che_Guevara">Ernesto Che Guevara</a><br/>
+                        My rating: <a href="https://www.goodreads.com/review/show/2152878225">5 of 5 stars</a><br /><br />
+                        Before he became 'Che' he was a free spirit, and this book is a narration of not only an explorer or a student doctor but a free spirit who saw America in its truest colors. Reading this book is not only a visual journey along with Earnesto and Alberto and their good old Le Poderosa but a contemplation of a vast continent divided by borders, consumed by corporations exploited by administration yet the presence of an ether of unity amongst the spirit of people and their struggle. This book is the very reminder of his words-<br /><br />“Let the world change you and you can change the world”<br /><br />― Ernesto Che Guevara 
+                    </p>
+                </div>
+                <div style="padding: 50px;">
+                    <p style="font-size: 20px; font-family: fantasy;">
+                        <a href="https://www.goodreads.com/book/show/13496.A_Game_of_Thrones" style="float: left; padding-right: 20px"><img border="0" alt="A Game of Thrones (A Song of Ice and Fire, #1)" src="https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1562726234l/13496._SY160_.jpg" /></a><a href="https://www.goodreads.com/book/show/13496.A_Game_of_Thrones">A Game of Thrones</a> by <a href="https://www.goodreads.com/author/show/346732.George_R_R_Martin">George R.R. Martin</a><br/>
+                        My rating: <a href="https://www.goodreads.com/review/show/2105060426">4 of 5 stars</a><br /><br />
+                        I was not reading it, I got a pair of eyes for every chapter. 
+                        <br><br>
+                    </p>
+                </div>
+                <div style="padding: 50px;">
+                    <p style="font-size: 20px; font-family: fantasy;">
+                        <a href="https://www.goodreads.com/book/show/355697.All_Quiet_on_the_Western_Front" style="float: left; padding-right: 20px"><img border="0" alt="All Quiet on the Western Front" src="https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1441227765l/355697._SY160_.jpg" /></a><a href="https://www.goodreads.com/book/show/355697.All_Quiet_on_the_Western_Front">All Quiet on the Western Front</a> by <a href="https://www.goodreads.com/author/show/4116.Erich_Maria_Remarque">Erich Maria Remarque</a><br/>
+                        My rating: <a href="https://www.goodreads.com/review/show/2045062348">5 of 5 stars</a><br /><br />
+                         - Saved are those who had already fallen in the dust. for those who live they carried their life like a crumpled backpack.<br />Battlefields of World War 1 through the eyes of a teenager trying to survive the fronts.                        
+                    </p>
+                </div>
+                <div style="padding: 50px;">
+                    <p style="font-size: 20px; font-family: fantasy;">
+                        <a href="https://www.goodreads.com/book/show/6334.Never_Let_Me_Go" style="float: left; padding-right: 20px"><img border="0" alt="Never Let Me Go" src="https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1353048590l/6334._SX98_.jpg" /></a><a href="https://www.goodreads.com/book/show/6334.Never_Let_Me_Go">Never Let Me Go</a> by <a href="https://www.goodreads.com/author/show/4280.Kazuo_Ishiguro">Kazuo Ishiguro</a><br/>
+                        My rating: <a href="https://www.goodreads.com/review/show/2012358215">5 of 5 stars</a><br /><br />
+                        Sometimes a purpose need redefinition, a masterpiece that will haunt your feelings for a long time.                        
+                    </p>
+                </div>
+                <div style="padding: 50px;">
+                    <p style="font-size: 20px; font-family: fantasy;">
+                        <a href="https://www.goodreads.com/book/show/11297.Norwegian_Wood" style="float: left; padding-right: 20px"><img border="0" alt="Norwegian Wood" src="https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1386924361l/11297._SX98_.jpg" /></a><a href="https://www.goodreads.com/book/show/11297.Norwegian_Wood">Norwegian Wood</a> by <a href="https://www.goodreads.com/author/show/3354.Haruki_Murakami">Haruki Murakami</a><br/>
+                        My rating: <a href="https://www.goodreads.com/review/show/2012363113">4 of 5 stars</a><br /><br />
+                        Murakami's signature style is draped all over each page of the book. He has this capability to explore complex human emotions with utmost simplicity along with making changes in contrast to the surroundings of the characters. This in depth exploration is quite a charm of Murakami in his contribution to literature. Norwegian Wood revolves around a teenage boy name Toru Watanabe as he stumbles through life in 70s Tokyo, both his life and the city (Where he is a university student) goes through vivid changes. Love, loss, and death all are intermingled with life and the book takes you to a trip to this revelation through the eyes of the 19 year old.                                            
+                    </p>
+                </div>
+                Books read, but not written about..(will add writeups later maybe)
+                <div style="padding: 50px;">
+                    <p style="font-size: 20px; font-family: fantasy;">
+                        <a href="https://www.goodreads.com/book/show/4671.The_Great_Gatsby" style="float: left; padding-right: 20px"><img border="0" alt="The Great Gatsby" src="https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1490528560l/4671._SX98_.jpg" /></a><a href="https://www.goodreads.com/book/show/4671.The_Great_Gatsby">The Great Gatsby</a> by <a href="https://www.goodreads.com/author/show/3190.F_Scott_Fitzgerald">F. Scott Fitzgerald</a><br/>
+                        My rating: <a href="https://www.goodreads.com/review/show/2012355603">4 of 5 stars</a><br /><br />
+                        <br/><br/><br>
+                        <a href="https://www.goodreads.com/book/show/4929.Kafka_on_the_Shore" style="float: left; padding-right: 20px"><img border="0" alt="Kafka on the Shore" src="https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1429638085l/4929._SX98_.jpg" /></a><a href="https://www.goodreads.com/book/show/4929.Kafka_on_the_Shore">Kafka on the Shore</a> by <a href="https://www.goodreads.com/author/show/3354.Haruki_Murakami">Haruki Murakami</a><br/>
+                        My rating: <a href="https://www.goodreads.com/review/show/2012363386">3 of 5 stars</a><br /><br />
+                        <br/><br/><br>
+                        <a href="https://www.goodreads.com/book/show/5297.The_Picture_of_Dorian_Gray" style="float: left; padding-right: 20px"><img border="0" alt="The Picture of Dorian Gray" src="https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1546103428l/5297._SX98_.jpg" /></a><a href="https://www.goodreads.com/book/show/5297.The_Picture_of_Dorian_Gray">The Picture of Dorian Gray</a> by <a href="https://www.goodreads.com/author/show/3565.Oscar_Wilde">Oscar Wilde</a><br/>
+                        My rating: <a href="https://www.goodreads.com/review/show/2020436188">5 of 5 stars</a><br /><br />
+                        <br/><br/><br>
+                        <a href="https://www.goodreads.com/book/show/9777.The_God_of_Small_Things" style="float: left; padding-right: 20px"><img border="0" alt="The God of Small Things" src="https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1590282886l/9777._SX98_.jpg" /></a><a href="https://www.goodreads.com/book/show/9777.The_God_of_Small_Things">The God of Small Things</a> by <a href="https://www.goodreads.com/author/show/6134.Arundhati_Roy">Arundhati Roy</a><br/>
+                        My rating: <a href="https://www.goodreads.com/review/show/2044940355">4 of 5 stars</a><br /><br />
+                        <br/><br/><br>
+                        <a href="https://www.goodreads.com/book/show/2165.The_Old_Man_and_the_Sea" style="float: left; padding-right: 20px"><img border="0" alt="The Old Man and the Sea" src="https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1329189714l/2165._SX98_.jpg" /></a><a href="https://www.goodreads.com/book/show/2165.The_Old_Man_and_the_Sea">The Old Man and the Sea</a> by <a href="https://www.goodreads.com/author/show/1455.Ernest_Hemingway">Ernest Hemingway</a><br/>
+                        My rating: <a href="https://www.goodreads.com/review/show/2045067854">4 of 5 stars</a><br /><br />
+                        <br/><br/><br>
+                    </p>
+                </div>
+                <span style="font-size:20px;font-family:monospace">Find me in <a href="https://www.goodreads.com/utsab_c " style="text-decoration: underline;">goodreads</a></span>
+			</div>
+			
+			
+				
+	
+				<!--Author-->
+				<div class="flex w-full items-center font-sans p-8 md:p-24">
+					<img class="w-10 h-10 rounded-full mr-4" src="/asset/avatar.jpg" alt="Avatar of Author">
+					<div class="flex-1">
+						<p class="text-base font-bold text-base md:text-xl leading-none">Utsab Chowdhury</p>
+						<p class="text-gray-600 text-xs md:text-base">Read <a class="text-gray-800 hover:text-teal-500 no-underline border-b-2 border-teal-500" href="/index.html">more</a> posts by this author. </p>
+					</div>
+					
+				</div>
+				<!--/Author-->
+			
+		</div>
+	
+
+	</div>
+
+
+
+
+
+
+
+	<footer class="bg-gray-900">	
+		<div class="container max-w-6xl mx-auto flex items-center px-2 py-8">
+
+			<div class="w-full mx-auto flex flex-wrap items-center">
+				<div class="flex w-full md:w-1/2 justify-center md:justify-start text-white font-normal">
+					<a class="text-gray-900 no-underline hover:text-gray-900 hover:no-underline" href="#">
+						 <span class="text-base text-gray-200">Reveries © 2020</span>
+					</a>
+				</div>
+				<div class="flex w-full pt-2 content-center justify-between md:w-1/2 md:justify-end">
+					<ul class="list-reset flex justify-center flex-1 md:flex-none items-center">
+					  <li>
+						<a class="inline-block py-2 px-3 text-white no-underline" href="index.html">Latest posts</a>
+					  </li>
+					  <li>
+						<a class="inline-block text-gray-600 no-underline hover:text-gray-200 hover:underline py-2 px-3" href="about.html">About</a>
+					  </li>
+					  <li>
+						<a class="inline-block text-gray-600 no-underline hover:text-gray-200 hover:underline py-2 px-3" href="https://github.com/tailwindtoolbox/Ghostwind">Ghostwind</a>
+					  </li>
+					</ul>
+				</div>
+			</div>
+        
+
+		
+		</div>
+	</footer>
+
+<script>
+	/* Progress bar */
+	//Source: https://alligator.io/js/progress-bar-javascript-css-variables/
+	var h = document.documentElement,
+		  b = document.body,
+		  st = 'scrollTop',
+		  sh = 'scrollHeight',
+		  progress = document.querySelector('#progress'),
+		  scroll;
+	var scrollpos = window.scrollY;
+	var header = document.getElementById("header");
+
+	document.addEventListener('scroll', function() {
+
+		/*Refresh scroll % width*/
+		scroll = (h[st]||b[st]) / ((h[sh]||b[sh]) - h.clientHeight) * 100;
+		progress.style.setProperty('--scroll', scroll + '%');
+
+		/*Apply classes for slide in bar*/
+		scrollpos = window.scrollY;
+
+    if(scrollpos > 100){
+      header.classList.remove("hidden");
+	  header.classList.remove("fadeOutUp");
+	  header.classList.add("slideInDown");
+    }
+    else {
+	  header.classList.remove("slideInDown");
+      header.classList.add("fadeOutUp");
+	  header.classList.add("hidden");
+    }
+
+	});
+
+</script>
+
+</body>
+</html>
