@@ -3439,7 +3439,6 @@ var rudderanalytics = (function (exports) {
     Optimizely: "OPTIMIZELY",
     FULLSTORY: "FULLSTORY",
     Fullstory: "FULLSTORY",
-    FullStory: "FULLSTORY",
     BUGSNAG: "BUGSNAG",
     TVSQUARED: "TVSQUARED",
     "Google Analytics 4": "GA4",
@@ -3468,20 +3467,19 @@ var rudderanalytics = (function (exports) {
     PINTERESTTAG: "PINTEREST_TAG",
     PINTEREST_TAG: "PINTEREST_TAG",
     pinterest: "PINTEREST_TAG",
-    PinterestAds: "PINTEREST_TAG",
-    Pinterest_Ads: "PINTEREST_TAG",
     Pinterest: "PINTEREST_TAG",
     "Adobe Analytics": "ADOBE_ANALYITCS",
     ADOBE_ANALYTICS: "ADOBE_ANALYTICS",
     AdobeAnalytics: "ADOBE_ANALYTICS",
     adobeanalytics: "ADOBE_ANALYTICS",
-    "LinkedIn Pixel": "LINKEDIN_PIXEL",
-    LINKEDIN_PIXEL: "LINKEDIN_PIXEL",
-    Linkedin_pixel: "LINKEDIN_PIXEL",
-    LinkedinPixel: "LINKEDIN_PIXEL",
-    LinkedInPixel: "LINKEDIN_PIXEL",
-    Linkedinpixel: "LINKEDIN_PIXEL",
-    LINKEDINPIXEL: "LINKEDIN_PIXEL"
+    "LinkedIn Insight Tag": "LINKEDIN_INSIGHT_TAG",
+    LINKEDIN_INSIGHT_TAG: "LINKEDIN_INSIGHT_TAG",
+    Linkedin_insight_tag: "LINKEDIN_INSIGHT_TAG",
+    LinkedinInsighttag: "LINKEDIN_INSIGHT_TAG",
+    LinkedinInsightTag: "LINKEDIN_INSIGHT_TAG",
+    LinkedInInsightTag: "LINKEDIN_INSIGHT_TAG",
+    Linkedininsighttag: "LINKEDIN_INSIGHT_TAG",
+    LINKEDININSIGHTTAG: "LINKEDIN_INSIGHT_TAG"
   };
 
   // from client native integration name to server identified display name
@@ -3517,7 +3515,7 @@ var rudderanalytics = (function (exports) {
     CLEVERTAP: "Clevertap",
     BINGADS: "BingAds",
     PINTEREST_TAG: "PinterestTag",
-    LINKEDIN_PIXEL: "LinkedinPixel"
+    LINKEDIN_INSIGHT_TAG: "LinkedInInsightTag"
   };
 
   // Reserved Keywords for properties/triats
@@ -14709,6 +14707,3826 @@ var rudderanalytics = (function (exports) {
     return Comscore;
   }();
 
+  var FacebookPixel = /*#__PURE__*/function () {
+    function FacebookPixel(config) {
+      _classCallCheck(this, FacebookPixel);
+
+      this.blacklistPiiProperties = config.blacklistPiiProperties;
+      this.categoryToContent = config.categoryToContent;
+      this.pixelId = config.pixelId;
+      this.eventsToEvents = config.eventsToEvents;
+      this.eventCustomProperties = config.eventCustomProperties;
+      this.valueFieldIdentifier = config.valueFieldIdentifier;
+      this.advancedMapping = config.advancedMapping;
+      this.traitKeyToExternalId = config.traitKeyToExternalId;
+      this.legacyConversionPixelId = config.legacyConversionPixelId;
+      this.userIdAsPixelId = config.userIdAsPixelId;
+      this.whitelistPiiProperties = config.whitelistPiiProperties;
+      this.name = "FB_PIXEL";
+    }
+
+    _createClass(FacebookPixel, [{
+      key: "init",
+      value: function init() {
+        if (this.categoryToContent === undefined) {
+          this.categoryToContent = [];
+        }
+
+        if (this.legacyConversionPixelId === undefined) {
+          this.legacyConversionPixelId = [];
+        }
+
+        if (this.userIdAsPixelId === undefined) {
+          this.userIdAsPixelId = [];
+        }
+
+        logger.debug("===in init FbPixel===");
+
+        window._fbq = function () {
+          if (window.fbq.callMethod) {
+            window.fbq.callMethod.apply(window.fbq, arguments);
+          } else {
+            window.fbq.queue.push(arguments);
+          }
+        };
+
+        window.fbq = window.fbq || window._fbq;
+        window.fbq.push = window.fbq;
+        window.fbq.loaded = true;
+        window.fbq.disablePushState = true; // disables automatic pageview tracking
+
+        window.fbq.allowDuplicatePageViews = true; // enables fb
+
+        window.fbq.version = "2.0";
+        window.fbq.queue = [];
+        window.fbq("init", this.pixelId);
+        ScriptLoader("fbpixel-integration", "https://connect.facebook.net/en_US/fbevents.js");
+      }
+    }, {
+      key: "isLoaded",
+      value: function isLoaded() {
+        logger.debug("in FBPixel isLoaded");
+        return !!(window.fbq && window.fbq.callMethod);
+      }
+    }, {
+      key: "isReady",
+      value: function isReady() {
+        logger.debug("in FBPixel isReady");
+        return !!(window.fbq && window.fbq.callMethod);
+      }
+    }, {
+      key: "page",
+      value: function page(rudderElement) {
+        window.fbq("track", "PageView");
+      }
+    }, {
+      key: "identify",
+      value: function identify(rudderElement) {
+        if (this.advancedMapping) {
+          window.fbq("init", this.pixelId, rudderElement.message.context.traits);
+        }
+      }
+    }, {
+      key: "track",
+      value: function track(rudderElement) {
+        var _this = this;
+
+        var self = this;
+        var event = rudderElement.message.event;
+        var revenue = this.formatRevenue(rudderElement.message.properties.revenue);
+        var payload = this.buildPayLoad(rudderElement, true);
+
+        if (this.categoryToContent === undefined) {
+          this.categoryToContent = [];
+        }
+
+        if (this.legacyConversionPixelId === undefined) {
+          this.legacyConversionPixelId = [];
+        }
+
+        if (this.userIdAsPixelId === undefined) {
+          this.userIdAsPixelId = [];
+        }
+
+        payload.value = revenue;
+        var standard = this.eventsToEvents;
+        var legacy = this.legacyConversionPixelId;
+        var standardTo;
+        var legacyTo;
+        standardTo = standard.reduce(function (filtered, standard) {
+          if (standard.from === event) {
+            filtered.push(standard.to);
+          }
+
+          return filtered;
+        }, []);
+        legacyTo = legacy.reduce(function (filtered, legacy) {
+          if (legacy.from === event) {
+            filtered.push(legacy.to);
+          }
+
+          return filtered;
+        }, []);
+        each_1(function (event) {
+          payload.currency = rudderElement.message.properties.currency || "USD";
+          window.fbq("trackSingle", self.pixelId, event, payload, {
+            eventID: rudderElement.message.messageId
+          });
+        }, standardTo);
+        each_1(function (event) {
+          window.fbq("trackSingle", self.pixelId, event, {
+            currency: rudderElement.message.properties.currency,
+            value: revenue
+          }, {
+            eventID: rudderElement.message.messageId
+          });
+        }, legacyTo);
+
+        if (event === "Product List Viewed") {
+          var contentType;
+          var contentIds;
+          var contents = [];
+          var products = rudderElement.message.properties.products;
+          var customProperties = this.buildPayLoad(rudderElement, true);
+
+          if (Array.isArray(products)) {
+            products.forEach(function (product) {
+              var productId = product.product_id;
+
+              if (productId) {
+                contentIds.push(productId);
+                contents.push({
+                  id: productId,
+                  quantity: rudderElement.message.properties.quantity
+                });
+              }
+            });
+          }
+
+          if (contentIds.length) {
+            contentType = ["product"];
+          } else {
+            contentIds.push(rudderElement.message.properties.category || "");
+            contents.push({
+              id: rudderElement.message.properties.category || "",
+              quantity: 1
+            });
+            contentType = ["product_group"];
+          }
+
+          window.fbq("trackSingle", self.pixelId, "ViewContent", this.merge({
+            content_ids: contentIds,
+            content_type: this.getContentType(rudderElement, contentType),
+            contents: contents
+          }, customProperties), {
+            eventID: rudderElement.message.messageId
+          });
+          each_1(function (event) {
+            window.fbq("trackSingle", self.pixelId, event, {
+              currency: rudderElement.message.properties.currency,
+              value: _this.formatRevenue(rudderElement.message.properties.revenue)
+            }, {
+              eventID: rudderElement.message.messageId
+            });
+          }, legacyTo);
+        } else if (event === "Product Viewed") {
+          var useValue = this.valueFieldIdentifier === "properties.value";
+          var customProperties = this.buildPayLoad(rudderElement, true);
+          window.fbq("trackSingle", self.pixelId, "ViewContent", this.merge({
+            content_ids: [rudderElement.message.properties.product_id || rudderElement.message.properties.id || rudderElement.message.properties.sku || ""],
+            content_type: this.getContentType(rudderElement, ["product"]),
+            content_name: rudderElement.message.properties.product_name || "",
+            content_category: rudderElement.message.properties.category || "",
+            currency: rudderElement.message.properties.currency,
+            value: useValue ? this.formatRevenue(rudderElement.message.properties.value) : this.formatRevenue(rudderElement.message.properties.price),
+            contents: [{
+              id: rudderElement.message.properties.product_id || rudderElement.message.properties.id || rudderElement.message.properties.sku || "",
+              quantity: rudderElement.message.properties.quantity,
+              item_price: rudderElement.message.properties.price
+            }]
+          }, customProperties), {
+            eventID: rudderElement.message.messageId
+          });
+          each_1(function (event) {
+            window.fbq("trackSingle", self.pixelId, event, {
+              currency: rudderElement.message.properties.currency,
+              value: useValue ? _this.formatRevenue(rudderElement.message.properties.value) : _this.formatRevenue(rudderElement.message.properties.price)
+            }, {
+              eventID: rudderElement.message.messageId
+            });
+          }, legacyTo);
+        } else if (event === "Product Added") {
+          var useValue = this.valueFieldIdentifier === "properties.value";
+          var customProperties = this.buildPayLoad(rudderElement, true);
+          window.fbq("trackSingle", self.pixelId, "AddToCart", this.merge({
+            content_ids: [rudderElement.message.properties.product_id || rudderElement.message.properties.id || rudderElement.message.properties.sku || ""],
+            content_type: this.getContentType(rudderElement, ["product"]),
+            content_name: rudderElement.message.properties.product_name || "",
+            content_category: rudderElement.message.properties.category || "",
+            currency: rudderElement.message.properties.currency,
+            value: useValue ? this.formatRevenue(rudderElement.message.properties.value) : this.formatRevenue(rudderElement.message.properties.price),
+            contents: [{
+              id: rudderElement.message.properties.product_id || rudderElement.message.properties.id || rudderElement.message.properties.sku || "",
+              quantity: rudderElement.message.properties.quantity,
+              item_price: rudderElement.message.properties.price
+            }]
+          }, customProperties), {
+            eventID: rudderElement.message.messageId
+          });
+          each_1(function (event) {
+            window.fbq("trackSingle", self.pixelId, event, {
+              currency: rudderElement.message.properties.currency,
+              value: useValue ? _this.formatRevenue(rudderElement.message.properties.value) : _this.formatRevenue(rudderElement.message.properties.price)
+            }, {
+              eventID: rudderElement.message.messageId
+            });
+          }, legacyTo);
+          this.merge({
+            content_ids: [rudderElement.message.properties.product_id || rudderElement.message.properties.id || rudderElement.message.properties.sku || ""],
+            content_type: this.getContentType(rudderElement, ["product"]),
+            content_name: rudderElement.message.properties.product_name || "",
+            content_category: rudderElement.message.properties.category || "",
+            currency: rudderElement.message.properties.currency,
+            value: useValue ? this.formatRevenue(rudderElement.message.properties.value) : this.formatRevenue(rudderElement.message.properties.price),
+            contents: [{
+              id: rudderElement.message.properties.product_id || rudderElement.message.properties.id || rudderElement.message.properties.sku || "",
+              quantity: rudderElement.message.properties.quantity,
+              item_price: rudderElement.message.properties.price
+            }]
+          }, customProperties);
+        } else if (event === "Order Completed") {
+          var products = rudderElement.message.properties.products;
+          var customProperties = this.buildPayLoad(rudderElement, true);
+          var revenue = this.formatRevenue(rudderElement.message.properties.revenue);
+          var contentType = this.getContentType(rudderElement, ["product"]);
+          var contentIds = [];
+          var contents = [];
+
+          for (var i = 0; i < products.length; i++) {
+            var pId = products[i].product_id;
+            contentIds.push(pId);
+            var content = {
+              id: pId,
+              quantity: rudderElement.message.properties.quantity
+            };
+
+            if (rudderElement.message.properties.price) {
+              content.item_price = rudderElement.message.properties.price;
+            }
+
+            contents.push(content);
+          }
+
+          window.fbq("trackSingle", self.pixelId, "Purchase", this.merge({
+            content_ids: contentIds,
+            content_type: contentType,
+            currency: rudderElement.message.properties.currency,
+            value: revenue,
+            contents: contents,
+            num_items: contentIds.length
+          }, customProperties), {
+            eventID: rudderElement.message.messageId
+          });
+          each_1(function (event) {
+            window.fbq("trackSingle", self.pixelId, event, {
+              currency: rudderElement.message.properties.currency,
+              value: _this.formatRevenue(rudderElement.message.properties.revenue)
+            }, {
+              eventID: rudderElement.message.messageId
+            });
+          }, legacyTo);
+        } else if (event === "Products Searched") {
+          var customProperties = this.buildPayLoad(rudderElement, true);
+          window.fbq("trackSingle", self.pixelId, "Search", this.merge({
+            search_string: rudderElement.message.properties.query
+          }, customProperties), {
+            eventID: rudderElement.message.messageId
+          });
+          each_1(function (event) {
+            window.fbq("trackSingle", self.pixelId, event, {
+              currency: rudderElement.message.properties.currency,
+              value: formatRevenue(rudderElement.message.properties.revenue)
+            }, {
+              eventID: rudderElement.message.messageId
+            });
+          }, legacyTo);
+        } else if (event === "Checkout Started") {
+          var products = rudderElement.message.properties.products;
+          var customProperties = this.buildPayLoad(rudderElement, true);
+          var revenue = this.formatRevenue(rudderElement.message.properties.revenue);
+          var contentCategory = rudderElement.message.properties.category;
+          var contentIds = [];
+          var contents = [];
+
+          for (var i = 0; i < products.length; i++) {
+            var product = products[i];
+            var pId = product.product_id;
+            contentIds.push(pId);
+            var content = {
+              id: pId,
+              quantity: rudderElement.message.properties.quantity,
+              item_price: rudderElement.message.properties.price
+            };
+
+            if (rudderElement.message.properties.price) {
+              content.item_price = rudderElement.message.properties.price;
+            }
+
+            contents.push(content);
+          }
+
+          if (!contentCategory && products[0] && products[0].category) {
+            contentCategory = products[0].category;
+          }
+
+          window.fbq("trackSingle", self.pixelId, "InitiateCheckout", this.merge({
+            content_category: contentCategory,
+            content_ids: contentIds,
+            content_type: this.getContentType(rudderElement, ["product"]),
+            currency: rudderElement.message.properties.currency,
+            value: revenue,
+            contents: contents,
+            num_items: contentIds.length
+          }, customProperties), {
+            eventID: rudderElement.message.messageId
+          });
+          each_1(function (event) {
+            window.fbq("trackSingle", self.pixelId, event, {
+              currency: rudderElement.message.properties.currency,
+              value: _this.formatRevenue(rudderElement.message.properties.revenue)
+            }, {
+              eventID: rudderElement.message.messageId
+            });
+          }, legacyTo);
+        }
+      }
+    }, {
+      key: "getContentType",
+      value: function getContentType(rudderElement, defaultValue) {
+        var options = rudderElement.message.options;
+
+        if (options && options.contentType) {
+          return [options.contentType];
+        }
+
+        var category = rudderElement.message.properties.category;
+
+        if (!category) {
+          var products = rudderElement.message.properties.products;
+
+          if (products && products.length) {
+            category = products[0].category;
+          }
+        }
+
+        if (category) {
+          var mapped = this.categoryToContent;
+          var mappedTo;
+          mappedTo = mapped.reduce(function (filtered, mapped) {
+            if (mapped.from == category) {
+              filtered.push(mapped.to);
+            }
+
+            return filtered;
+          }, []);
+
+          if (mappedTo.length) {
+            return mappedTo;
+          }
+        }
+
+        return defaultValue;
+      }
+    }, {
+      key: "merge",
+      value: function merge(obj1, obj2) {
+        var res = {}; // All properties of obj1
+
+        for (var propObj1 in obj1) {
+          if (obj1.hasOwnProperty(propObj1)) {
+            res[propObj1] = obj1[propObj1];
+          }
+        } // Extra properties of obj2
+
+
+        for (var propObj2 in obj2) {
+          if (obj2.hasOwnProperty(propObj2) && !res.hasOwnProperty(propObj2)) {
+            res[propObj2] = obj2[propObj2];
+          }
+        }
+
+        return res;
+      }
+    }, {
+      key: "formatRevenue",
+      value: function formatRevenue(revenue) {
+        return Number(revenue || 0).toFixed(2);
+      }
+    }, {
+      key: "buildPayLoad",
+      value: function buildPayLoad(rudderElement, isStandardEvent) {
+        var dateFields = ["checkinDate", "checkoutDate", "departingArrivalDate", "departingDepartureDate", "returningArrivalDate", "returningDepartureDate", "travelEnd", "travelStart"];
+        var defaultPiiProperties = ["email", "firstName", "lastName", "gender", "city", "country", "phone", "state", "zip", "birthday"];
+        var whitelistPiiProperties = this.whitelistPiiProperties || [];
+        var blacklistPiiProperties = this.blacklistPiiProperties || [];
+        var eventCustomProperties = this.eventCustomProperties || [];
+        var customPiiProperties = {};
+
+        for (var i = 0; i < blacklistPiiProperties[i]; i++) {
+          var configuration = blacklistPiiProperties[i];
+          customPiiProperties[configuration.blacklistPiiProperties] = configuration.blacklistPiiHash;
+        }
+
+        var payload = {};
+        var properties = rudderElement.message.properties;
+
+        for (var property in properties) {
+          if (!properties.hasOwnProperty(property)) {
+            continue;
+          }
+
+          if (isStandardEvent && eventCustomProperties.indexOf(property) < 0) {
+            continue;
+          }
+
+          var value = properties[property];
+
+          if (dateFields.indexOf(properties) >= 0) {
+            if (is_1.date(value)) {
+              payload[property] = value.toISOTring().split("T")[0];
+              continue;
+            }
+          }
+
+          if (customPiiProperties.hasOwnProperty(property)) {
+            if (customPiiProperties[property] && typeof value === "string") {
+              payload[property] = sha256(value);
+            }
+
+            continue;
+          }
+
+          var isPropertyPii = defaultPiiProperties.indexOf(property) >= 0;
+          var isProperyWhiteListed = whitelistPiiProperties.indexOf(property) >= 0;
+
+          if (!isPropertyPii || isProperyWhiteListed) {
+            payload[property] = value;
+          }
+        }
+
+        return payload;
+      }
+    }]);
+
+    return FacebookPixel;
+  }();
+
+  var defaults$2 = {
+    lotame_synch_time_key: "lt_synch_timestamp"
+  };
+
+  var LotameStorage = /*#__PURE__*/function () {
+    function LotameStorage() {
+      _classCallCheck(this, LotameStorage);
+
+      this.storage = Storage$1; // new Storage();
+    }
+
+    _createClass(LotameStorage, [{
+      key: "setLotameSynchTime",
+      value: function setLotameSynchTime(value) {
+        this.storage.setItem(defaults$2.lotame_synch_time_key, value);
+      }
+    }, {
+      key: "getLotameSynchTime",
+      value: function getLotameSynchTime() {
+        return this.storage.getItem(defaults$2.lotame_synch_time_key);
+      }
+    }]);
+
+    return LotameStorage;
+  }();
+
+  var lotameStorage = new LotameStorage();
+
+  var Lotame = /*#__PURE__*/function () {
+    function Lotame(config, analytics) {
+      var _this = this;
+
+      _classCallCheck(this, Lotame);
+
+      this.name = "LOTAME";
+      this.analytics = analytics;
+      this.storage = lotameStorage;
+      this.bcpUrlSettingsPixel = config.bcpUrlSettingsPixel;
+      this.bcpUrlSettingsIframe = config.bcpUrlSettingsIframe;
+      this.dspUrlSettingsPixel = config.dspUrlSettingsPixel;
+      this.dspUrlSettingsIframe = config.dspUrlSettingsIframe;
+      this.mappings = {};
+      config.mappings.forEach(function (mapping) {
+        var key = mapping.key;
+        var value = mapping.value;
+        _this.mappings[key] = value;
+      });
+    }
+
+    _createClass(Lotame, [{
+      key: "init",
+      value: function init() {
+        logger.debug("===in init Lotame===");
+
+        window.LOTAME_SYNCH_CALLBACK = function () {};
+      }
+    }, {
+      key: "addPixel",
+      value: function addPixel(source, width, height) {
+        logger.debug("Adding pixel for :: ".concat(source));
+        var image = document.createElement("img");
+        image.src = source;
+        image.setAttribute("width", width);
+        image.setAttribute("height", height);
+        logger.debug("Image Pixel :: ".concat(image));
+        document.getElementsByTagName("body")[0].appendChild(image);
+      }
+    }, {
+      key: "addIFrame",
+      value: function addIFrame(source) {
+        logger.debug("Adding iframe for :: ".concat(source));
+        var iframe = document.createElement("iframe");
+        iframe.src = source;
+        iframe.title = "empty";
+        iframe.setAttribute("id", "LOTCCFrame");
+        iframe.setAttribute("tabindex", "-1");
+        iframe.setAttribute("role", "presentation");
+        iframe.setAttribute("aria-hidden", "true");
+        iframe.setAttribute("style", "border: 0px; width: 0px; height: 0px; display: block;");
+        logger.debug("IFrame :: ".concat(iframe));
+        document.getElementsByTagName("body")[0].appendChild(iframe);
+      }
+    }, {
+      key: "syncPixel",
+      value: function syncPixel(userId) {
+        var _this2 = this;
+
+        logger.debug("===== in syncPixel ======");
+        logger.debug("Firing DSP Pixel URLs");
+
+        if (this.dspUrlSettingsPixel && this.dspUrlSettingsPixel.length > 0) {
+          var currentTime = Date.now();
+          this.dspUrlSettingsPixel.forEach(function (urlSettings) {
+            var dspUrl = _this2.compileUrl(_objectSpread2(_objectSpread2({}, _this2.mappings), {}, {
+              userId: userId,
+              random: currentTime
+            }), urlSettings.dspUrlTemplate);
+
+            _this2.addPixel(dspUrl, "1", "1");
+          });
+        }
+
+        logger.debug("Firing DSP IFrame URLs");
+
+        if (this.dspUrlSettingsIframe && this.dspUrlSettingsIframe.length > 0) {
+          var _currentTime = Date.now();
+
+          this.dspUrlSettingsIframe.forEach(function (urlSettings) {
+            var dspUrl = _this2.compileUrl(_objectSpread2(_objectSpread2({}, _this2.mappings), {}, {
+              userId: userId,
+              random: _currentTime
+            }), urlSettings.dspUrlTemplate);
+
+            _this2.addIFrame(dspUrl);
+          });
+        }
+
+        this.storage.setLotameSynchTime(Date.now()); // emit on syncPixel
+
+        if (this.analytics.methodToCallbackMapping.syncPixel) {
+          this.analytics.emit("syncPixel", {
+            destination: this.name
+          });
+        }
+      }
+    }, {
+      key: "compileUrl",
+      value: function compileUrl(map, url) {
+        Object.keys(map).forEach(function (key) {
+          if (map.hasOwnProperty(key)) {
+            var replaceKey = "{{".concat(key, "}}");
+            var regex = new RegExp(replaceKey, "gi");
+            url = url.replace(regex, map[key]);
+          }
+        });
+        return url;
+      }
+    }, {
+      key: "identify",
+      value: function identify(rudderElement) {
+        logger.debug("in Lotame identify");
+        var userId = rudderElement.message.userId;
+        this.syncPixel(userId);
+      }
+    }, {
+      key: "track",
+      value: function track(rudderElement) {
+        logger.debug("track not supported for lotame");
+      }
+    }, {
+      key: "page",
+      value: function page(rudderElement) {
+        var _this3 = this;
+
+        logger.debug("in Lotame page");
+        logger.debug("Firing BCP Pixel URLs");
+
+        if (this.bcpUrlSettingsPixel && this.bcpUrlSettingsPixel.length > 0) {
+          var currentTime = Date.now();
+          this.bcpUrlSettingsPixel.forEach(function (urlSettings) {
+            var bcpUrl = _this3.compileUrl(_objectSpread2(_objectSpread2({}, _this3.mappings), {}, {
+              random: currentTime
+            }), urlSettings.bcpUrlTemplate);
+
+            _this3.addPixel(bcpUrl, "1", "1");
+          });
+        }
+
+        logger.debug("Firing BCP IFrame URLs");
+
+        if (this.bcpUrlSettingsIframe && this.bcpUrlSettingsIframe.length > 0) {
+          var _currentTime2 = Date.now();
+
+          this.bcpUrlSettingsIframe.forEach(function (urlSettings) {
+            var bcpUrl = _this3.compileUrl(_objectSpread2(_objectSpread2({}, _this3.mappings), {}, {
+              random: _currentTime2
+            }), urlSettings.bcpUrlTemplate);
+
+            _this3.addIFrame(bcpUrl);
+          });
+        }
+
+        if (rudderElement.message.userId && this.isPixelToBeSynched()) {
+          this.syncPixel(rudderElement.message.userId);
+        }
+      }
+    }, {
+      key: "isPixelToBeSynched",
+      value: function isPixelToBeSynched() {
+        var lastSynchedTime = this.storage.getLotameSynchTime();
+        var currentTime = Date.now();
+
+        if (!lastSynchedTime) {
+          return true;
+        }
+
+        var difference = Math.floor((currentTime - lastSynchedTime) / (1000 * 3600 * 24));
+        return difference >= 7;
+      }
+    }, {
+      key: "isLoaded",
+      value: function isLoaded() {
+        logger.debug("in Lotame isLoaded");
+        return true;
+      }
+    }, {
+      key: "isReady",
+      value: function isReady() {
+        return true;
+      }
+    }]);
+
+    return Lotame;
+  }();
+
+  var Optimizely = /*#__PURE__*/function () {
+    function Optimizely(config, analytics) {
+      var _this = this;
+
+      _classCallCheck(this, Optimizely);
+
+      this.referrerOverride = function (referrer) {
+        if (referrer) {
+          window.optimizelyEffectiveReferrer = referrer;
+          return referrer;
+        }
+
+        return undefined;
+      };
+
+      this.sendDataToRudder = function (campaignState) {
+        logger.debug(campaignState);
+        var experiment = campaignState.experiment;
+        var variation = campaignState.variation;
+        var context = {
+          integrations: {
+            All: true
+          }
+        };
+        var audiences = campaignState.audiences; // Reformatting this data structure into hash map so concatenating variation ids and names is easier later
+
+        var audiencesMap = {};
+        audiences.forEach(function (audience) {
+          audiencesMap[audience.id] = audience.name;
+        });
+        var audienceIds = Object.keys(audiencesMap).sort().join();
+        var audienceNames = Object.values(audiencesMap).sort().join(", ");
+
+        if (_this.sendExperimentTrack) {
+          var props = {
+            campaignName: campaignState.campaignName,
+            campaignId: campaignState.id,
+            experimentId: experiment.id,
+            experimentName: experiment.name,
+            variationName: variation.name,
+            variationId: variation.id,
+            audienceId: audienceIds,
+            // eg. '7527562222,7527111138'
+            audienceName: audienceNames,
+            // eg. 'Peaky Blinders, Trust Tree'
+            isInCampaignHoldback: campaignState.isInCampaignHoldback
+          }; // If this was a redirect experiment and the effective referrer is different from document.referrer,
+          // this value is made available. So if a customer came in via google.com/ad -> tb12.com -> redirect experiment -> Belichickgoat.com
+          // `experiment.referrer` would be google.com/ad here NOT `tb12.com`.
+
+          if (experiment.referrer) {
+            props.referrer = experiment.referrer;
+            context.page = {
+              referrer: experiment.referrer
+            };
+          } // For Google's nonInteraction flag
+
+
+          if (_this.sendExperimentTrackAsNonInteractive) props.nonInteraction = 1; // If customCampaignProperties is provided overide the props with it.
+          // If valid customCampaignProperties present it will override existing props.
+          // const data = window.optimizely && window.optimizely.get("data");
+
+          var data = campaignState;
+
+          if (data && _this.customCampaignProperties.length > 0) {
+            for (var index = 0; index < _this.customCampaignProperties.length; index += 1) {
+              var rudderProp = _this.customCampaignProperties[index].from;
+              var optimizelyProp = _this.customCampaignProperties[index].to;
+
+              if (typeof props[optimizelyProp] !== "undefined") {
+                props[rudderProp] = props[optimizelyProp];
+                delete props[optimizelyProp];
+              }
+            }
+          } // Send to Rudder
+
+
+          _this.analytics.track("Experiment Viewed", props, context);
+        }
+
+        if (_this.sendExperimentIdentify) {
+          var traits = {};
+          traits["Experiment: ".concat(experiment.name)] = variation.name; // Send to Rudder
+
+          _this.analytics.identify(traits);
+        }
+      };
+
+      this.analytics = analytics;
+      this.sendExperimentTrack = config.sendExperimentTrack;
+      this.sendExperimentIdentify = config.sendExperimentIdentify;
+      this.sendExperimentTrackAsNonInteractive = config.sendExperimentTrackAsNonInteractive;
+      this.revenueOnlyOnOrderCompleted = config.revenueOnlyOnOrderCompleted;
+      this.trackCategorizedPages = config.trackCategorizedPages;
+      this.trackNamedPages = config.trackNamedPages;
+      this.customCampaignProperties = config.customCampaignProperties ? config.customCampaignProperties : [];
+      this.customExperimentProperties = config.customExperimentProperties ? config.customExperimentProperties : [];
+      this.name = "OPTIMIZELY";
+    }
+
+    _createClass(Optimizely, [{
+      key: "init",
+      value: function init() {
+        logger.debug("=== in optimizely init ===");
+        this.initOptimizelyIntegration(this.referrerOverride, this.sendDataToRudder);
+      }
+    }, {
+      key: "initOptimizelyIntegration",
+      value: function initOptimizelyIntegration(referrerOverride, sendCampaignData) {
+        var newActiveCampaign = function newActiveCampaign(id, referrer) {
+          var state = window.optimizely.get && window.optimizely.get("state");
+
+          if (state) {
+            var activeCampaigns = state.getCampaignStates({
+              isActive: true
+            });
+            var campaignState = activeCampaigns[id];
+            if (referrer) campaignState.experiment.referrer = referrer;
+            sendCampaignData(campaignState);
+          }
+        };
+
+        var checkReferrer = function checkReferrer() {
+          var state = window.optimizely.get && window.optimizely.get("state");
+
+          if (state) {
+            var referrer = state.getRedirectInfo() && state.getRedirectInfo().referrer;
+
+            if (referrer) {
+              referrerOverride(referrer);
+              return referrer;
+            }
+          }
+
+          return undefined;
+        };
+
+        var registerFutureActiveCampaigns = function registerFutureActiveCampaigns() {
+          window.optimizely = window.optimizely || [];
+          window.optimizely.push({
+            type: "addListener",
+            filter: {
+              type: "lifecycle",
+              name: "campaignDecided"
+            },
+            handler: function handler(event) {
+              var id = event.data.campaign.id;
+              newActiveCampaign(id);
+            }
+          });
+        };
+
+        var registerCurrentlyActiveCampaigns = function registerCurrentlyActiveCampaigns() {
+          window.optimizely = window.optimizely || [];
+          var state = window.optimizely.get && window.optimizely.get("state");
+
+          if (state) {
+            var referrer = checkReferrer();
+            var activeCampaigns = state.getCampaignStates({
+              isActive: true
+            });
+            Object.keys(activeCampaigns).forEach(function (id) {
+              if (referrer) {
+                newActiveCampaign(id, referrer);
+              } else {
+                newActiveCampaign(id);
+              }
+            });
+          } else {
+            window.optimizely.push({
+              type: "addListener",
+              filter: {
+                type: "lifecycle",
+                name: "initialized"
+              },
+              handler: function handler() {
+                checkReferrer();
+              }
+            });
+          }
+        };
+
+        registerCurrentlyActiveCampaigns();
+        registerFutureActiveCampaigns();
+      }
+    }, {
+      key: "track",
+      value: function track(rudderElement) {
+        logger.debug("in Optimizely web track");
+        var eventProperties = rudderElement.message.properties;
+        var event = rudderElement.message.event;
+
+        if (eventProperties.revenue && this.revenueOnlyOnOrderCompleted) {
+          if (event === "Order Completed") {
+            eventProperties.revenue = Math.round(eventProperties.revenue * 100);
+          } else if (event !== "Order Completed") {
+            delete eventProperties.revenue;
+          }
+        }
+
+        var eventName = event.replace(/:/g, "_"); // can't have colons so replacing with underscores
+
+        var payload = {
+          type: "event",
+          eventName: eventName,
+          tags: eventProperties
+        };
+        window.optimizely.push(payload);
+      }
+    }, {
+      key: "page",
+      value: function page(rudderElement) {
+        logger.debug("in Optimizely web page");
+        var category = rudderElement.message.properties.category;
+        var name = rudderElement.message.name;
+        /* const contextOptimizely = {
+          integrations: { All: false, Optimizely: true },
+        }; */
+        // categorized pages
+
+        if (category && this.trackCategorizedPages) {
+          // this.analytics.track(`Viewed ${category} page`, {}, contextOptimizely);
+          rudderElement.message.event = "Viewed ".concat(category, " page");
+          rudderElement.message.type = "track";
+          this.track(rudderElement);
+        } // named pages
+
+
+        if (name && this.trackNamedPages) {
+          // this.analytics.track(`Viewed ${name} page`, {}, contextOptimizely);
+          rudderElement.message.event = "Viewed ".concat(name, " page");
+          rudderElement.message.type = "track";
+          this.track(rudderElement);
+        }
+      }
+    }, {
+      key: "isLoaded",
+      value: function isLoaded() {
+        return !!(window.optimizely && window.optimizely.push !== Array.prototype.push);
+      }
+    }, {
+      key: "isReady",
+      value: function isReady() {
+        return !!(window.optimizely && window.optimizely.push !== Array.prototype.push);
+      }
+    }]);
+
+    return Optimizely;
+  }();
+
+  var Bugsnag = /*#__PURE__*/function () {
+    function Bugsnag(config) {
+      _classCallCheck(this, Bugsnag);
+
+      this.releaseStage = config.releaseStage;
+      this.apiKey = config.apiKey;
+      this.name = "BUGSNAG";
+      this.setIntervalHandler = undefined;
+    }
+
+    _createClass(Bugsnag, [{
+      key: "init",
+      value: function init() {
+        logger.debug("===in init Bugsnag===");
+        ScriptLoader("bugsnag-id", "https://d2wy8f7a9ursnm.cloudfront.net/v6/bugsnag.min.js");
+        this.setIntervalHandler = setInterval(this.initBugsnagClient.bind(this), 1000);
+      }
+    }, {
+      key: "initBugsnagClient",
+      value: function initBugsnagClient() {
+        if (window.bugsnag !== undefined) {
+          window.bugsnagClient = window.bugsnag(this.apiKey);
+          window.bugsnagClient.releaseStage = this.releaseStage;
+          clearInterval(this.setIntervalHandler);
+        }
+      }
+    }, {
+      key: "isLoaded",
+      value: function isLoaded() {
+        logger.debug("in bugsnag isLoaded");
+        return !!window.bugsnagClient;
+      }
+    }, {
+      key: "isReady",
+      value: function isReady() {
+        logger.debug("in bugsnag isReady");
+        return !!window.bugsnagClient;
+      }
+    }, {
+      key: "identify",
+      value: function identify(rudderElement) {
+        var traits = rudderElement.message.context.traits;
+        var traitsFinal = {
+          id: rudderElement.message.userId || rudderElement.message.anonymousId,
+          name: traits.name,
+          email: traits.email
+        };
+        window.bugsnagClient.user = traitsFinal;
+        window.bugsnagClient.notify(new Error("error in identify"));
+      }
+    }]);
+
+    return Bugsnag;
+  }();
+
+  var preserveCamelCase = function preserveCamelCase(string, locale) {
+    var isLastCharLower = false;
+    var isLastCharUpper = false;
+    var isLastLastCharUpper = false;
+
+    for (var i = 0; i < string.length; i++) {
+      var character = string[i];
+
+      if (isLastCharLower && /(?:[A-Z\xC0-\xD6\xD8-\xDE\u0100\u0102\u0104\u0106\u0108\u010A\u010C\u010E\u0110\u0112\u0114\u0116\u0118\u011A\u011C\u011E\u0120\u0122\u0124\u0126\u0128\u012A\u012C\u012E\u0130\u0132\u0134\u0136\u0139\u013B\u013D\u013F\u0141\u0143\u0145\u0147\u014A\u014C\u014E\u0150\u0152\u0154\u0156\u0158\u015A\u015C\u015E\u0160\u0162\u0164\u0166\u0168\u016A\u016C\u016E\u0170\u0172\u0174\u0176\u0178\u0179\u017B\u017D\u0181\u0182\u0184\u0186\u0187\u0189-\u018B\u018E-\u0191\u0193\u0194\u0196-\u0198\u019C\u019D\u019F\u01A0\u01A2\u01A4\u01A6\u01A7\u01A9\u01AC\u01AE\u01AF\u01B1-\u01B3\u01B5\u01B7\u01B8\u01BC\u01C4\u01C7\u01CA\u01CD\u01CF\u01D1\u01D3\u01D5\u01D7\u01D9\u01DB\u01DE\u01E0\u01E2\u01E4\u01E6\u01E8\u01EA\u01EC\u01EE\u01F1\u01F4\u01F6-\u01F8\u01FA\u01FC\u01FE\u0200\u0202\u0204\u0206\u0208\u020A\u020C\u020E\u0210\u0212\u0214\u0216\u0218\u021A\u021C\u021E\u0220\u0222\u0224\u0226\u0228\u022A\u022C\u022E\u0230\u0232\u023A\u023B\u023D\u023E\u0241\u0243-\u0246\u0248\u024A\u024C\u024E\u0370\u0372\u0376\u037F\u0386\u0388-\u038A\u038C\u038E\u038F\u0391-\u03A1\u03A3-\u03AB\u03CF\u03D2-\u03D4\u03D8\u03DA\u03DC\u03DE\u03E0\u03E2\u03E4\u03E6\u03E8\u03EA\u03EC\u03EE\u03F4\u03F7\u03F9\u03FA\u03FD-\u042F\u0460\u0462\u0464\u0466\u0468\u046A\u046C\u046E\u0470\u0472\u0474\u0476\u0478\u047A\u047C\u047E\u0480\u048A\u048C\u048E\u0490\u0492\u0494\u0496\u0498\u049A\u049C\u049E\u04A0\u04A2\u04A4\u04A6\u04A8\u04AA\u04AC\u04AE\u04B0\u04B2\u04B4\u04B6\u04B8\u04BA\u04BC\u04BE\u04C0\u04C1\u04C3\u04C5\u04C7\u04C9\u04CB\u04CD\u04D0\u04D2\u04D4\u04D6\u04D8\u04DA\u04DC\u04DE\u04E0\u04E2\u04E4\u04E6\u04E8\u04EA\u04EC\u04EE\u04F0\u04F2\u04F4\u04F6\u04F8\u04FA\u04FC\u04FE\u0500\u0502\u0504\u0506\u0508\u050A\u050C\u050E\u0510\u0512\u0514\u0516\u0518\u051A\u051C\u051E\u0520\u0522\u0524\u0526\u0528\u052A\u052C\u052E\u0531-\u0556\u10A0-\u10C5\u10C7\u10CD\u13A0-\u13F5\u1C90-\u1CBA\u1CBD-\u1CBF\u1E00\u1E02\u1E04\u1E06\u1E08\u1E0A\u1E0C\u1E0E\u1E10\u1E12\u1E14\u1E16\u1E18\u1E1A\u1E1C\u1E1E\u1E20\u1E22\u1E24\u1E26\u1E28\u1E2A\u1E2C\u1E2E\u1E30\u1E32\u1E34\u1E36\u1E38\u1E3A\u1E3C\u1E3E\u1E40\u1E42\u1E44\u1E46\u1E48\u1E4A\u1E4C\u1E4E\u1E50\u1E52\u1E54\u1E56\u1E58\u1E5A\u1E5C\u1E5E\u1E60\u1E62\u1E64\u1E66\u1E68\u1E6A\u1E6C\u1E6E\u1E70\u1E72\u1E74\u1E76\u1E78\u1E7A\u1E7C\u1E7E\u1E80\u1E82\u1E84\u1E86\u1E88\u1E8A\u1E8C\u1E8E\u1E90\u1E92\u1E94\u1E9E\u1EA0\u1EA2\u1EA4\u1EA6\u1EA8\u1EAA\u1EAC\u1EAE\u1EB0\u1EB2\u1EB4\u1EB6\u1EB8\u1EBA\u1EBC\u1EBE\u1EC0\u1EC2\u1EC4\u1EC6\u1EC8\u1ECA\u1ECC\u1ECE\u1ED0\u1ED2\u1ED4\u1ED6\u1ED8\u1EDA\u1EDC\u1EDE\u1EE0\u1EE2\u1EE4\u1EE6\u1EE8\u1EEA\u1EEC\u1EEE\u1EF0\u1EF2\u1EF4\u1EF6\u1EF8\u1EFA\u1EFC\u1EFE\u1F08-\u1F0F\u1F18-\u1F1D\u1F28-\u1F2F\u1F38-\u1F3F\u1F48-\u1F4D\u1F59\u1F5B\u1F5D\u1F5F\u1F68-\u1F6F\u1FB8-\u1FBB\u1FC8-\u1FCB\u1FD8-\u1FDB\u1FE8-\u1FEC\u1FF8-\u1FFB\u2102\u2107\u210B-\u210D\u2110-\u2112\u2115\u2119-\u211D\u2124\u2126\u2128\u212A-\u212D\u2130-\u2133\u213E\u213F\u2145\u2183\u2C00-\u2C2E\u2C60\u2C62-\u2C64\u2C67\u2C69\u2C6B\u2C6D-\u2C70\u2C72\u2C75\u2C7E-\u2C80\u2C82\u2C84\u2C86\u2C88\u2C8A\u2C8C\u2C8E\u2C90\u2C92\u2C94\u2C96\u2C98\u2C9A\u2C9C\u2C9E\u2CA0\u2CA2\u2CA4\u2CA6\u2CA8\u2CAA\u2CAC\u2CAE\u2CB0\u2CB2\u2CB4\u2CB6\u2CB8\u2CBA\u2CBC\u2CBE\u2CC0\u2CC2\u2CC4\u2CC6\u2CC8\u2CCA\u2CCC\u2CCE\u2CD0\u2CD2\u2CD4\u2CD6\u2CD8\u2CDA\u2CDC\u2CDE\u2CE0\u2CE2\u2CEB\u2CED\u2CF2\uA640\uA642\uA644\uA646\uA648\uA64A\uA64C\uA64E\uA650\uA652\uA654\uA656\uA658\uA65A\uA65C\uA65E\uA660\uA662\uA664\uA666\uA668\uA66A\uA66C\uA680\uA682\uA684\uA686\uA688\uA68A\uA68C\uA68E\uA690\uA692\uA694\uA696\uA698\uA69A\uA722\uA724\uA726\uA728\uA72A\uA72C\uA72E\uA732\uA734\uA736\uA738\uA73A\uA73C\uA73E\uA740\uA742\uA744\uA746\uA748\uA74A\uA74C\uA74E\uA750\uA752\uA754\uA756\uA758\uA75A\uA75C\uA75E\uA760\uA762\uA764\uA766\uA768\uA76A\uA76C\uA76E\uA779\uA77B\uA77D\uA77E\uA780\uA782\uA784\uA786\uA78B\uA78D\uA790\uA792\uA796\uA798\uA79A\uA79C\uA79E\uA7A0\uA7A2\uA7A4\uA7A6\uA7A8\uA7AA-\uA7AE\uA7B0-\uA7B4\uA7B6\uA7B8\uA7BA\uA7BC\uA7BE\uA7C2\uA7C4-\uA7C7\uA7C9\uA7F5\uFF21-\uFF3A]|\uD801[\uDC00-\uDC27\uDCB0-\uDCD3]|\uD803[\uDC80-\uDCB2]|\uD806[\uDCA0-\uDCBF]|\uD81B[\uDE40-\uDE5F]|\uD835[\uDC00-\uDC19\uDC34-\uDC4D\uDC68-\uDC81\uDC9C\uDC9E\uDC9F\uDCA2\uDCA5\uDCA6\uDCA9-\uDCAC\uDCAE-\uDCB5\uDCD0-\uDCE9\uDD04\uDD05\uDD07-\uDD0A\uDD0D-\uDD14\uDD16-\uDD1C\uDD38\uDD39\uDD3B-\uDD3E\uDD40-\uDD44\uDD46\uDD4A-\uDD50\uDD6C-\uDD85\uDDA0-\uDDB9\uDDD4-\uDDED\uDE08-\uDE21\uDE3C-\uDE55\uDE70-\uDE89\uDEA8-\uDEC0\uDEE2-\uDEFA\uDF1C-\uDF34\uDF56-\uDF6E\uDF90-\uDFA8\uDFCA]|\uD83A[\uDD00-\uDD21])/.test(character)) {
+        string = string.slice(0, i) + '-' + string.slice(i);
+        isLastCharLower = false;
+        isLastLastCharUpper = isLastCharUpper;
+        isLastCharUpper = true;
+        i++;
+      } else if (isLastCharUpper && isLastLastCharUpper && /(?:[a-z\xB5\xDF-\xF6\xF8-\xFF\u0101\u0103\u0105\u0107\u0109\u010B\u010D\u010F\u0111\u0113\u0115\u0117\u0119\u011B\u011D\u011F\u0121\u0123\u0125\u0127\u0129\u012B\u012D\u012F\u0131\u0133\u0135\u0137\u0138\u013A\u013C\u013E\u0140\u0142\u0144\u0146\u0148\u0149\u014B\u014D\u014F\u0151\u0153\u0155\u0157\u0159\u015B\u015D\u015F\u0161\u0163\u0165\u0167\u0169\u016B\u016D\u016F\u0171\u0173\u0175\u0177\u017A\u017C\u017E-\u0180\u0183\u0185\u0188\u018C\u018D\u0192\u0195\u0199-\u019B\u019E\u01A1\u01A3\u01A5\u01A8\u01AA\u01AB\u01AD\u01B0\u01B4\u01B6\u01B9\u01BA\u01BD-\u01BF\u01C6\u01C9\u01CC\u01CE\u01D0\u01D2\u01D4\u01D6\u01D8\u01DA\u01DC\u01DD\u01DF\u01E1\u01E3\u01E5\u01E7\u01E9\u01EB\u01ED\u01EF\u01F0\u01F3\u01F5\u01F9\u01FB\u01FD\u01FF\u0201\u0203\u0205\u0207\u0209\u020B\u020D\u020F\u0211\u0213\u0215\u0217\u0219\u021B\u021D\u021F\u0221\u0223\u0225\u0227\u0229\u022B\u022D\u022F\u0231\u0233-\u0239\u023C\u023F\u0240\u0242\u0247\u0249\u024B\u024D\u024F-\u0293\u0295-\u02AF\u0371\u0373\u0377\u037B-\u037D\u0390\u03AC-\u03CE\u03D0\u03D1\u03D5-\u03D7\u03D9\u03DB\u03DD\u03DF\u03E1\u03E3\u03E5\u03E7\u03E9\u03EB\u03ED\u03EF-\u03F3\u03F5\u03F8\u03FB\u03FC\u0430-\u045F\u0461\u0463\u0465\u0467\u0469\u046B\u046D\u046F\u0471\u0473\u0475\u0477\u0479\u047B\u047D\u047F\u0481\u048B\u048D\u048F\u0491\u0493\u0495\u0497\u0499\u049B\u049D\u049F\u04A1\u04A3\u04A5\u04A7\u04A9\u04AB\u04AD\u04AF\u04B1\u04B3\u04B5\u04B7\u04B9\u04BB\u04BD\u04BF\u04C2\u04C4\u04C6\u04C8\u04CA\u04CC\u04CE\u04CF\u04D1\u04D3\u04D5\u04D7\u04D9\u04DB\u04DD\u04DF\u04E1\u04E3\u04E5\u04E7\u04E9\u04EB\u04ED\u04EF\u04F1\u04F3\u04F5\u04F7\u04F9\u04FB\u04FD\u04FF\u0501\u0503\u0505\u0507\u0509\u050B\u050D\u050F\u0511\u0513\u0515\u0517\u0519\u051B\u051D\u051F\u0521\u0523\u0525\u0527\u0529\u052B\u052D\u052F\u0560-\u0588\u10D0-\u10FA\u10FD-\u10FF\u13F8-\u13FD\u1C80-\u1C88\u1D00-\u1D2B\u1D6B-\u1D77\u1D79-\u1D9A\u1E01\u1E03\u1E05\u1E07\u1E09\u1E0B\u1E0D\u1E0F\u1E11\u1E13\u1E15\u1E17\u1E19\u1E1B\u1E1D\u1E1F\u1E21\u1E23\u1E25\u1E27\u1E29\u1E2B\u1E2D\u1E2F\u1E31\u1E33\u1E35\u1E37\u1E39\u1E3B\u1E3D\u1E3F\u1E41\u1E43\u1E45\u1E47\u1E49\u1E4B\u1E4D\u1E4F\u1E51\u1E53\u1E55\u1E57\u1E59\u1E5B\u1E5D\u1E5F\u1E61\u1E63\u1E65\u1E67\u1E69\u1E6B\u1E6D\u1E6F\u1E71\u1E73\u1E75\u1E77\u1E79\u1E7B\u1E7D\u1E7F\u1E81\u1E83\u1E85\u1E87\u1E89\u1E8B\u1E8D\u1E8F\u1E91\u1E93\u1E95-\u1E9D\u1E9F\u1EA1\u1EA3\u1EA5\u1EA7\u1EA9\u1EAB\u1EAD\u1EAF\u1EB1\u1EB3\u1EB5\u1EB7\u1EB9\u1EBB\u1EBD\u1EBF\u1EC1\u1EC3\u1EC5\u1EC7\u1EC9\u1ECB\u1ECD\u1ECF\u1ED1\u1ED3\u1ED5\u1ED7\u1ED9\u1EDB\u1EDD\u1EDF\u1EE1\u1EE3\u1EE5\u1EE7\u1EE9\u1EEB\u1EED\u1EEF\u1EF1\u1EF3\u1EF5\u1EF7\u1EF9\u1EFB\u1EFD\u1EFF-\u1F07\u1F10-\u1F15\u1F20-\u1F27\u1F30-\u1F37\u1F40-\u1F45\u1F50-\u1F57\u1F60-\u1F67\u1F70-\u1F7D\u1F80-\u1F87\u1F90-\u1F97\u1FA0-\u1FA7\u1FB0-\u1FB4\u1FB6\u1FB7\u1FBE\u1FC2-\u1FC4\u1FC6\u1FC7\u1FD0-\u1FD3\u1FD6\u1FD7\u1FE0-\u1FE7\u1FF2-\u1FF4\u1FF6\u1FF7\u210A\u210E\u210F\u2113\u212F\u2134\u2139\u213C\u213D\u2146-\u2149\u214E\u2184\u2C30-\u2C5E\u2C61\u2C65\u2C66\u2C68\u2C6A\u2C6C\u2C71\u2C73\u2C74\u2C76-\u2C7B\u2C81\u2C83\u2C85\u2C87\u2C89\u2C8B\u2C8D\u2C8F\u2C91\u2C93\u2C95\u2C97\u2C99\u2C9B\u2C9D\u2C9F\u2CA1\u2CA3\u2CA5\u2CA7\u2CA9\u2CAB\u2CAD\u2CAF\u2CB1\u2CB3\u2CB5\u2CB7\u2CB9\u2CBB\u2CBD\u2CBF\u2CC1\u2CC3\u2CC5\u2CC7\u2CC9\u2CCB\u2CCD\u2CCF\u2CD1\u2CD3\u2CD5\u2CD7\u2CD9\u2CDB\u2CDD\u2CDF\u2CE1\u2CE3\u2CE4\u2CEC\u2CEE\u2CF3\u2D00-\u2D25\u2D27\u2D2D\uA641\uA643\uA645\uA647\uA649\uA64B\uA64D\uA64F\uA651\uA653\uA655\uA657\uA659\uA65B\uA65D\uA65F\uA661\uA663\uA665\uA667\uA669\uA66B\uA66D\uA681\uA683\uA685\uA687\uA689\uA68B\uA68D\uA68F\uA691\uA693\uA695\uA697\uA699\uA69B\uA723\uA725\uA727\uA729\uA72B\uA72D\uA72F-\uA731\uA733\uA735\uA737\uA739\uA73B\uA73D\uA73F\uA741\uA743\uA745\uA747\uA749\uA74B\uA74D\uA74F\uA751\uA753\uA755\uA757\uA759\uA75B\uA75D\uA75F\uA761\uA763\uA765\uA767\uA769\uA76B\uA76D\uA76F\uA771-\uA778\uA77A\uA77C\uA77F\uA781\uA783\uA785\uA787\uA78C\uA78E\uA791\uA793-\uA795\uA797\uA799\uA79B\uA79D\uA79F\uA7A1\uA7A3\uA7A5\uA7A7\uA7A9\uA7AF\uA7B5\uA7B7\uA7B9\uA7BB\uA7BD\uA7BF\uA7C3\uA7C8\uA7CA\uA7F6\uA7FA\uAB30-\uAB5A\uAB60-\uAB68\uAB70-\uABBF\uFB00-\uFB06\uFB13-\uFB17\uFF41-\uFF5A]|\uD801[\uDC28-\uDC4F\uDCD8-\uDCFB]|\uD803[\uDCC0-\uDCF2]|\uD806[\uDCC0-\uDCDF]|\uD81B[\uDE60-\uDE7F]|\uD835[\uDC1A-\uDC33\uDC4E-\uDC54\uDC56-\uDC67\uDC82-\uDC9B\uDCB6-\uDCB9\uDCBB\uDCBD-\uDCC3\uDCC5-\uDCCF\uDCEA-\uDD03\uDD1E-\uDD37\uDD52-\uDD6B\uDD86-\uDD9F\uDDBA-\uDDD3\uDDEE-\uDE07\uDE22-\uDE3B\uDE56-\uDE6F\uDE8A-\uDEA5\uDEC2-\uDEDA\uDEDC-\uDEE1\uDEFC-\uDF14\uDF16-\uDF1B\uDF36-\uDF4E\uDF50-\uDF55\uDF70-\uDF88\uDF8A-\uDF8F\uDFAA-\uDFC2\uDFC4-\uDFC9\uDFCB]|\uD83A[\uDD22-\uDD43])/.test(character)) {
+        string = string.slice(0, i - 1) + '-' + string.slice(i - 1);
+        isLastLastCharUpper = isLastCharUpper;
+        isLastCharUpper = false;
+        isLastCharLower = true;
+      } else {
+        isLastCharLower = character.toLocaleLowerCase(locale) === character && character.toLocaleUpperCase(locale) !== character;
+        isLastLastCharUpper = isLastCharUpper;
+        isLastCharUpper = character.toLocaleUpperCase(locale) === character && character.toLocaleLowerCase(locale) !== character;
+      }
+    }
+
+    return string;
+  };
+
+  var preserveConsecutiveUppercase = function preserveConsecutiveUppercase(input) {
+    return input.replace(/^(?:[A-Z\xC0-\xD6\xD8-\xDE\u0100\u0102\u0104\u0106\u0108\u010A\u010C\u010E\u0110\u0112\u0114\u0116\u0118\u011A\u011C\u011E\u0120\u0122\u0124\u0126\u0128\u012A\u012C\u012E\u0130\u0132\u0134\u0136\u0139\u013B\u013D\u013F\u0141\u0143\u0145\u0147\u014A\u014C\u014E\u0150\u0152\u0154\u0156\u0158\u015A\u015C\u015E\u0160\u0162\u0164\u0166\u0168\u016A\u016C\u016E\u0170\u0172\u0174\u0176\u0178\u0179\u017B\u017D\u0181\u0182\u0184\u0186\u0187\u0189-\u018B\u018E-\u0191\u0193\u0194\u0196-\u0198\u019C\u019D\u019F\u01A0\u01A2\u01A4\u01A6\u01A7\u01A9\u01AC\u01AE\u01AF\u01B1-\u01B3\u01B5\u01B7\u01B8\u01BC\u01C4\u01C7\u01CA\u01CD\u01CF\u01D1\u01D3\u01D5\u01D7\u01D9\u01DB\u01DE\u01E0\u01E2\u01E4\u01E6\u01E8\u01EA\u01EC\u01EE\u01F1\u01F4\u01F6-\u01F8\u01FA\u01FC\u01FE\u0200\u0202\u0204\u0206\u0208\u020A\u020C\u020E\u0210\u0212\u0214\u0216\u0218\u021A\u021C\u021E\u0220\u0222\u0224\u0226\u0228\u022A\u022C\u022E\u0230\u0232\u023A\u023B\u023D\u023E\u0241\u0243-\u0246\u0248\u024A\u024C\u024E\u0370\u0372\u0376\u037F\u0386\u0388-\u038A\u038C\u038E\u038F\u0391-\u03A1\u03A3-\u03AB\u03CF\u03D2-\u03D4\u03D8\u03DA\u03DC\u03DE\u03E0\u03E2\u03E4\u03E6\u03E8\u03EA\u03EC\u03EE\u03F4\u03F7\u03F9\u03FA\u03FD-\u042F\u0460\u0462\u0464\u0466\u0468\u046A\u046C\u046E\u0470\u0472\u0474\u0476\u0478\u047A\u047C\u047E\u0480\u048A\u048C\u048E\u0490\u0492\u0494\u0496\u0498\u049A\u049C\u049E\u04A0\u04A2\u04A4\u04A6\u04A8\u04AA\u04AC\u04AE\u04B0\u04B2\u04B4\u04B6\u04B8\u04BA\u04BC\u04BE\u04C0\u04C1\u04C3\u04C5\u04C7\u04C9\u04CB\u04CD\u04D0\u04D2\u04D4\u04D6\u04D8\u04DA\u04DC\u04DE\u04E0\u04E2\u04E4\u04E6\u04E8\u04EA\u04EC\u04EE\u04F0\u04F2\u04F4\u04F6\u04F8\u04FA\u04FC\u04FE\u0500\u0502\u0504\u0506\u0508\u050A\u050C\u050E\u0510\u0512\u0514\u0516\u0518\u051A\u051C\u051E\u0520\u0522\u0524\u0526\u0528\u052A\u052C\u052E\u0531-\u0556\u10A0-\u10C5\u10C7\u10CD\u13A0-\u13F5\u1C90-\u1CBA\u1CBD-\u1CBF\u1E00\u1E02\u1E04\u1E06\u1E08\u1E0A\u1E0C\u1E0E\u1E10\u1E12\u1E14\u1E16\u1E18\u1E1A\u1E1C\u1E1E\u1E20\u1E22\u1E24\u1E26\u1E28\u1E2A\u1E2C\u1E2E\u1E30\u1E32\u1E34\u1E36\u1E38\u1E3A\u1E3C\u1E3E\u1E40\u1E42\u1E44\u1E46\u1E48\u1E4A\u1E4C\u1E4E\u1E50\u1E52\u1E54\u1E56\u1E58\u1E5A\u1E5C\u1E5E\u1E60\u1E62\u1E64\u1E66\u1E68\u1E6A\u1E6C\u1E6E\u1E70\u1E72\u1E74\u1E76\u1E78\u1E7A\u1E7C\u1E7E\u1E80\u1E82\u1E84\u1E86\u1E88\u1E8A\u1E8C\u1E8E\u1E90\u1E92\u1E94\u1E9E\u1EA0\u1EA2\u1EA4\u1EA6\u1EA8\u1EAA\u1EAC\u1EAE\u1EB0\u1EB2\u1EB4\u1EB6\u1EB8\u1EBA\u1EBC\u1EBE\u1EC0\u1EC2\u1EC4\u1EC6\u1EC8\u1ECA\u1ECC\u1ECE\u1ED0\u1ED2\u1ED4\u1ED6\u1ED8\u1EDA\u1EDC\u1EDE\u1EE0\u1EE2\u1EE4\u1EE6\u1EE8\u1EEA\u1EEC\u1EEE\u1EF0\u1EF2\u1EF4\u1EF6\u1EF8\u1EFA\u1EFC\u1EFE\u1F08-\u1F0F\u1F18-\u1F1D\u1F28-\u1F2F\u1F38-\u1F3F\u1F48-\u1F4D\u1F59\u1F5B\u1F5D\u1F5F\u1F68-\u1F6F\u1FB8-\u1FBB\u1FC8-\u1FCB\u1FD8-\u1FDB\u1FE8-\u1FEC\u1FF8-\u1FFB\u2102\u2107\u210B-\u210D\u2110-\u2112\u2115\u2119-\u211D\u2124\u2126\u2128\u212A-\u212D\u2130-\u2133\u213E\u213F\u2145\u2183\u2C00-\u2C2E\u2C60\u2C62-\u2C64\u2C67\u2C69\u2C6B\u2C6D-\u2C70\u2C72\u2C75\u2C7E-\u2C80\u2C82\u2C84\u2C86\u2C88\u2C8A\u2C8C\u2C8E\u2C90\u2C92\u2C94\u2C96\u2C98\u2C9A\u2C9C\u2C9E\u2CA0\u2CA2\u2CA4\u2CA6\u2CA8\u2CAA\u2CAC\u2CAE\u2CB0\u2CB2\u2CB4\u2CB6\u2CB8\u2CBA\u2CBC\u2CBE\u2CC0\u2CC2\u2CC4\u2CC6\u2CC8\u2CCA\u2CCC\u2CCE\u2CD0\u2CD2\u2CD4\u2CD6\u2CD8\u2CDA\u2CDC\u2CDE\u2CE0\u2CE2\u2CEB\u2CED\u2CF2\uA640\uA642\uA644\uA646\uA648\uA64A\uA64C\uA64E\uA650\uA652\uA654\uA656\uA658\uA65A\uA65C\uA65E\uA660\uA662\uA664\uA666\uA668\uA66A\uA66C\uA680\uA682\uA684\uA686\uA688\uA68A\uA68C\uA68E\uA690\uA692\uA694\uA696\uA698\uA69A\uA722\uA724\uA726\uA728\uA72A\uA72C\uA72E\uA732\uA734\uA736\uA738\uA73A\uA73C\uA73E\uA740\uA742\uA744\uA746\uA748\uA74A\uA74C\uA74E\uA750\uA752\uA754\uA756\uA758\uA75A\uA75C\uA75E\uA760\uA762\uA764\uA766\uA768\uA76A\uA76C\uA76E\uA779\uA77B\uA77D\uA77E\uA780\uA782\uA784\uA786\uA78B\uA78D\uA790\uA792\uA796\uA798\uA79A\uA79C\uA79E\uA7A0\uA7A2\uA7A4\uA7A6\uA7A8\uA7AA-\uA7AE\uA7B0-\uA7B4\uA7B6\uA7B8\uA7BA\uA7BC\uA7BE\uA7C2\uA7C4-\uA7C7\uA7C9\uA7F5\uFF21-\uFF3A]|\uD801[\uDC00-\uDC27\uDCB0-\uDCD3]|\uD803[\uDC80-\uDCB2]|\uD806[\uDCA0-\uDCBF]|\uD81B[\uDE40-\uDE5F]|\uD835[\uDC00-\uDC19\uDC34-\uDC4D\uDC68-\uDC81\uDC9C\uDC9E\uDC9F\uDCA2\uDCA5\uDCA6\uDCA9-\uDCAC\uDCAE-\uDCB5\uDCD0-\uDCE9\uDD04\uDD05\uDD07-\uDD0A\uDD0D-\uDD14\uDD16-\uDD1C\uDD38\uDD39\uDD3B-\uDD3E\uDD40-\uDD44\uDD46\uDD4A-\uDD50\uDD6C-\uDD85\uDDA0-\uDDB9\uDDD4-\uDDED\uDE08-\uDE21\uDE3C-\uDE55\uDE70-\uDE89\uDEA8-\uDEC0\uDEE2-\uDEFA\uDF1C-\uDF34\uDF56-\uDF6E\uDF90-\uDFA8\uDFCA]|\uD83A[\uDD00-\uDD21])(?!(?:[A-Z\xC0-\xD6\xD8-\xDE\u0100\u0102\u0104\u0106\u0108\u010A\u010C\u010E\u0110\u0112\u0114\u0116\u0118\u011A\u011C\u011E\u0120\u0122\u0124\u0126\u0128\u012A\u012C\u012E\u0130\u0132\u0134\u0136\u0139\u013B\u013D\u013F\u0141\u0143\u0145\u0147\u014A\u014C\u014E\u0150\u0152\u0154\u0156\u0158\u015A\u015C\u015E\u0160\u0162\u0164\u0166\u0168\u016A\u016C\u016E\u0170\u0172\u0174\u0176\u0178\u0179\u017B\u017D\u0181\u0182\u0184\u0186\u0187\u0189-\u018B\u018E-\u0191\u0193\u0194\u0196-\u0198\u019C\u019D\u019F\u01A0\u01A2\u01A4\u01A6\u01A7\u01A9\u01AC\u01AE\u01AF\u01B1-\u01B3\u01B5\u01B7\u01B8\u01BC\u01C4\u01C7\u01CA\u01CD\u01CF\u01D1\u01D3\u01D5\u01D7\u01D9\u01DB\u01DE\u01E0\u01E2\u01E4\u01E6\u01E8\u01EA\u01EC\u01EE\u01F1\u01F4\u01F6-\u01F8\u01FA\u01FC\u01FE\u0200\u0202\u0204\u0206\u0208\u020A\u020C\u020E\u0210\u0212\u0214\u0216\u0218\u021A\u021C\u021E\u0220\u0222\u0224\u0226\u0228\u022A\u022C\u022E\u0230\u0232\u023A\u023B\u023D\u023E\u0241\u0243-\u0246\u0248\u024A\u024C\u024E\u0370\u0372\u0376\u037F\u0386\u0388-\u038A\u038C\u038E\u038F\u0391-\u03A1\u03A3-\u03AB\u03CF\u03D2-\u03D4\u03D8\u03DA\u03DC\u03DE\u03E0\u03E2\u03E4\u03E6\u03E8\u03EA\u03EC\u03EE\u03F4\u03F7\u03F9\u03FA\u03FD-\u042F\u0460\u0462\u0464\u0466\u0468\u046A\u046C\u046E\u0470\u0472\u0474\u0476\u0478\u047A\u047C\u047E\u0480\u048A\u048C\u048E\u0490\u0492\u0494\u0496\u0498\u049A\u049C\u049E\u04A0\u04A2\u04A4\u04A6\u04A8\u04AA\u04AC\u04AE\u04B0\u04B2\u04B4\u04B6\u04B8\u04BA\u04BC\u04BE\u04C0\u04C1\u04C3\u04C5\u04C7\u04C9\u04CB\u04CD\u04D0\u04D2\u04D4\u04D6\u04D8\u04DA\u04DC\u04DE\u04E0\u04E2\u04E4\u04E6\u04E8\u04EA\u04EC\u04EE\u04F0\u04F2\u04F4\u04F6\u04F8\u04FA\u04FC\u04FE\u0500\u0502\u0504\u0506\u0508\u050A\u050C\u050E\u0510\u0512\u0514\u0516\u0518\u051A\u051C\u051E\u0520\u0522\u0524\u0526\u0528\u052A\u052C\u052E\u0531-\u0556\u10A0-\u10C5\u10C7\u10CD\u13A0-\u13F5\u1C90-\u1CBA\u1CBD-\u1CBF\u1E00\u1E02\u1E04\u1E06\u1E08\u1E0A\u1E0C\u1E0E\u1E10\u1E12\u1E14\u1E16\u1E18\u1E1A\u1E1C\u1E1E\u1E20\u1E22\u1E24\u1E26\u1E28\u1E2A\u1E2C\u1E2E\u1E30\u1E32\u1E34\u1E36\u1E38\u1E3A\u1E3C\u1E3E\u1E40\u1E42\u1E44\u1E46\u1E48\u1E4A\u1E4C\u1E4E\u1E50\u1E52\u1E54\u1E56\u1E58\u1E5A\u1E5C\u1E5E\u1E60\u1E62\u1E64\u1E66\u1E68\u1E6A\u1E6C\u1E6E\u1E70\u1E72\u1E74\u1E76\u1E78\u1E7A\u1E7C\u1E7E\u1E80\u1E82\u1E84\u1E86\u1E88\u1E8A\u1E8C\u1E8E\u1E90\u1E92\u1E94\u1E9E\u1EA0\u1EA2\u1EA4\u1EA6\u1EA8\u1EAA\u1EAC\u1EAE\u1EB0\u1EB2\u1EB4\u1EB6\u1EB8\u1EBA\u1EBC\u1EBE\u1EC0\u1EC2\u1EC4\u1EC6\u1EC8\u1ECA\u1ECC\u1ECE\u1ED0\u1ED2\u1ED4\u1ED6\u1ED8\u1EDA\u1EDC\u1EDE\u1EE0\u1EE2\u1EE4\u1EE6\u1EE8\u1EEA\u1EEC\u1EEE\u1EF0\u1EF2\u1EF4\u1EF6\u1EF8\u1EFA\u1EFC\u1EFE\u1F08-\u1F0F\u1F18-\u1F1D\u1F28-\u1F2F\u1F38-\u1F3F\u1F48-\u1F4D\u1F59\u1F5B\u1F5D\u1F5F\u1F68-\u1F6F\u1FB8-\u1FBB\u1FC8-\u1FCB\u1FD8-\u1FDB\u1FE8-\u1FEC\u1FF8-\u1FFB\u2102\u2107\u210B-\u210D\u2110-\u2112\u2115\u2119-\u211D\u2124\u2126\u2128\u212A-\u212D\u2130-\u2133\u213E\u213F\u2145\u2183\u2C00-\u2C2E\u2C60\u2C62-\u2C64\u2C67\u2C69\u2C6B\u2C6D-\u2C70\u2C72\u2C75\u2C7E-\u2C80\u2C82\u2C84\u2C86\u2C88\u2C8A\u2C8C\u2C8E\u2C90\u2C92\u2C94\u2C96\u2C98\u2C9A\u2C9C\u2C9E\u2CA0\u2CA2\u2CA4\u2CA6\u2CA8\u2CAA\u2CAC\u2CAE\u2CB0\u2CB2\u2CB4\u2CB6\u2CB8\u2CBA\u2CBC\u2CBE\u2CC0\u2CC2\u2CC4\u2CC6\u2CC8\u2CCA\u2CCC\u2CCE\u2CD0\u2CD2\u2CD4\u2CD6\u2CD8\u2CDA\u2CDC\u2CDE\u2CE0\u2CE2\u2CEB\u2CED\u2CF2\uA640\uA642\uA644\uA646\uA648\uA64A\uA64C\uA64E\uA650\uA652\uA654\uA656\uA658\uA65A\uA65C\uA65E\uA660\uA662\uA664\uA666\uA668\uA66A\uA66C\uA680\uA682\uA684\uA686\uA688\uA68A\uA68C\uA68E\uA690\uA692\uA694\uA696\uA698\uA69A\uA722\uA724\uA726\uA728\uA72A\uA72C\uA72E\uA732\uA734\uA736\uA738\uA73A\uA73C\uA73E\uA740\uA742\uA744\uA746\uA748\uA74A\uA74C\uA74E\uA750\uA752\uA754\uA756\uA758\uA75A\uA75C\uA75E\uA760\uA762\uA764\uA766\uA768\uA76A\uA76C\uA76E\uA779\uA77B\uA77D\uA77E\uA780\uA782\uA784\uA786\uA78B\uA78D\uA790\uA792\uA796\uA798\uA79A\uA79C\uA79E\uA7A0\uA7A2\uA7A4\uA7A6\uA7A8\uA7AA-\uA7AE\uA7B0-\uA7B4\uA7B6\uA7B8\uA7BA\uA7BC\uA7BE\uA7C2\uA7C4-\uA7C7\uA7C9\uA7F5\uFF21-\uFF3A]|\uD801[\uDC00-\uDC27\uDCB0-\uDCD3]|\uD803[\uDC80-\uDCB2]|\uD806[\uDCA0-\uDCBF]|\uD81B[\uDE40-\uDE5F]|\uD835[\uDC00-\uDC19\uDC34-\uDC4D\uDC68-\uDC81\uDC9C\uDC9E\uDC9F\uDCA2\uDCA5\uDCA6\uDCA9-\uDCAC\uDCAE-\uDCB5\uDCD0-\uDCE9\uDD04\uDD05\uDD07-\uDD0A\uDD0D-\uDD14\uDD16-\uDD1C\uDD38\uDD39\uDD3B-\uDD3E\uDD40-\uDD44\uDD46\uDD4A-\uDD50\uDD6C-\uDD85\uDDA0-\uDDB9\uDDD4-\uDDED\uDE08-\uDE21\uDE3C-\uDE55\uDE70-\uDE89\uDEA8-\uDEC0\uDEE2-\uDEFA\uDF1C-\uDF34\uDF56-\uDF6E\uDF90-\uDFA8\uDFCA]|\uD83A[\uDD00-\uDD21]))/g, function (m1) {
+      return m1.toLowerCase();
+    });
+  };
+
+  var postProcess = function postProcess(input, options) {
+    return input.replace(/[ \x2D\._]+((?:[0-9A-Z_a-z\xAA\xB2\xB3\xB5\xB9\xBA\xBC-\xBE\xC0-\xD6\xD8-\xF6\xF8-\u02C1\u02C6-\u02D1\u02E0-\u02E4\u02EC\u02EE\u0345\u0370-\u0374\u0376\u0377\u037A-\u037D\u037F\u0386\u0388-\u038A\u038C\u038E-\u03A1\u03A3-\u03F5\u03F7-\u0481\u048A-\u052F\u0531-\u0556\u0559\u0560-\u0588\u05B0-\u05BD\u05BF\u05C1\u05C2\u05C4\u05C5\u05C7\u05D0-\u05EA\u05EF-\u05F2\u0610-\u061A\u0620-\u0657\u0659-\u0669\u066E-\u06D3\u06D5-\u06DC\u06E1-\u06E8\u06ED-\u06FC\u06FF\u0710-\u073F\u074D-\u07B1\u07C0-\u07EA\u07F4\u07F5\u07FA\u0800-\u0817\u081A-\u082C\u0840-\u0858\u0860-\u086A\u08A0-\u08B4\u08B6-\u08C7\u08D4-\u08DF\u08E3-\u08E9\u08F0-\u093B\u093D-\u094C\u094E-\u0950\u0955-\u0963\u0966-\u096F\u0971-\u0983\u0985-\u098C\u098F\u0990\u0993-\u09A8\u09AA-\u09B0\u09B2\u09B6-\u09B9\u09BD-\u09C4\u09C7\u09C8\u09CB\u09CC\u09CE\u09D7\u09DC\u09DD\u09DF-\u09E3\u09E6-\u09F1\u09F4-\u09F9\u09FC\u0A01-\u0A03\u0A05-\u0A0A\u0A0F\u0A10\u0A13-\u0A28\u0A2A-\u0A30\u0A32\u0A33\u0A35\u0A36\u0A38\u0A39\u0A3E-\u0A42\u0A47\u0A48\u0A4B\u0A4C\u0A51\u0A59-\u0A5C\u0A5E\u0A66-\u0A75\u0A81-\u0A83\u0A85-\u0A8D\u0A8F-\u0A91\u0A93-\u0AA8\u0AAA-\u0AB0\u0AB2\u0AB3\u0AB5-\u0AB9\u0ABD-\u0AC5\u0AC7-\u0AC9\u0ACB\u0ACC\u0AD0\u0AE0-\u0AE3\u0AE6-\u0AEF\u0AF9-\u0AFC\u0B01-\u0B03\u0B05-\u0B0C\u0B0F\u0B10\u0B13-\u0B28\u0B2A-\u0B30\u0B32\u0B33\u0B35-\u0B39\u0B3D-\u0B44\u0B47\u0B48\u0B4B\u0B4C\u0B56\u0B57\u0B5C\u0B5D\u0B5F-\u0B63\u0B66-\u0B6F\u0B71-\u0B77\u0B82\u0B83\u0B85-\u0B8A\u0B8E-\u0B90\u0B92-\u0B95\u0B99\u0B9A\u0B9C\u0B9E\u0B9F\u0BA3\u0BA4\u0BA8-\u0BAA\u0BAE-\u0BB9\u0BBE-\u0BC2\u0BC6-\u0BC8\u0BCA-\u0BCC\u0BD0\u0BD7\u0BE6-\u0BF2\u0C00-\u0C03\u0C05-\u0C0C\u0C0E-\u0C10\u0C12-\u0C28\u0C2A-\u0C39\u0C3D-\u0C44\u0C46-\u0C48\u0C4A-\u0C4C\u0C55\u0C56\u0C58-\u0C5A\u0C60-\u0C63\u0C66-\u0C6F\u0C78-\u0C7E\u0C80-\u0C83\u0C85-\u0C8C\u0C8E-\u0C90\u0C92-\u0CA8\u0CAA-\u0CB3\u0CB5-\u0CB9\u0CBD-\u0CC4\u0CC6-\u0CC8\u0CCA-\u0CCC\u0CD5\u0CD6\u0CDE\u0CE0-\u0CE3\u0CE6-\u0CEF\u0CF1\u0CF2\u0D00-\u0D0C\u0D0E-\u0D10\u0D12-\u0D3A\u0D3D-\u0D44\u0D46-\u0D48\u0D4A-\u0D4C\u0D4E\u0D54-\u0D63\u0D66-\u0D78\u0D7A-\u0D7F\u0D81-\u0D83\u0D85-\u0D96\u0D9A-\u0DB1\u0DB3-\u0DBB\u0DBD\u0DC0-\u0DC6\u0DCF-\u0DD4\u0DD6\u0DD8-\u0DDF\u0DE6-\u0DEF\u0DF2\u0DF3\u0E01-\u0E3A\u0E40-\u0E46\u0E4D\u0E50-\u0E59\u0E81\u0E82\u0E84\u0E86-\u0E8A\u0E8C-\u0EA3\u0EA5\u0EA7-\u0EB9\u0EBB-\u0EBD\u0EC0-\u0EC4\u0EC6\u0ECD\u0ED0-\u0ED9\u0EDC-\u0EDF\u0F00\u0F20-\u0F33\u0F40-\u0F47\u0F49-\u0F6C\u0F71-\u0F81\u0F88-\u0F97\u0F99-\u0FBC\u1000-\u1036\u1038\u103B-\u1049\u1050-\u109D\u10A0-\u10C5\u10C7\u10CD\u10D0-\u10FA\u10FC-\u1248\u124A-\u124D\u1250-\u1256\u1258\u125A-\u125D\u1260-\u1288\u128A-\u128D\u1290-\u12B0\u12B2-\u12B5\u12B8-\u12BE\u12C0\u12C2-\u12C5\u12C8-\u12D6\u12D8-\u1310\u1312-\u1315\u1318-\u135A\u1369-\u137C\u1380-\u138F\u13A0-\u13F5\u13F8-\u13FD\u1401-\u166C\u166F-\u167F\u1681-\u169A\u16A0-\u16EA\u16EE-\u16F8\u1700-\u170C\u170E-\u1713\u1720-\u1733\u1740-\u1753\u1760-\u176C\u176E-\u1770\u1772\u1773\u1780-\u17B3\u17B6-\u17C8\u17D7\u17DC\u17E0-\u17E9\u17F0-\u17F9\u1810-\u1819\u1820-\u1878\u1880-\u18AA\u18B0-\u18F5\u1900-\u191E\u1920-\u192B\u1930-\u1938\u1946-\u196D\u1970-\u1974\u1980-\u19AB\u19B0-\u19C9\u19D0-\u19DA\u1A00-\u1A1B\u1A20-\u1A5E\u1A61-\u1A74\u1A80-\u1A89\u1A90-\u1A99\u1AA7\u1ABF\u1AC0\u1B00-\u1B33\u1B35-\u1B43\u1B45-\u1B4B\u1B50-\u1B59\u1B80-\u1BA9\u1BAC-\u1BE5\u1BE7-\u1BF1\u1C00-\u1C36\u1C40-\u1C49\u1C4D-\u1C7D\u1C80-\u1C88\u1C90-\u1CBA\u1CBD-\u1CBF\u1CE9-\u1CEC\u1CEE-\u1CF3\u1CF5\u1CF6\u1CFA\u1D00-\u1DBF\u1DE7-\u1DF4\u1E00-\u1F15\u1F18-\u1F1D\u1F20-\u1F45\u1F48-\u1F4D\u1F50-\u1F57\u1F59\u1F5B\u1F5D\u1F5F-\u1F7D\u1F80-\u1FB4\u1FB6-\u1FBC\u1FBE\u1FC2-\u1FC4\u1FC6-\u1FCC\u1FD0-\u1FD3\u1FD6-\u1FDB\u1FE0-\u1FEC\u1FF2-\u1FF4\u1FF6-\u1FFC\u2070\u2071\u2074-\u2079\u207F-\u2089\u2090-\u209C\u2102\u2107\u210A-\u2113\u2115\u2119-\u211D\u2124\u2126\u2128\u212A-\u212D\u212F-\u2139\u213C-\u213F\u2145-\u2149\u214E\u2160-\u2189\u2150-\u2182\u2460-\u249B\u24B6-\u24FF\u2776-\u2793\u2C00-\u2C2E\u2C30-\u2C5E\u2C60-\u2CE4\u2CEB-\u2CEE\u2CF2\u2CF3\u2CFD\u2D00-\u2D25\u2D27\u2D2D\u2D30-\u2D67\u2D6F\u2D80-\u2D96\u2DA0-\u2DA6\u2DA8-\u2DAE\u2DB0-\u2DB6\u2DB8-\u2DBE\u2DC0-\u2DC6\u2DC8-\u2DCE\u2DD0-\u2DD6\u2DD8-\u2DDE\u2DE0-\u2DFF\u2E2F\u3005-\u3007\u3021-\u3029\u3031-\u3035\u3038-\u303C\u3041-\u3096\u309D-\u309F\u30A1-\u30FA\u30FC-\u30FF\u3105-\u312F\u3131-\u318E\u3192-\u3195\u31A0-\u31BF\u31F0-\u31FF\u3220-\u3229\u3248-\u324F\u3251-\u325F\u3280-\u3289\u32B1-\u32BF\u3400-\u4DBF\u4E00-\u9FFC\uA000-\uA48C\uA4D0-\uA4FD\uA500-\uA60C\uA610-\uA62B\uA640-\uA66E\uA674-\uA67B\uA67F-\uA6EF\uA717-\uA71F\uA722-\uA788\uA78B-\uA7BF\uA7C2-\uA7CA\uA7F5-\uA805\uA807-\uA827\uA830-\uA835\uA840-\uA873\uA880-\uA8C3\uA8C5\uA8D0-\uA8D9\uA8F2-\uA8F7\uA8FB\uA8FD-\uA92A\uA930-\uA952\uA960-\uA97C\uA980-\uA9B2\uA9B4-\uA9BF\uA9CF-\uA9D9\uA9E0-\uA9FE\uAA00-\uAA36\uAA40-\uAA4D\uAA50-\uAA59\uAA60-\uAA76\uAA7A-\uAABE\uAAC0\uAAC2\uAADB-\uAADD\uAAE0-\uAAEF\uAAF2-\uAAF5\uAB01-\uAB06\uAB09-\uAB0E\uAB11-\uAB16\uAB20-\uAB26\uAB28-\uAB2E\uAB30-\uAB5A\uAB5C-\uAB69\uAB70-\uABEA\uABF0-\uABF9\uAC00-\uD7A3\uD7B0-\uD7C6\uD7CB-\uD7FB\uF900-\uFA6D\uFA70-\uFAD9\uFB00-\uFB06\uFB13-\uFB17\uFB1D-\uFB28\uFB2A-\uFB36\uFB38-\uFB3C\uFB3E\uFB40\uFB41\uFB43\uFB44\uFB46-\uFBB1\uFBD3-\uFD3D\uFD50-\uFD8F\uFD92-\uFDC7\uFDF0-\uFDFB\uFE70-\uFE74\uFE76-\uFEFC\uFF10-\uFF19\uFF21-\uFF3A\uFF41-\uFF5A\uFF66-\uFFBE\uFFC2-\uFFC7\uFFCA-\uFFCF\uFFD2-\uFFD7\uFFDA-\uFFDC]|\uD800[\uDC00-\uDC0B\uDC0D-\uDC26\uDC28-\uDC3A\uDC3C\uDC3D\uDC3F-\uDC4D\uDC50-\uDC5D\uDC80-\uDCFA\uDD07-\uDD33\uDD40-\uDD78\uDD8A\uDD8B\uDE80-\uDE9C\uDEA0-\uDED0\uDEE1-\uDEFB\uDF00-\uDF23\uDF2D-\uDF4A\uDF50-\uDF7A\uDF80-\uDF9D\uDFA0-\uDFC3\uDFC8-\uDFCF\uDFD1-\uDFD5]|\uD801[\uDC00-\uDC9D\uDCA0-\uDCA9\uDCB0-\uDCD3\uDCD8-\uDCFB\uDD00-\uDD27\uDD30-\uDD63\uDE00-\uDF36\uDF40-\uDF55\uDF60-\uDF67]|\uD802[\uDC00-\uDC05\uDC08\uDC0A-\uDC35\uDC37\uDC38\uDC3C\uDC3F-\uDC55\uDC58-\uDC76\uDC79-\uDC9E\uDCA7-\uDCAF\uDCE0-\uDCF2\uDCF4\uDCF5\uDCFB-\uDD1B\uDD20-\uDD39\uDD80-\uDDB7\uDDBC-\uDDCF\uDDD2-\uDE03\uDE05\uDE06\uDE0C-\uDE13\uDE15-\uDE17\uDE19-\uDE35\uDE40-\uDE48\uDE60-\uDE7E\uDE80-\uDE9F\uDEC0-\uDEC7\uDEC9-\uDEE4\uDEEB-\uDEEF\uDF00-\uDF35\uDF40-\uDF55\uDF58-\uDF72\uDF78-\uDF91\uDFA9-\uDFAF]|\uD803[\uDC00-\uDC48\uDC80-\uDCB2\uDCC0-\uDCF2\uDCFA-\uDD27\uDD30-\uDD39\uDE60-\uDE7E\uDE80-\uDEA9\uDEAB\uDEAC\uDEB0\uDEB1\uDF00-\uDF27\uDF30-\uDF45\uDF51-\uDF54\uDFB0-\uDFCB\uDFE0-\uDFF6]|\uD804[\uDC00-\uDC45\uDC52-\uDC6F\uDC82-\uDCB8\uDCD0-\uDCE8\uDCF0-\uDCF9\uDD00-\uDD32\uDD36-\uDD3F\uDD44-\uDD47\uDD50-\uDD72\uDD76\uDD80-\uDDBF\uDDC1-\uDDC4\uDDCE-\uDDDA\uDDDC\uDDE1-\uDDF4\uDE00-\uDE11\uDE13-\uDE34\uDE37\uDE3E\uDE80-\uDE86\uDE88\uDE8A-\uDE8D\uDE8F-\uDE9D\uDE9F-\uDEA8\uDEB0-\uDEE8\uDEF0-\uDEF9\uDF00-\uDF03\uDF05-\uDF0C\uDF0F\uDF10\uDF13-\uDF28\uDF2A-\uDF30\uDF32\uDF33\uDF35-\uDF39\uDF3D-\uDF44\uDF47\uDF48\uDF4B\uDF4C\uDF50\uDF57\uDF5D-\uDF63]|\uD805[\uDC00-\uDC41\uDC43-\uDC45\uDC47-\uDC4A\uDC50-\uDC59\uDC5F-\uDC61\uDC80-\uDCC1\uDCC4\uDCC5\uDCC7\uDCD0-\uDCD9\uDD80-\uDDB5\uDDB8-\uDDBE\uDDD8-\uDDDD\uDE00-\uDE3E\uDE40\uDE44\uDE50-\uDE59\uDE80-\uDEB5\uDEB8\uDEC0-\uDEC9\uDF00-\uDF1A\uDF1D-\uDF2A\uDF30-\uDF3B]|\uD806[\uDC00-\uDC38\uDCA0-\uDCF2\uDCFF-\uDD06\uDD09\uDD0C-\uDD13\uDD15\uDD16\uDD18-\uDD35\uDD37\uDD38\uDD3B\uDD3C\uDD3F-\uDD42\uDD50-\uDD59\uDDA0-\uDDA7\uDDAA-\uDDD7\uDDDA-\uDDDF\uDDE1\uDDE3\uDDE4\uDE00-\uDE32\uDE35-\uDE3E\uDE50-\uDE97\uDE9D\uDEC0-\uDEF8]|\uD807[\uDC00-\uDC08\uDC0A-\uDC36\uDC38-\uDC3E\uDC40\uDC50-\uDC6C\uDC72-\uDC8F\uDC92-\uDCA7\uDCA9-\uDCB6\uDD00-\uDD06\uDD08\uDD09\uDD0B-\uDD36\uDD3A\uDD3C\uDD3D\uDD3F-\uDD41\uDD43\uDD46\uDD47\uDD50-\uDD59\uDD60-\uDD65\uDD67\uDD68\uDD6A-\uDD8E\uDD90\uDD91\uDD93-\uDD96\uDD98\uDDA0-\uDDA9\uDEE0-\uDEF6\uDFB0\uDFC0-\uDFD4]|\uD808[\uDC00-\uDF99]|\uD809[\uDC00-\uDC6E\uDC80-\uDD43]|[\uD80C\uD81C-\uD820\uD822\uD840-\uD868\uD86A-\uD86C\uD86F-\uD872\uD874-\uD879\uD880-\uD883][\uDC00-\uDFFF]|\uD80D[\uDC00-\uDC2E]|\uD811[\uDC00-\uDE46]|\uD81A[\uDC00-\uDE38\uDE40-\uDE5E\uDE60-\uDE69\uDED0-\uDEED\uDF00-\uDF2F\uDF40-\uDF43\uDF50-\uDF59\uDF5B-\uDF61\uDF63-\uDF77\uDF7D-\uDF8F]|\uD81B[\uDE40-\uDE96\uDF00-\uDF4A\uDF4F-\uDF87\uDF8F-\uDF9F\uDFE0\uDFE1\uDFE3\uDFF0\uDFF1]|\uD821[\uDC00-\uDFF7]|\uD823[\uDC00-\uDCD5\uDD00-\uDD08]|\uD82C[\uDC00-\uDD1E\uDD50-\uDD52\uDD64-\uDD67\uDD70-\uDEFB]|\uD82F[\uDC00-\uDC6A\uDC70-\uDC7C\uDC80-\uDC88\uDC90-\uDC99\uDC9E]|\uD834[\uDEE0-\uDEF3\uDF60-\uDF78]|\uD835[\uDC00-\uDC54\uDC56-\uDC9C\uDC9E\uDC9F\uDCA2\uDCA5\uDCA6\uDCA9-\uDCAC\uDCAE-\uDCB9\uDCBB\uDCBD-\uDCC3\uDCC5-\uDD05\uDD07-\uDD0A\uDD0D-\uDD14\uDD16-\uDD1C\uDD1E-\uDD39\uDD3B-\uDD3E\uDD40-\uDD44\uDD46\uDD4A-\uDD50\uDD52-\uDEA5\uDEA8-\uDEC0\uDEC2-\uDEDA\uDEDC-\uDEFA\uDEFC-\uDF14\uDF16-\uDF34\uDF36-\uDF4E\uDF50-\uDF6E\uDF70-\uDF88\uDF8A-\uDFA8\uDFAA-\uDFC2\uDFC4-\uDFCB\uDFCE-\uDFFF]|\uD838[\uDC00-\uDC06\uDC08-\uDC18\uDC1B-\uDC21\uDC23\uDC24\uDC26-\uDC2A\uDD00-\uDD2C\uDD37-\uDD3D\uDD40-\uDD49\uDD4E\uDEC0-\uDEEB\uDEF0-\uDEF9]|\uD83A[\uDC00-\uDCC4\uDCC7-\uDCCF\uDD00-\uDD43\uDD47\uDD4B\uDD50-\uDD59]|\uD83B[\uDC71-\uDCAB\uDCAD-\uDCAF\uDCB1-\uDCB4\uDD01-\uDD2D\uDD2F-\uDD3D\uDE00-\uDE03\uDE05-\uDE1F\uDE21\uDE22\uDE24\uDE27\uDE29-\uDE32\uDE34-\uDE37\uDE39\uDE3B\uDE42\uDE47\uDE49\uDE4B\uDE4D-\uDE4F\uDE51\uDE52\uDE54\uDE57\uDE59\uDE5B\uDE5D\uDE5F\uDE61\uDE62\uDE64\uDE67-\uDE6A\uDE6C-\uDE72\uDE74-\uDE77\uDE79-\uDE7C\uDE7E\uDE80-\uDE89\uDE8B-\uDE9B\uDEA1-\uDEA3\uDEA5-\uDEA9\uDEAB-\uDEBB]|\uD83C[\uDD00-\uDD0C\uDD30-\uDD49\uDD50-\uDD69\uDD70-\uDD89]|\uD83E[\uDFF0-\uDFF9]|\uD869[\uDC00-\uDEDD\uDF00-\uDFFF]|\uD86D[\uDC00-\uDF34\uDF40-\uDFFF]|\uD86E[\uDC00-\uDC1D\uDC20-\uDFFF]|\uD873[\uDC00-\uDEA1\uDEB0-\uDFFF]|\uD87A[\uDC00-\uDFE0]|\uD87E[\uDC00-\uDE1D]|\uD884[\uDC00-\uDF4A])|$)/g, function (_, p1) {
+      return p1.toLocaleUpperCase(options.locale);
+    }).replace(/[0-9]+((?:[0-9A-Z_a-z\xAA\xB2\xB3\xB5\xB9\xBA\xBC-\xBE\xC0-\xD6\xD8-\xF6\xF8-\u02C1\u02C6-\u02D1\u02E0-\u02E4\u02EC\u02EE\u0345\u0370-\u0374\u0376\u0377\u037A-\u037D\u037F\u0386\u0388-\u038A\u038C\u038E-\u03A1\u03A3-\u03F5\u03F7-\u0481\u048A-\u052F\u0531-\u0556\u0559\u0560-\u0588\u05B0-\u05BD\u05BF\u05C1\u05C2\u05C4\u05C5\u05C7\u05D0-\u05EA\u05EF-\u05F2\u0610-\u061A\u0620-\u0657\u0659-\u0669\u066E-\u06D3\u06D5-\u06DC\u06E1-\u06E8\u06ED-\u06FC\u06FF\u0710-\u073F\u074D-\u07B1\u07C0-\u07EA\u07F4\u07F5\u07FA\u0800-\u0817\u081A-\u082C\u0840-\u0858\u0860-\u086A\u08A0-\u08B4\u08B6-\u08C7\u08D4-\u08DF\u08E3-\u08E9\u08F0-\u093B\u093D-\u094C\u094E-\u0950\u0955-\u0963\u0966-\u096F\u0971-\u0983\u0985-\u098C\u098F\u0990\u0993-\u09A8\u09AA-\u09B0\u09B2\u09B6-\u09B9\u09BD-\u09C4\u09C7\u09C8\u09CB\u09CC\u09CE\u09D7\u09DC\u09DD\u09DF-\u09E3\u09E6-\u09F1\u09F4-\u09F9\u09FC\u0A01-\u0A03\u0A05-\u0A0A\u0A0F\u0A10\u0A13-\u0A28\u0A2A-\u0A30\u0A32\u0A33\u0A35\u0A36\u0A38\u0A39\u0A3E-\u0A42\u0A47\u0A48\u0A4B\u0A4C\u0A51\u0A59-\u0A5C\u0A5E\u0A66-\u0A75\u0A81-\u0A83\u0A85-\u0A8D\u0A8F-\u0A91\u0A93-\u0AA8\u0AAA-\u0AB0\u0AB2\u0AB3\u0AB5-\u0AB9\u0ABD-\u0AC5\u0AC7-\u0AC9\u0ACB\u0ACC\u0AD0\u0AE0-\u0AE3\u0AE6-\u0AEF\u0AF9-\u0AFC\u0B01-\u0B03\u0B05-\u0B0C\u0B0F\u0B10\u0B13-\u0B28\u0B2A-\u0B30\u0B32\u0B33\u0B35-\u0B39\u0B3D-\u0B44\u0B47\u0B48\u0B4B\u0B4C\u0B56\u0B57\u0B5C\u0B5D\u0B5F-\u0B63\u0B66-\u0B6F\u0B71-\u0B77\u0B82\u0B83\u0B85-\u0B8A\u0B8E-\u0B90\u0B92-\u0B95\u0B99\u0B9A\u0B9C\u0B9E\u0B9F\u0BA3\u0BA4\u0BA8-\u0BAA\u0BAE-\u0BB9\u0BBE-\u0BC2\u0BC6-\u0BC8\u0BCA-\u0BCC\u0BD0\u0BD7\u0BE6-\u0BF2\u0C00-\u0C03\u0C05-\u0C0C\u0C0E-\u0C10\u0C12-\u0C28\u0C2A-\u0C39\u0C3D-\u0C44\u0C46-\u0C48\u0C4A-\u0C4C\u0C55\u0C56\u0C58-\u0C5A\u0C60-\u0C63\u0C66-\u0C6F\u0C78-\u0C7E\u0C80-\u0C83\u0C85-\u0C8C\u0C8E-\u0C90\u0C92-\u0CA8\u0CAA-\u0CB3\u0CB5-\u0CB9\u0CBD-\u0CC4\u0CC6-\u0CC8\u0CCA-\u0CCC\u0CD5\u0CD6\u0CDE\u0CE0-\u0CE3\u0CE6-\u0CEF\u0CF1\u0CF2\u0D00-\u0D0C\u0D0E-\u0D10\u0D12-\u0D3A\u0D3D-\u0D44\u0D46-\u0D48\u0D4A-\u0D4C\u0D4E\u0D54-\u0D63\u0D66-\u0D78\u0D7A-\u0D7F\u0D81-\u0D83\u0D85-\u0D96\u0D9A-\u0DB1\u0DB3-\u0DBB\u0DBD\u0DC0-\u0DC6\u0DCF-\u0DD4\u0DD6\u0DD8-\u0DDF\u0DE6-\u0DEF\u0DF2\u0DF3\u0E01-\u0E3A\u0E40-\u0E46\u0E4D\u0E50-\u0E59\u0E81\u0E82\u0E84\u0E86-\u0E8A\u0E8C-\u0EA3\u0EA5\u0EA7-\u0EB9\u0EBB-\u0EBD\u0EC0-\u0EC4\u0EC6\u0ECD\u0ED0-\u0ED9\u0EDC-\u0EDF\u0F00\u0F20-\u0F33\u0F40-\u0F47\u0F49-\u0F6C\u0F71-\u0F81\u0F88-\u0F97\u0F99-\u0FBC\u1000-\u1036\u1038\u103B-\u1049\u1050-\u109D\u10A0-\u10C5\u10C7\u10CD\u10D0-\u10FA\u10FC-\u1248\u124A-\u124D\u1250-\u1256\u1258\u125A-\u125D\u1260-\u1288\u128A-\u128D\u1290-\u12B0\u12B2-\u12B5\u12B8-\u12BE\u12C0\u12C2-\u12C5\u12C8-\u12D6\u12D8-\u1310\u1312-\u1315\u1318-\u135A\u1369-\u137C\u1380-\u138F\u13A0-\u13F5\u13F8-\u13FD\u1401-\u166C\u166F-\u167F\u1681-\u169A\u16A0-\u16EA\u16EE-\u16F8\u1700-\u170C\u170E-\u1713\u1720-\u1733\u1740-\u1753\u1760-\u176C\u176E-\u1770\u1772\u1773\u1780-\u17B3\u17B6-\u17C8\u17D7\u17DC\u17E0-\u17E9\u17F0-\u17F9\u1810-\u1819\u1820-\u1878\u1880-\u18AA\u18B0-\u18F5\u1900-\u191E\u1920-\u192B\u1930-\u1938\u1946-\u196D\u1970-\u1974\u1980-\u19AB\u19B0-\u19C9\u19D0-\u19DA\u1A00-\u1A1B\u1A20-\u1A5E\u1A61-\u1A74\u1A80-\u1A89\u1A90-\u1A99\u1AA7\u1ABF\u1AC0\u1B00-\u1B33\u1B35-\u1B43\u1B45-\u1B4B\u1B50-\u1B59\u1B80-\u1BA9\u1BAC-\u1BE5\u1BE7-\u1BF1\u1C00-\u1C36\u1C40-\u1C49\u1C4D-\u1C7D\u1C80-\u1C88\u1C90-\u1CBA\u1CBD-\u1CBF\u1CE9-\u1CEC\u1CEE-\u1CF3\u1CF5\u1CF6\u1CFA\u1D00-\u1DBF\u1DE7-\u1DF4\u1E00-\u1F15\u1F18-\u1F1D\u1F20-\u1F45\u1F48-\u1F4D\u1F50-\u1F57\u1F59\u1F5B\u1F5D\u1F5F-\u1F7D\u1F80-\u1FB4\u1FB6-\u1FBC\u1FBE\u1FC2-\u1FC4\u1FC6-\u1FCC\u1FD0-\u1FD3\u1FD6-\u1FDB\u1FE0-\u1FEC\u1FF2-\u1FF4\u1FF6-\u1FFC\u2070\u2071\u2074-\u2079\u207F-\u2089\u2090-\u209C\u2102\u2107\u210A-\u2113\u2115\u2119-\u211D\u2124\u2126\u2128\u212A-\u212D\u212F-\u2139\u213C-\u213F\u2145-\u2149\u214E\u2160-\u2189\u2150-\u2182\u2460-\u249B\u24B6-\u24FF\u2776-\u2793\u2C00-\u2C2E\u2C30-\u2C5E\u2C60-\u2CE4\u2CEB-\u2CEE\u2CF2\u2CF3\u2CFD\u2D00-\u2D25\u2D27\u2D2D\u2D30-\u2D67\u2D6F\u2D80-\u2D96\u2DA0-\u2DA6\u2DA8-\u2DAE\u2DB0-\u2DB6\u2DB8-\u2DBE\u2DC0-\u2DC6\u2DC8-\u2DCE\u2DD0-\u2DD6\u2DD8-\u2DDE\u2DE0-\u2DFF\u2E2F\u3005-\u3007\u3021-\u3029\u3031-\u3035\u3038-\u303C\u3041-\u3096\u309D-\u309F\u30A1-\u30FA\u30FC-\u30FF\u3105-\u312F\u3131-\u318E\u3192-\u3195\u31A0-\u31BF\u31F0-\u31FF\u3220-\u3229\u3248-\u324F\u3251-\u325F\u3280-\u3289\u32B1-\u32BF\u3400-\u4DBF\u4E00-\u9FFC\uA000-\uA48C\uA4D0-\uA4FD\uA500-\uA60C\uA610-\uA62B\uA640-\uA66E\uA674-\uA67B\uA67F-\uA6EF\uA717-\uA71F\uA722-\uA788\uA78B-\uA7BF\uA7C2-\uA7CA\uA7F5-\uA805\uA807-\uA827\uA830-\uA835\uA840-\uA873\uA880-\uA8C3\uA8C5\uA8D0-\uA8D9\uA8F2-\uA8F7\uA8FB\uA8FD-\uA92A\uA930-\uA952\uA960-\uA97C\uA980-\uA9B2\uA9B4-\uA9BF\uA9CF-\uA9D9\uA9E0-\uA9FE\uAA00-\uAA36\uAA40-\uAA4D\uAA50-\uAA59\uAA60-\uAA76\uAA7A-\uAABE\uAAC0\uAAC2\uAADB-\uAADD\uAAE0-\uAAEF\uAAF2-\uAAF5\uAB01-\uAB06\uAB09-\uAB0E\uAB11-\uAB16\uAB20-\uAB26\uAB28-\uAB2E\uAB30-\uAB5A\uAB5C-\uAB69\uAB70-\uABEA\uABF0-\uABF9\uAC00-\uD7A3\uD7B0-\uD7C6\uD7CB-\uD7FB\uF900-\uFA6D\uFA70-\uFAD9\uFB00-\uFB06\uFB13-\uFB17\uFB1D-\uFB28\uFB2A-\uFB36\uFB38-\uFB3C\uFB3E\uFB40\uFB41\uFB43\uFB44\uFB46-\uFBB1\uFBD3-\uFD3D\uFD50-\uFD8F\uFD92-\uFDC7\uFDF0-\uFDFB\uFE70-\uFE74\uFE76-\uFEFC\uFF10-\uFF19\uFF21-\uFF3A\uFF41-\uFF5A\uFF66-\uFFBE\uFFC2-\uFFC7\uFFCA-\uFFCF\uFFD2-\uFFD7\uFFDA-\uFFDC]|\uD800[\uDC00-\uDC0B\uDC0D-\uDC26\uDC28-\uDC3A\uDC3C\uDC3D\uDC3F-\uDC4D\uDC50-\uDC5D\uDC80-\uDCFA\uDD07-\uDD33\uDD40-\uDD78\uDD8A\uDD8B\uDE80-\uDE9C\uDEA0-\uDED0\uDEE1-\uDEFB\uDF00-\uDF23\uDF2D-\uDF4A\uDF50-\uDF7A\uDF80-\uDF9D\uDFA0-\uDFC3\uDFC8-\uDFCF\uDFD1-\uDFD5]|\uD801[\uDC00-\uDC9D\uDCA0-\uDCA9\uDCB0-\uDCD3\uDCD8-\uDCFB\uDD00-\uDD27\uDD30-\uDD63\uDE00-\uDF36\uDF40-\uDF55\uDF60-\uDF67]|\uD802[\uDC00-\uDC05\uDC08\uDC0A-\uDC35\uDC37\uDC38\uDC3C\uDC3F-\uDC55\uDC58-\uDC76\uDC79-\uDC9E\uDCA7-\uDCAF\uDCE0-\uDCF2\uDCF4\uDCF5\uDCFB-\uDD1B\uDD20-\uDD39\uDD80-\uDDB7\uDDBC-\uDDCF\uDDD2-\uDE03\uDE05\uDE06\uDE0C-\uDE13\uDE15-\uDE17\uDE19-\uDE35\uDE40-\uDE48\uDE60-\uDE7E\uDE80-\uDE9F\uDEC0-\uDEC7\uDEC9-\uDEE4\uDEEB-\uDEEF\uDF00-\uDF35\uDF40-\uDF55\uDF58-\uDF72\uDF78-\uDF91\uDFA9-\uDFAF]|\uD803[\uDC00-\uDC48\uDC80-\uDCB2\uDCC0-\uDCF2\uDCFA-\uDD27\uDD30-\uDD39\uDE60-\uDE7E\uDE80-\uDEA9\uDEAB\uDEAC\uDEB0\uDEB1\uDF00-\uDF27\uDF30-\uDF45\uDF51-\uDF54\uDFB0-\uDFCB\uDFE0-\uDFF6]|\uD804[\uDC00-\uDC45\uDC52-\uDC6F\uDC82-\uDCB8\uDCD0-\uDCE8\uDCF0-\uDCF9\uDD00-\uDD32\uDD36-\uDD3F\uDD44-\uDD47\uDD50-\uDD72\uDD76\uDD80-\uDDBF\uDDC1-\uDDC4\uDDCE-\uDDDA\uDDDC\uDDE1-\uDDF4\uDE00-\uDE11\uDE13-\uDE34\uDE37\uDE3E\uDE80-\uDE86\uDE88\uDE8A-\uDE8D\uDE8F-\uDE9D\uDE9F-\uDEA8\uDEB0-\uDEE8\uDEF0-\uDEF9\uDF00-\uDF03\uDF05-\uDF0C\uDF0F\uDF10\uDF13-\uDF28\uDF2A-\uDF30\uDF32\uDF33\uDF35-\uDF39\uDF3D-\uDF44\uDF47\uDF48\uDF4B\uDF4C\uDF50\uDF57\uDF5D-\uDF63]|\uD805[\uDC00-\uDC41\uDC43-\uDC45\uDC47-\uDC4A\uDC50-\uDC59\uDC5F-\uDC61\uDC80-\uDCC1\uDCC4\uDCC5\uDCC7\uDCD0-\uDCD9\uDD80-\uDDB5\uDDB8-\uDDBE\uDDD8-\uDDDD\uDE00-\uDE3E\uDE40\uDE44\uDE50-\uDE59\uDE80-\uDEB5\uDEB8\uDEC0-\uDEC9\uDF00-\uDF1A\uDF1D-\uDF2A\uDF30-\uDF3B]|\uD806[\uDC00-\uDC38\uDCA0-\uDCF2\uDCFF-\uDD06\uDD09\uDD0C-\uDD13\uDD15\uDD16\uDD18-\uDD35\uDD37\uDD38\uDD3B\uDD3C\uDD3F-\uDD42\uDD50-\uDD59\uDDA0-\uDDA7\uDDAA-\uDDD7\uDDDA-\uDDDF\uDDE1\uDDE3\uDDE4\uDE00-\uDE32\uDE35-\uDE3E\uDE50-\uDE97\uDE9D\uDEC0-\uDEF8]|\uD807[\uDC00-\uDC08\uDC0A-\uDC36\uDC38-\uDC3E\uDC40\uDC50-\uDC6C\uDC72-\uDC8F\uDC92-\uDCA7\uDCA9-\uDCB6\uDD00-\uDD06\uDD08\uDD09\uDD0B-\uDD36\uDD3A\uDD3C\uDD3D\uDD3F-\uDD41\uDD43\uDD46\uDD47\uDD50-\uDD59\uDD60-\uDD65\uDD67\uDD68\uDD6A-\uDD8E\uDD90\uDD91\uDD93-\uDD96\uDD98\uDDA0-\uDDA9\uDEE0-\uDEF6\uDFB0\uDFC0-\uDFD4]|\uD808[\uDC00-\uDF99]|\uD809[\uDC00-\uDC6E\uDC80-\uDD43]|[\uD80C\uD81C-\uD820\uD822\uD840-\uD868\uD86A-\uD86C\uD86F-\uD872\uD874-\uD879\uD880-\uD883][\uDC00-\uDFFF]|\uD80D[\uDC00-\uDC2E]|\uD811[\uDC00-\uDE46]|\uD81A[\uDC00-\uDE38\uDE40-\uDE5E\uDE60-\uDE69\uDED0-\uDEED\uDF00-\uDF2F\uDF40-\uDF43\uDF50-\uDF59\uDF5B-\uDF61\uDF63-\uDF77\uDF7D-\uDF8F]|\uD81B[\uDE40-\uDE96\uDF00-\uDF4A\uDF4F-\uDF87\uDF8F-\uDF9F\uDFE0\uDFE1\uDFE3\uDFF0\uDFF1]|\uD821[\uDC00-\uDFF7]|\uD823[\uDC00-\uDCD5\uDD00-\uDD08]|\uD82C[\uDC00-\uDD1E\uDD50-\uDD52\uDD64-\uDD67\uDD70-\uDEFB]|\uD82F[\uDC00-\uDC6A\uDC70-\uDC7C\uDC80-\uDC88\uDC90-\uDC99\uDC9E]|\uD834[\uDEE0-\uDEF3\uDF60-\uDF78]|\uD835[\uDC00-\uDC54\uDC56-\uDC9C\uDC9E\uDC9F\uDCA2\uDCA5\uDCA6\uDCA9-\uDCAC\uDCAE-\uDCB9\uDCBB\uDCBD-\uDCC3\uDCC5-\uDD05\uDD07-\uDD0A\uDD0D-\uDD14\uDD16-\uDD1C\uDD1E-\uDD39\uDD3B-\uDD3E\uDD40-\uDD44\uDD46\uDD4A-\uDD50\uDD52-\uDEA5\uDEA8-\uDEC0\uDEC2-\uDEDA\uDEDC-\uDEFA\uDEFC-\uDF14\uDF16-\uDF34\uDF36-\uDF4E\uDF50-\uDF6E\uDF70-\uDF88\uDF8A-\uDFA8\uDFAA-\uDFC2\uDFC4-\uDFCB\uDFCE-\uDFFF]|\uD838[\uDC00-\uDC06\uDC08-\uDC18\uDC1B-\uDC21\uDC23\uDC24\uDC26-\uDC2A\uDD00-\uDD2C\uDD37-\uDD3D\uDD40-\uDD49\uDD4E\uDEC0-\uDEEB\uDEF0-\uDEF9]|\uD83A[\uDC00-\uDCC4\uDCC7-\uDCCF\uDD00-\uDD43\uDD47\uDD4B\uDD50-\uDD59]|\uD83B[\uDC71-\uDCAB\uDCAD-\uDCAF\uDCB1-\uDCB4\uDD01-\uDD2D\uDD2F-\uDD3D\uDE00-\uDE03\uDE05-\uDE1F\uDE21\uDE22\uDE24\uDE27\uDE29-\uDE32\uDE34-\uDE37\uDE39\uDE3B\uDE42\uDE47\uDE49\uDE4B\uDE4D-\uDE4F\uDE51\uDE52\uDE54\uDE57\uDE59\uDE5B\uDE5D\uDE5F\uDE61\uDE62\uDE64\uDE67-\uDE6A\uDE6C-\uDE72\uDE74-\uDE77\uDE79-\uDE7C\uDE7E\uDE80-\uDE89\uDE8B-\uDE9B\uDEA1-\uDEA3\uDEA5-\uDEA9\uDEAB-\uDEBB]|\uD83C[\uDD00-\uDD0C\uDD30-\uDD49\uDD50-\uDD69\uDD70-\uDD89]|\uD83E[\uDFF0-\uDFF9]|\uD869[\uDC00-\uDEDD\uDF00-\uDFFF]|\uD86D[\uDC00-\uDF34\uDF40-\uDFFF]|\uD86E[\uDC00-\uDC1D\uDC20-\uDFFF]|\uD873[\uDC00-\uDEA1\uDEB0-\uDFFF]|\uD87A[\uDC00-\uDFE0]|\uD87E[\uDC00-\uDE1D]|\uD884[\uDC00-\uDF4A])|$)/g, function (m) {
+      return m.toLocaleUpperCase(options.locale);
+    });
+  };
+
+  var camelCase = function camelCase(input, options) {
+    if (!(typeof input === 'string' || Array.isArray(input))) {
+      throw new TypeError('Expected the input to be `string | string[]`');
+    }
+
+    options = _objectSpread2({
+      pascalCase: false,
+      preserveConsecutiveUppercase: false
+    }, options);
+
+    if (Array.isArray(input)) {
+      input = input.map(function (x) {
+        return x.trim();
+      }).filter(function (x) {
+        return x.length;
+      }).join('-');
+    } else {
+      input = input.trim();
+    }
+
+    if (input.length === 0) {
+      return '';
+    }
+
+    if (input.length === 1) {
+      return options.pascalCase ? input.toLocaleUpperCase(options.locale) : input.toLocaleLowerCase(options.locale);
+    }
+
+    var hasUpperCase = input !== input.toLocaleLowerCase(options.locale);
+
+    if (hasUpperCase) {
+      input = preserveCamelCase(input, options.locale);
+    }
+
+    input = input.replace(/^[_.\- ]+/, '');
+
+    if (options.preserveConsecutiveUppercase) {
+      input = preserveConsecutiveUppercase(input);
+    } else {
+      input = input.toLocaleLowerCase();
+    }
+
+    if (options.pascalCase) {
+      input = input.charAt(0).toLocaleUpperCase(options.locale) + input.slice(1);
+    }
+
+    return postProcess(input, options);
+  };
+
+  var camelcase = camelCase; // TODO: Remove this for the next major release
+
+  var default_1 = camelCase;
+  camelcase["default"] = default_1;
+
+  var Fullstory = /*#__PURE__*/function () {
+    function Fullstory(config) {
+      _classCallCheck(this, Fullstory);
+
+      this.fs_org = config.fs_org;
+      this.fs_debug_mode = config.fs_debug_mode;
+      this.name = "FULLSTORY";
+    }
+
+    _createClass(Fullstory, [{
+      key: "init",
+      value: function init() {
+        logger.debug("===in init FULLSTORY===");
+        window._fs_debug = this.fs_debug_mode;
+        window._fs_host = "fullstory.com";
+        window._fs_script = "edge.fullstory.com/s/fs.js";
+        window._fs_org = this.fs_org;
+        window._fs_namespace = "FS";
+
+        (function (m, n, e, t, l, o, g, y) {
+          if (e in m) {
+            if (m.console && m.console.log) {
+              m.console.log('FullStory namespace conflict. Please set window["_fs_namespace"].');
+            }
+
+            return;
+          }
+
+          g = m[e] = function (a, b, s) {
+            g.q ? g.q.push([a, b, s]) : g._api(a, b, s);
+          };
+
+          g.q = [];
+          o = n.createElement(t);
+          o.async = 1;
+          o.crossOrigin = "anonymous";
+          o.src = "https://".concat(_fs_script);
+          y = n.getElementsByTagName(t)[0];
+          y.parentNode.insertBefore(o, y);
+
+          g.identify = function (i, v, s) {
+            g(l, {
+              uid: i
+            }, s);
+            if (v) g(l, v, s);
+          };
+
+          g.setUserVars = function (v, s) {
+            g(l, v, s);
+          };
+
+          g.event = function (i, v, s) {
+            g("event", {
+              n: i,
+              p: v
+            }, s);
+          };
+
+          g.shutdown = function () {
+            g("rec", !1);
+          };
+
+          g.restart = function () {
+            g("rec", !0);
+          };
+
+          g.log = function (a, b) {
+            g("log", [a, b]);
+          };
+
+          g.consent = function (a) {
+            g("consent", !arguments.length || a);
+          };
+
+          g.identifyAccount = function (i, v) {
+            o = "account";
+            v = v || {};
+            v.acctId = i;
+            g(o, v);
+          };
+
+          g.clearUserCookie = function () {};
+
+          g._w = {};
+          y = "XMLHttpRequest";
+          g._w[y] = m[y];
+          y = "fetch";
+          g._w[y] = m[y];
+          if (m[y]) m[y] = function () {
+            return g._w[y].apply(this, arguments);
+          };
+        })(window, document, window._fs_namespace, "script", "user");
+      }
+    }, {
+      key: "page",
+      value: function page(rudderElement) {
+        logger.debug("in FULLSORY page");
+        var rudderMessage = rudderElement.message;
+        var pageName = rudderMessage.name;
+
+        var props = _objectSpread2({
+          name: pageName
+        }, rudderMessage.properties);
+
+        window.FS.event("Viewed a Page", Fullstory.getFSProperties(props));
+      }
+    }, {
+      key: "identify",
+      value: function identify(rudderElement) {
+        logger.debug("in FULLSORY identify");
+        var userId = rudderElement.message.userId;
+        var traits = rudderElement.message.context.traits;
+        if (!userId) userId = rudderElement.message.anonymousId;
+        if (Object.keys(traits).length === 0 && traits.constructor === Object) window.FS.identify(userId);else window.FS.identify(userId, Fullstory.getFSProperties(traits));
+      }
+    }, {
+      key: "track",
+      value: function track(rudderElement) {
+        logger.debug("in FULLSTORY track");
+        window.FS.event(rudderElement.message.event, Fullstory.getFSProperties(rudderElement.message.properties));
+      }
+    }, {
+      key: "isLoaded",
+      value: function isLoaded() {
+        logger.debug("in FULLSTORY isLoaded");
+        return !!window.FS;
+      }
+    }], [{
+      key: "getFSProperties",
+      value: function getFSProperties(properties) {
+        var FS_properties = {};
+        Object.keys(properties).map(function (key, index) {
+          FS_properties[key === "displayName" || key === "email" ? key : Fullstory.camelCaseField(key)] = properties[key];
+        });
+        return FS_properties;
+      }
+    }, {
+      key: "camelCaseField",
+      value: function camelCaseField(fieldName) {
+        // Do not camel case across type suffixes.
+        var parts = fieldName.split("_");
+
+        if (parts.length > 1) {
+          var typeSuffix = parts.pop();
+
+          switch (typeSuffix) {
+            case "str":
+            case "int":
+            case "date":
+            case "real":
+            case "bool":
+            case "strs":
+            case "ints":
+            case "dates":
+            case "reals":
+            case "bools":
+              return "".concat(camelcase(parts.join("_")), "_").concat(typeSuffix);
+
+          }
+        } // No type suffix found. Camel case the whole field name.
+
+
+        return camelcase(fieldName);
+      }
+    }]);
+
+    return Fullstory;
+  }();
+
+  var TVSquared = /*#__PURE__*/function () {
+    function TVSquared(config) {
+      _classCallCheck(this, TVSquared);
+
+      this.isLoaded = function () {
+        logger.debug("in TVSqaured isLoaded");
+        return !!(window._tvq && window._tvq.push !== Array.prototype.push);
+      };
+
+      this.isReady = function () {
+        logger.debug("in TVSqaured isReady");
+        return !!(window._tvq && window._tvq.push !== Array.prototype.push);
+      };
+
+      this.page = function () {
+        window._tvq.push(["trackPageView"]);
+      };
+
+      this.formatRevenue = function (revenue) {
+        var rev = revenue;
+        rev = parseFloat(rev.toString().replace(/^[^\d.]*/, ""));
+        return rev;
+      };
+
+      this.brandId = config.brandId;
+      this.clientId = config.clientId;
+      this.eventWhiteList = config.eventWhiteList || [];
+      this.customMetrics = config.customMetrics || [];
+      this.name = "TVSquared";
+    }
+
+    _createClass(TVSquared, [{
+      key: "init",
+      value: function init() {
+        logger.debug("===in init TVSquared===");
+        window._tvq = window._tvq || [];
+        var url = document.location.protocol === "https:" ? "https://" : "http://";
+        url += "collector-".concat(this.clientId, ".tvsquared.com/");
+
+        window._tvq.push(["setSiteId", this.brandId]);
+
+        window._tvq.push(["setTrackerUrl", "".concat(url, "tv2track.php")]);
+
+        ScriptLoader("TVSquared-integration", "".concat(url, "tv2track.js"));
+      }
+    }, {
+      key: "track",
+      value: function track(rudderElement) {
+        var _rudderElement$messag = rudderElement.message,
+            event = _rudderElement$messag.event,
+            userId = _rudderElement$messag.userId,
+            anonymousId = _rudderElement$messag.anonymousId;
+        var _rudderElement$messag2 = rudderElement.message.properties,
+            revenue = _rudderElement$messag2.revenue,
+            productType = _rudderElement$messag2.productType,
+            category = _rudderElement$messag2.category,
+            order_id = _rudderElement$messag2.order_id,
+            promotion_id = _rudderElement$messag2.promotion_id;
+        var i;
+        var j;
+        var whitelist = this.eventWhiteList.slice();
+        whitelist = whitelist.filter(function (wl) {
+          return wl.event !== "";
+        });
+
+        for (i = 0; i < whitelist.length; i += 1) {
+          if (event.toUpperCase() === whitelist[i].event.toUpperCase()) {
+            break;
+          }
+
+          if (i === whitelist.length - 1) {
+            return;
+          }
+        }
+
+        var session = {
+          user: userId || anonymousId || ""
+        };
+        var action = {
+          rev: revenue ? this.formatRevenue(revenue) : "",
+          prod: category || productType || "",
+          id: order_id || "",
+          promo: promotion_id || ""
+        };
+        var customMetrics = this.customMetrics.slice();
+        customMetrics = customMetrics.filter(function (cm) {
+          return cm.propertyName !== "";
+        });
+
+        if (customMetrics.length) {
+          for (j = 0; j < customMetrics.length; j += 1) {
+            var key = customMetrics[j].propertyName;
+            var value = rudderElement.message.properties[key];
+
+            if (value) {
+              action[key] = value;
+            }
+          }
+        }
+
+        window._tvq.push([function () {
+          this.setCustomVariable(5, "session", JSON.stringify(session), "visit");
+        }]);
+
+        if (event.toUpperCase() !== "RESPONSE") {
+          window._tvq.push([function () {
+            this.setCustomVariable(5, event, JSON.stringify(action), "page");
+          }]);
+
+          window._tvq.push(["trackPageView"]);
+        }
+      }
+    }]);
+
+    return TVSquared;
+  }();
+
+  var requiredEventParameters = {
+    PromotionId: "promotion_id",
+    PromotionName: "promotion_name",
+    Search: "search_term",
+    ProductId: "item_id",
+    ProductName: "item_name"
+  }; // To Do : Future Scope :: We can remove this one and add everything in include list.
+  // This will also simplify our existing code and complex logics related to that
+
+  var includeParams = {
+    CartShare: {
+      defaults: {
+        content_type: "Cart"
+      },
+      mappings: {
+        share_via: "method",
+        cart_id: "content_id"
+      }
+    },
+    ProductShare: {
+      defaults: {
+        content_type: "Product"
+      },
+      mappings: {
+        share_via: "method",
+        product_id: "content_id"
+      }
+    },
+    Search: {
+      mappings: {
+        query: "search_term"
+      }
+    },
+    Promotion: {
+      mappings: {
+        position: "location_id"
+      }
+    }
+  };
+  var eventParametersConfigArray = {
+    ListId: {
+      src: "list_id",
+      dest: "item_list_id",
+      inItems: true
+    },
+    Category: {
+      src: "category",
+      dest: "item_list_name",
+      inItems: true
+    },
+    Price: {
+      src: "price",
+      dest: "value"
+    },
+    Currency: {
+      src: "currency",
+      dest: "currency",
+      inItems: true
+    },
+    Coupon: {
+      src: "coupon",
+      dest: "coupon",
+      inItems: true
+    },
+    Affiliation: {
+      src: "affiliation",
+      dest: "affiliation",
+      inItems: true
+    },
+    Shipping: {
+      src: "shipping",
+      dest: "shipping"
+    },
+    Tax: {
+      src: "tax",
+      dest: "tax"
+    },
+    Total: {
+      src: "total",
+      dest: "value"
+    },
+    CheckoutId: {
+      src: "checkout_id",
+      dest: "transaction_id"
+    },
+    ShippingMethod: {
+      src: "shipping_method",
+      dest: "shipping_tier"
+    },
+    PaymentMethod: {
+      src: "payment_method",
+      dest: "payment_type"
+    }
+  };
+  var itemParametersConfigArray = [{
+    src: "product_id",
+    dest: "item_id"
+  }, {
+    src: "order_id",
+    dest: "item_id"
+  }, {
+    src: "name",
+    dest: "item_name"
+  }, {
+    src: "coupon",
+    dest: "coupon"
+  }, {
+    src: "category",
+    dest: "item_category"
+  }, {
+    src: "brand",
+    dest: "item_brand"
+  }, {
+    src: "variant",
+    dest: "item_variant"
+  }, {
+    src: "price",
+    dest: "price"
+  }, {
+    src: "quantity",
+    dest: "quantity"
+  }, {
+    src: "position",
+    dest: "index"
+  }];
+  var eventNamesConfigArray = [// Browsing Section
+  {
+    src: ["products searched", "product searched"],
+    dest: "search",
+    requiredParams: requiredEventParameters.Search,
+    onlyIncludeParams: includeParams.Search
+  }, {
+    src: ["product list viewed"],
+    dest: "view_item_list",
+    requiredParams: [requiredEventParameters.ProductId, requiredEventParameters.ProductName],
+    hasItem: true,
+    includeList: [eventParametersConfigArray.ListId, eventParametersConfigArray.Category]
+  }, // Promotion Section
+  {
+    src: ["promotion viewed"],
+    dest: "view_promotion",
+    onlyIncludeParams: includeParams.Promotion
+  }, {
+    src: ["promotion clicked"],
+    dest: "select_promotion",
+    onlyIncludeParams: includeParams.Promotion
+  }, // Ordering Section
+  {
+    src: ["product clicked", "products clicked"],
+    dest: "select_item",
+    requiredParams: [requiredEventParameters.ProductId, requiredEventParameters.ProductName],
+    hasItem: true,
+    includeList: [eventParametersConfigArray.ListId, eventParametersConfigArray.Category]
+  }, {
+    src: ["product viewed"],
+    dest: "view_item",
+    requiredParams: [requiredEventParameters.ProductId, requiredEventParameters.ProductName],
+    hasItem: true,
+    includeList: [eventParametersConfigArray.Currency, eventParametersConfigArray.Total]
+  }, {
+    src: ["product added"],
+    dest: "add_to_cart",
+    requiredParams: [requiredEventParameters.ProductId, requiredEventParameters.ProductName],
+    hasItem: true,
+    includeList: [eventParametersConfigArray.Currency, eventParametersConfigArray.Total]
+  }, {
+    src: ["product removed"],
+    dest: "remove_from_cart",
+    requiredParams: [requiredEventParameters.ProductId, requiredEventParameters.ProductName],
+    hasItem: true,
+    includeList: [eventParametersConfigArray.Currency, eventParametersConfigArray.Total]
+  }, {
+    src: ["cart viewed"],
+    dest: "view_cart",
+    requiredParams: [requiredEventParameters.ProductId, requiredEventParameters.ProductName],
+    hasItem: true,
+    includeList: [eventParametersConfigArray.Currency, eventParametersConfigArray.Total]
+  }, {
+    src: ["checkout started"],
+    dest: "begin_checkout",
+    requiredParams: [requiredEventParameters.ProductId, requiredEventParameters.ProductName],
+    hasItem: true,
+    includeList: [eventParametersConfigArray.Coupon, eventParametersConfigArray.Currency, eventParametersConfigArray.Total]
+  }, {
+    src: ["payment info entered"],
+    dest: "add_payment_info",
+    hasItem: false,
+    includeList: [eventParametersConfigArray.PaymentMethod]
+  }, {
+    src: ["payment info entered"],
+    dest: "add_shipping_info",
+    hasItem: false,
+    includeList: [eventParametersConfigArray.ShippingMethod]
+  }, {
+    src: ["order completed"],
+    dest: "purchase",
+    requiredParams: [requiredEventParameters.ProductId, requiredEventParameters.ProductName],
+    hasItem: true,
+    includeList: [eventParametersConfigArray.Affiliation, eventParametersConfigArray.Coupon, eventParametersConfigArray.Currency, eventParametersConfigArray.CheckoutId, eventParametersConfigArray.Shipping, eventParametersConfigArray.Tax, eventParametersConfigArray.Total]
+  }, {
+    src: ["order refunded"],
+    dest: "refund",
+    hasItem: true,
+    includeList: [eventParametersConfigArray.Affiliation, eventParametersConfigArray.Coupon, eventParametersConfigArray.Currency, eventParametersConfigArray.CheckoutId, eventParametersConfigArray.Shipping, eventParametersConfigArray.Tax, eventParametersConfigArray.Total]
+  },
+  /* Coupon Section
+    No Coupon Events present in GA4
+  /----------  */
+  // Wishlist Section
+  {
+    src: ["product added to wishlist"],
+    dest: "add_to_wishlist",
+    requiredParams: [requiredEventParameters.ProductId, requiredEventParameters.ProductName],
+    hasItem: true,
+    includeList: [eventParametersConfigArray.Currency, eventParametersConfigArray.Total]
+  }, //-------
+  // Sharing Section
+  {
+    src: ["product shared"],
+    dest: "share",
+    hasItem: false,
+    onlyIncludeParams: includeParams.ProductShare
+  }, {
+    src: ["cart shared"],
+    dest: "share",
+    hasItem: false,
+    onlyIncludeParams: includeParams.CartShare
+  } //---------
+  ];
+
+  var pageEventParametersConfigArray = [{
+    src: "path",
+    dest: "page_location"
+  }, {
+    src: "referrer",
+    dest: "page_referrer"
+  }, {
+    src: "title",
+    dest: "page_title"
+  }];
+
+  /**
+   * Check if event name is not one of the following reserved names
+   * @param {*} name
+   */
+
+  function isReservedName(name) {
+    var reservedEventNames = ["ad_activeview", "ad_click", "ad_exposure", "ad_impression", "ad_query", "adunit_exposure", "app_clear_data", "app_install", "app_update", "app_remove", "error", "first_open", "first_visit", "in_app_purchase", "notification_dismiss", "notification_foreground", "notification_open", "notification_receive", "os_update", "screen_view", "session_start", "user_engagement"];
+    return reservedEventNames.includes(name);
+  }
+  /**
+   * map rudder event name to ga4 ecomm event name and return array
+   * @param {*} event
+   */
+
+
+  function getDestinationEventName(event) {
+    return eventNamesConfigArray.filter(function (p) {
+      return p.src.includes(event.toLowerCase());
+    });
+  }
+  /**
+   * Create item array and add into destination parameters
+   * If 'items' prop is present push new key value into it else create a new and push data
+   * 'items' -> name of GA4 Ecommerce property name.
+   * For now its hard coded, we can think of some better soln. later.
+   * @param {*} dest
+   * @param {*} key
+   * @param {*} value
+   */
+
+
+  function createItemProperty(dest, key, value) {
+    var destinationProperties = dest;
+
+    if (!destinationProperties.items) {
+      destinationProperties.items = [];
+      destinationProperties.items.push(_defineProperty({}, key, value));
+    } else {
+      destinationProperties.items[0][key] = value;
+    }
+
+    return destinationProperties;
+  }
+  /**
+   * Check if your payload contains required parameters to map to ga4 ecomm
+   * @param {*} includeRequiredParams this can be boolean or an array or required object
+   * @param {*} key
+   * @param {*} src
+   */
+
+
+  function hasRequiredParameters(props, eventMappingObj) {
+    var requiredParams = eventMappingObj.requiredParams || false;
+    if (!requiredParams) return true;
+
+    if (!Array.isArray(requiredParams)) {
+      if (props[requiredParams]) {
+        return true;
+      }
+
+      return false;
+    }
+
+    for (var i in props.items) {
+      for (var p in requiredParams) {
+        if (!props.items[i][requiredParams[p]]) {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  }
+  /**
+   * TO DO Future Improvement ::::
+   * Here we only support mapping single level object mapping.
+   * Implement using recursion to handle multi level prop mapping.
+   * @param {*} props { product_id: 123456_abcdef, name: "chess-board", list_id: "ls_abcdef", category: games }
+   * @param {*} destParameterConfig
+   * Defined Parameter present GA4/utils.js ex: [{ src: "category", dest: "item_list_name", inItems: true }]
+   * @param {*} includeRequiredParams contains object of required parameter to be mapped from source payload
+   * output: {
+    "item_list_id": "ls_abcdef",
+    "items": [
+      {
+        "item_id": "123456_abcdef",
+        "item_name": "chess-board",
+        "item_list_id": "ls_abc",
+        "item_list_name": "games"
+      }
+    ],
+    "item_list_name": "games"
+  }
+  */
+
+
+  function getDestinationEventProperties(props, destParameterConfig) {
+    var hasItem = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
+    var destinationProperties = {};
+    Object.keys(props).forEach(function (key) {
+      destParameterConfig.forEach(function (param) {
+        if (key === param.src) {
+          // handle case where the key needs to go inside items as well as top level params in GA4
+          if (param.inItems && hasItem) {
+            destinationProperties = createItemProperty(destinationProperties, param.dest, props[key]);
+          }
+
+          destinationProperties[param.dest] = props[key]; // eslint-disable-next-line no-param-reassign
+
+          delete props[key];
+        }
+      });
+    });
+    return destinationProperties;
+  }
+  /**
+   * Map rudder products arrays payload to ga4 ecomm items array
+   * @param {*} products
+   * @param {*} item
+   */
+
+
+  function getDestinationItemProperties(products, item) {
+    var items = [];
+    var obj = {};
+
+    if (type(products) !== "array") {
+      logger.debug("Event payload doesn't have products array");
+    } else {
+      // get the dest keys from itemParameters config
+      // append the already created item object keys (this is done to get the keys that are actually top level props in Rudder payload but GA expects them under items too)
+      products.forEach(function (p) {
+        obj = _objectSpread2(_objectSpread2({}, getDestinationEventProperties(p, itemParametersConfigArray)), item && type(item) === "array" && item[0] || {});
+        items.push(obj);
+      });
+    }
+
+    return items;
+  }
+  /**
+   * Generate ga4 page_view events payload
+   * @param {*} props
+   */
+
+
+  function getPageViewProperty(props) {
+    return getDestinationEventProperties(props, pageEventParametersConfigArray);
+  }
+
+  var GA4 = /*#__PURE__*/function () {
+    function GA4(config, analytics) {
+      _classCallCheck(this, GA4);
+
+      this.measurementId = config.measurementId;
+      this.analytics = analytics;
+      this.sendUserId = config.sendUserId || false;
+      this.blockPageView = config.blockPageViewEvent || false;
+      this.extendPageViewParams = config.extendPageViewParams || false;
+      this.name = "GA4";
+    }
+
+    _createClass(GA4, [{
+      key: "loadScript",
+      value: function loadScript(measurementId, userId) {
+        window.dataLayer = window.dataLayer || [];
+
+        window.gtag = window.gtag || function gt() {
+          // eslint-disable-next-line prefer-rest-params
+          window.dataLayer.push(arguments);
+        };
+
+        window.gtag("js", new Date()); // This condition is not working, even after disabling page view
+        // page_view is even getting called on page load
+
+        if (this.blockPageView) {
+          if (this.sendUserId) {
+            window.gtag("config", measurementId, {
+              user_id: userId,
+              send_page_view: false
+            });
+          } else {
+            window.gtag("config", measurementId, {
+              send_page_view: false
+            });
+          }
+        } else if (this.sendUserId) {
+          window.gtag("config", measurementId, {
+            user_id: userId
+          });
+        } else {
+          window.gtag("config", measurementId);
+        }
+
+        ScriptLoader("google-analytics 4", "https://www.googletagmanager.com/gtag/js?id=".concat(measurementId));
+      }
+    }, {
+      key: "init",
+      value: function init() {
+        // To do :: check how custom dimension and metrics is used
+        var userId = this.analytics.userId || this.analytics.anonymousId;
+        this.loadScript(this.measurementId, userId);
+      }
+      /* utility functions ---Start here ---  */
+
+    }, {
+      key: "isLoaded",
+      value: function isLoaded() {
+        return !!(window.gtag && window.gtag.push !== Array.prototype.push);
+      }
+    }, {
+      key: "isReady",
+      value: function isReady() {
+        return !!(window.gtag && window.gtag.push !== Array.prototype.push);
+      }
+      /* utility functions --- Ends here ---  */
+
+      /**
+       * Function to get destination properties for both event parameters and items array if present
+       * For top level properties, include only those properties that are in the includeList
+       * @param {*} properties
+       * @param {*} hasItem
+       * @param {*} products
+       * @param {*} includeList
+       */
+
+    }, {
+      key: "getdestinationProperties",
+      value: function getdestinationProperties(properties, hasItem, products, includeList) {
+        var destinationProperties = {};
+        destinationProperties = getDestinationEventProperties(properties, includeList, hasItem);
+
+        if (hasItem) {
+          // only for events where GA requires an items array to be sent
+          // get the product related destination keys || if products is not present use the rudder message properties to get the product related destination keys
+          destinationProperties.items = getDestinationItemProperties(products || [properties], destinationProperties.items);
+        }
+
+        return destinationProperties;
+      }
+      /**
+       * Only include params that are present in given mapping config for things like Cart/Product shared, Product/Products shared
+       * @param {*} params
+       * @param {*} properties
+       */
+
+    }, {
+      key: "getIncludedParameters",
+      value: function getIncludedParameters(params, properties) {
+        var destinationProperties = {};
+
+        if (type(params) === "object") {
+          var defaults = params.defaults,
+              mappings = params.mappings;
+
+          if (type(defaults) === "object") {
+            Object.keys(defaults).forEach(function (key) {
+              destinationProperties[key] = defaults[key];
+            });
+          }
+
+          if (type(mappings) === "object") {
+            Object.keys(mappings).forEach(function (key) {
+              destinationProperties[mappings[key]] = properties[key];
+            });
+          }
+        }
+
+        return destinationProperties;
+      }
+    }, {
+      key: "sendGAEvent",
+      value: function sendGAEvent(event, parameters, checkRequiredParameters, eventMappingObj) {
+        if (checkRequiredParameters) {
+          if (!hasRequiredParameters(parameters, eventMappingObj)) {
+            throw Error("Payload must have required parameters..");
+          }
+        }
+
+        window.gtag("event", event, parameters);
+      }
+    }, {
+      key: "handleEventMapper",
+      value: function handleEventMapper(eventMappingObj, properties, products) {
+        var destinationProperties = {};
+        var event = eventMappingObj.dest;
+
+        if (eventMappingObj.onlyIncludeParams) {
+          /* Only include params that are present in given mapping config for things like Cart/Product shared, Product/Products shared
+           */
+          var includeParams = eventMappingObj.onlyIncludeParams;
+          destinationProperties = this.getIncludedParameters(includeParams, properties);
+        } else {
+          destinationProperties = this.getdestinationProperties(properties, eventMappingObj.hasItem, products, eventMappingObj.includeList);
+        }
+
+        this.sendGAEvent(event, destinationProperties, true, eventMappingObj);
+      }
+      /**
+       *
+       * @param {*} rudderElement
+       */
+
+    }, {
+      key: "track",
+      value: function track(rudderElement) {
+        var _this = this;
+
+        var event = rudderElement.message.event;
+        var properties = rudderElement.message.properties;
+        var products = properties.products;
+
+        if (!event || isReservedName(event)) {
+          throw Error("Cannot call un-named/reserved named track event");
+        } // get GA4 event name and corresponding configs defined to add properties to that event
+
+
+        var eventMappingArray = getDestinationEventName(event);
+
+        if (eventMappingArray && eventMappingArray.length) {
+          eventMappingArray.forEach(function (events) {
+            _this.handleEventMapper(events, properties, products);
+          });
+        } else {
+          this.sendGAEvent(event, flattenJsonPayload(properties), false);
+        }
+      }
+    }, {
+      key: "identify",
+      value: function identify(rudderElement) {
+        window.gtag("set", "user_properties", flattenJsonPayload(this.analytics.userTraits));
+
+        if (this.sendUserId && rudderElement.message.userId) {
+          var userId = this.analytics.userId || this.analytics.anonymousId;
+
+          if (this.blockPageView) {
+            window.gtag("config", this.measurementId, {
+              user_id: userId,
+              send_page_view: false
+            });
+          } else {
+            window.gtag("config", this.measurementId, {
+              user_id: userId
+            });
+          }
+        }
+
+        logger.debug("in GoogleAnalyticsManager identify");
+      }
+    }, {
+      key: "page",
+      value: function page(rudderElement) {
+        var pageProps = rudderElement.message.properties;
+        if (!pageProps) return;
+        pageProps = flattenJsonPayload(pageProps);
+
+        if (this.extendPageViewParams) {
+          window.gtag("event", "page_view", _objectSpread2(_objectSpread2({}, pageProps), getPageViewProperty(pageProps)));
+        } else {
+          window.gtag("event", "page_view", getPageViewProperty(pageProps));
+        }
+      }
+    }]);
+
+    return GA4;
+  }();
+
+  var traitsMap = {
+    firstName: "first_name",
+    lastName: "last_name",
+    firstname: "first_name",
+    lastname: "last_name",
+    email: "email",
+    phone: "mobile",
+    name: "user_name",
+    username: "user_name",
+    userName: "user_name",
+    gender: "gender",
+    birthday: "birthday",
+    id: null
+  };
+
+  var MoEngage = /*#__PURE__*/function () {
+    function MoEngage(config, analyticsinstance) {
+      _classCallCheck(this, MoEngage);
+
+      this.isLoaded = function () {
+        logger.debug("in MoEngage isLoaded");
+        return !!window.moeBannerText;
+      };
+
+      this.isReady = function () {
+        logger.debug("in MoEngage isReady");
+        return !!window.moeBannerText;
+      };
+
+      this.apiId = config.apiId;
+      this.debug = config.debug;
+      this.region = config.region;
+      this.name = "MoEngage";
+      this.analyticsinstance = analyticsinstance;
+    }
+
+    _createClass(MoEngage, [{
+      key: "init",
+      value: function init() {
+        var self = this;
+        logger.debug("===in init MoEnagage==="); // loading the script for moengage web sdk
+
+        /* eslint-disable */
+
+        (function (i, s, o, g, r, a, m, n) {
+          i.moengage_object = r;
+          var t = {};
+
+          var q = function q(f) {
+            return function () {
+              (i.moengage_q = i.moengage_q || []).push({
+                f: f,
+                a: arguments
+              });
+            };
+          };
+
+          var f = ["track_event", "add_user_attribute", "add_first_name", "add_last_name", "add_email", "add_mobile", "add_user_name", "add_gender", "add_birthday", "destroy_session", "add_unique_user_id", "moe_events", "call_web_push", "track", "location_type_attribute"];
+          var h = {
+            onsite: ["getData", "registerCallback"]
+          };
+
+          for (var k in f) {
+            t[f[k]] = q(f[k]);
+          }
+
+          for (var k in h) {
+            for (var l in h[k]) {
+              null == t[k] && (t[k] = {}), t[k][h[k][l]] = q(k + "." + h[k][l]);
+            }
+          }
+
+          a = s.createElement(o);
+          m = s.getElementsByTagName(o)[0];
+          a.async = 1;
+          a.src = g;
+          m.parentNode.insertBefore(a, m);
+
+          i.moe = i.moe || function () {
+            n = arguments[0];
+            return t;
+          };
+
+          a.onload = function () {
+            if (n) {
+              i[r] = moe(n);
+            }
+          };
+        })(window, document, "script", document.location.protocol === "https:" ? "https://cdn.moengage.com/webpush/moe_webSdk.min.latest.js" : "http://cdn.moengage.com/webpush/moe_webSdk.min.latest.js", "Moengage");
+        /* eslint-enable */
+        // setting the region if us then not needed.
+
+
+        if (this.region !== "US") {
+          self.moeClient = window.moe({
+            app_id: this.apiId,
+            debug_logs: this.debug ? 1 : 0,
+            cluster: this.region === "EU" ? "eu" : "in"
+          });
+        } else {
+          self.moeClient = window.moe({
+            app_id: this.apiId,
+            debug_logs: this.debug ? 1 : 0
+          });
+        }
+
+        this.initialUserId = this.analyticsinstance.userId;
+      }
+    }, {
+      key: "track",
+      value: function track(rudderElement) {
+        logger.debug("inside track"); // Check if the user id is same as previous session if not a new session will start
+
+        if (!rudderElement.message) {
+          logger.error("Payload not correct");
+          return;
+        }
+
+        var _rudderElement$messag = rudderElement.message,
+            event = _rudderElement$messag.event,
+            properties = _rudderElement$messag.properties,
+            userId = _rudderElement$messag.userId;
+
+        if (userId) {
+          if (this.initialUserId !== userId) {
+            this.reset();
+          }
+        } // track event : https://docs.moengage.com/docs/tracking-events
+
+
+        if (!event) {
+          logger.error("Event name not present");
+          return;
+        }
+
+        if (properties) {
+          this.moeClient.track_event(event, properties);
+        } else {
+          this.moeClient.track_event(event);
+        }
+      }
+    }, {
+      key: "reset",
+      value: function reset() {
+        logger.debug("inside reset"); // reset the user id
+
+        this.initialUserId = this.analyticsinstance.userId;
+        this.moeClient.destroy_session();
+      }
+    }, {
+      key: "identify",
+      value: function identify(rudderElement) {
+        var self = this;
+        var userId = rudderElement.message.userId;
+        var traits = null;
+
+        if (rudderElement.message.context) {
+          traits = rudderElement.message.context.traits;
+        } // check if user id is same or not
+
+
+        if (this.initialUserId !== userId) {
+          this.reset();
+        } // if user is present map
+
+
+        if (userId) {
+          this.moeClient.add_unique_user_id(userId);
+        } // track user attributes : https://docs.moengage.com/docs/tracking-web-user-attributes
+
+
+        if (traits) {
+          each_1(function add(value, key) {
+            // check if name is present
+            if (key === "name") {
+              self.moeClient.add_user_name(value);
+            }
+
+            if (Object.prototype.hasOwnProperty.call(traitsMap, key)) {
+              var method = "add_".concat(traitsMap[key]);
+              self.moeClient[method](value);
+            } else {
+              self.moeClient.add_user_attribute(key, value);
+            }
+          }, traits);
+        }
+      }
+    }]);
+
+    return MoEngage;
+  }();
+
+  var Amplitude = /*#__PURE__*/function () {
+    function Amplitude(config, analytics) {
+      var _this = this;
+
+      _classCallCheck(this, Amplitude);
+
+      this.name = "AM";
+      this.analytics = analytics;
+      this.apiKey = config.apiKey;
+      this.trackAllPages = config.trackAllPages || false;
+      this.trackNamedPages = config.trackNamedPages || false;
+      this.trackCategorizedPages = config.trackCategorizedPages || false;
+      this.trackUtmProperties = config.trackUtmProperties || false;
+      this.trackReferrer = config.trackReferrer || false;
+      this.batchEvents = config.batchEvents || false;
+      this.eventUploadThreshold = +config.eventUploadThreshold || 30;
+      this.eventUploadPeriodMillis = +config.eventUploadPeriodMillis || 30000;
+      this.forceHttps = config.forceHttps || false;
+      this.trackGclid = config.trackGclid || false;
+      this.saveParamsReferrerOncePerSession = config.saveParamsReferrerOncePerSession || false;
+      this.deviceIdFromUrlParam = config.deviceIdFromUrlParam || false; // this.mapQueryParams = config.mapQueryParams;
+
+      this.trackRevenuePerProduct = config.trackRevenuePerProduct || false;
+      this.preferAnonymousIdForDeviceId = config.preferAnonymousIdForDeviceId || false;
+      this.traitsToSetOnce = [];
+      this.traitsToIncrement = [];
+      this.appendFieldsToEventProps = config.appendFieldsToEventProps || false;
+      this.unsetParamsReferrerOnNewSession = config.unsetParamsReferrerOnNewSession || false;
+      this.trackProductsOnce = config.trackProductsOnce || false;
+      this.versionName = config.versionName;
+
+      if (config.traitsToSetOnce && config.traitsToSetOnce.length > 0) {
+        config.traitsToSetOnce.forEach(function (element) {
+          if (element && element.traits && element.traits !== "") {
+            _this.traitsToSetOnce.push(element.traits);
+          }
+        });
+      }
+
+      if (config.traitsToIncrement && config.traitsToIncrement.length > 0) {
+        config.traitsToIncrement.forEach(function (element) {
+          if (element && element.traits && element.traits !== "") {
+            _this.traitsToIncrement.push(element.traits);
+          }
+        });
+      }
+    }
+
+    _createClass(Amplitude, [{
+      key: "init",
+      value: function init() {
+        if (this.analytics.loadIntegration) {
+          (function (e, t) {
+            var n = e.amplitude || {
+              _q: [],
+              _iq: {}
+            };
+            var r = t.createElement("script");
+            r.type = "text/javascript";
+            r.integrity = "sha384-girahbTbYZ9tT03PWWj0mEVgyxtZoyDF9KVZdL+R53PP5wCY0PiVUKq0jeRlMx9M";
+            r.crossOrigin = "anonymous";
+            r.async = true;
+            r.src = "https://cdn.amplitude.com/libs/amplitude-7.2.1-min.gz.js";
+
+            r.onload = function () {
+              if (!e.amplitude.runQueuedFunctions) {
+                console.log("[Amplitude] Error: could not load SDK");
+              }
+            };
+
+            var i = t.getElementsByTagName("script")[0];
+            i.parentNode.insertBefore(r, i);
+
+            function s(e, t) {
+              e.prototype[t] = function () {
+                this._q.push([t].concat(Array.prototype.slice.call(arguments, 0)));
+
+                return this;
+              };
+            }
+
+            var o = function o() {
+              this._q = [];
+              return this;
+            };
+
+            var a = ["add", "append", "clearAll", "prepend", "set", "setOnce", "unset"];
+
+            for (var c = 0; c < a.length; c++) {
+              s(o, a[c]);
+            }
+
+            n.Identify = o;
+
+            var u = function u() {
+              this._q = [];
+              return this;
+            };
+
+            var l = ["setProductId", "setQuantity", "setPrice", "setRevenueType", "setEventProperties"];
+
+            for (var p = 0; p < l.length; p++) {
+              s(u, l[p]);
+            }
+
+            n.Revenue = u;
+            var d = ["init", "logEvent", "logRevenue", "setUserId", "setUserProperties", "setOptOut", "setVersionName", "setDomain", "setDeviceId", "enableTracking", "setGlobalUserProperties", "identify", "clearUserProperties", "setGroup", "logRevenueV2", "regenerateDeviceId", "groupIdentify", "onInit", "logEventWithTimestamp", "logEventWithGroups", "setSessionId", "resetSessionId"];
+
+            function v(e) {
+              function t(t) {
+                e[t] = function () {
+                  e._q.push([t].concat(Array.prototype.slice.call(arguments, 0)));
+                };
+              }
+
+              for (var _n = 0; _n < d.length; _n++) {
+                t(d[_n]);
+              }
+            }
+
+            v(n);
+
+            n.getInstance = function (e) {
+              e = (!e || e.length === 0 ? "$default_instance" : e).toLowerCase();
+
+              if (!n._iq.hasOwnProperty(e)) {
+                n._iq[e] = {
+                  _q: []
+                };
+                v(n._iq[e]);
+              }
+
+              return n._iq[e];
+            };
+
+            e.amplitude = n;
+          })(window, document);
+        }
+
+        var initOptions = {
+          includeUtm: this.trackUtmProperties,
+          batchEvents: this.batchEvents,
+          eventUploadThreshold: this.eventUploadThreshold,
+          eventUploadPeriodMillis: this.eventUploadPeriodMillis,
+          forceHttps: this.forceHttps,
+          includeGclid: this.trackGclid,
+          includeReferrer: this.trackReferrer,
+          saveParamsReferrerOncePerSession: this.saveParamsReferrerOncePerSession,
+          deviceIdFromUrlParam: this.deviceIdFromUrlParam,
+          unsetParamsReferrerOnNewSession: this.unsetParamsReferrerOnNewSession,
+          deviceId: this.preferAnonymousIdForDeviceId && this.analytics && this.analytics.getAnonymousId()
+        };
+        window.amplitude.getInstance().init(this.apiKey, null, initOptions);
+
+        if (this.versionName) {
+          window.amplitude.getInstance().setVersionName(this.versionName);
+        }
+      }
+    }, {
+      key: "identify",
+      value: function identify(rudderElement) {
+        logger.debug("in Amplitude identify");
+        this.setDeviceId(rudderElement); // rudderElement.message.context will always be present as part of identify event payload.
+
+        var traits = rudderElement.message.context.traits;
+        var userId = rudderElement.message.userId;
+
+        if (userId) {
+          window.amplitude.getInstance().setUserId(userId);
+        }
+
+        if (traits) {
+          var amplitudeIdentify = new window.amplitude.Identify();
+
+          for (var trait in traits) {
+            if (!traits.hasOwnProperty(trait)) {
+              continue;
+            }
+
+            var shouldIncrement = this.traitsToIncrement.indexOf(trait) >= 0;
+            var shouldSetOnce = this.traitsToSetOnce.indexOf(trait) >= 0;
+
+            if (shouldIncrement) {
+              amplitudeIdentify.add(trait, traits[trait]);
+            }
+
+            if (shouldSetOnce) {
+              amplitudeIdentify.setOnce(trait, traits[trait]);
+            }
+
+            if (!shouldIncrement && !shouldSetOnce) {
+              amplitudeIdentify.set(trait, traits[trait]);
+            }
+          }
+
+          window.amplitude.identify(amplitudeIdentify);
+        }
+      }
+    }, {
+      key: "track",
+      value: function track(rudderElement) {
+        logger.debug("in Amplitude track");
+        this.setDeviceId(rudderElement);
+        var properties = rudderElement.message.properties; // message.properties will always be present as part of track event.
+
+        var products = properties.products;
+        var clonedTrackEvent = {};
+
+        _extends(clonedTrackEvent, rudderElement.message); // For track products once, we will send the products in a single call.
+
+
+        if (this.trackProductsOnce) {
+          if (products && type(products) == "array") {
+            // track all the products in a single event.
+            var allProducts = [];
+            var productKeys = Object.keys(products);
+
+            for (var index = 0; index < productKeys.length; index++) {
+              var product = {};
+              product = this.getProductAttributes(products[index]);
+              allProducts.push(product);
+            }
+
+            clonedTrackEvent.properties.products = allProducts;
+            this.logEventAndCorrespondingRevenue(clonedTrackEvent, this.trackRevenuePerProduct); // we do not want to track revenue as a whole if trackRevenuePerProduct is enabled.
+            // If trackRevenuePerProduct is enabled, track revenues per product.
+
+            if (this.trackRevenuePerProduct) {
+              var trackEventMessage = {};
+
+              _extends(trackEventMessage, clonedTrackEvent);
+
+              this.trackingEventAndRevenuePerProduct(trackEventMessage, products, false); // also track revenue only and not event per product.
+            }
+          } else {
+            // track event and revenue as a whole as products array is not available.
+            this.logEventAndCorrespondingRevenue(clonedTrackEvent, false);
+          }
+
+          return;
+        }
+
+        if (products && type(products) == "array") {
+          // track events iterating over product array individually.
+          // Log the actuall event without products array. We will subsequently track each product with 'Product Purchased' event.
+          delete clonedTrackEvent.properties.products;
+          this.logEventAndCorrespondingRevenue(clonedTrackEvent, this.trackRevenuePerProduct);
+          var _trackEventMessage = {};
+
+          _extends(_trackEventMessage, clonedTrackEvent); // track products and revenue per product basis.
+
+
+          this.trackingEventAndRevenuePerProduct(_trackEventMessage, products, true); // track both event and revenue on per product basis.
+        } else {
+          // track event and revenue as a whole as no product array is present.
+          this.logEventAndCorrespondingRevenue(clonedTrackEvent, false);
+        }
+      }
+    }, {
+      key: "trackingEventAndRevenuePerProduct",
+      value: function trackingEventAndRevenuePerProduct(trackEventMessage, products, shouldTrackEventPerProduct) {
+        var _trackEventMessage$pr = trackEventMessage.properties,
+            revenue = _trackEventMessage$pr.revenue,
+            revenueType = _trackEventMessage$pr.revenueType,
+            revenue_type = _trackEventMessage$pr.revenue_type;
+        revenueType = revenueType || revenue_type;
+
+        for (var index = 0; index < products.length; index++) {
+          var product = products[index];
+          trackEventMessage.properties = product;
+          trackEventMessage.event = "Product Purchased";
+
+          if (this.trackRevenuePerProduct) {
+            if (revenueType) {
+              trackEventMessage.properties.revenueType = revenueType;
+            }
+
+            if (revenue) {
+              trackEventMessage.properties.revenue = revenue;
+            }
+
+            this.trackRevenue(trackEventMessage);
+          }
+
+          if (shouldTrackEventPerProduct) {
+            this.logEventAndCorrespondingRevenue(trackEventMessage, true);
+          }
+        }
+      } // Always to be called for general and top level events (and not product level)
+      // For these events we expect top level revenue property.
+
+    }, {
+      key: "logEventAndCorrespondingRevenue",
+      value: function logEventAndCorrespondingRevenue(rudderMessage, dontTrackRevenue) {
+        var properties = rudderMessage.properties,
+            event = rudderMessage.event;
+        window.amplitude.getInstance().logEvent(event, properties);
+
+        if (properties.revenue && !dontTrackRevenue) {
+          this.trackRevenue(rudderMessage);
+        }
+      }
+      /**
+       * track page events base on destination settings. If more than one settings is enabled, multiple events may be logged for a single page event.
+       * For example, if category of a page is present, and both trackAllPages and trackCategorizedPages are enabled, then 2 events will be tracked for
+       * a single pageview - 'Loaded a page' and `Viewed page ${category}`.
+       *
+       * @memberof Amplitude
+       */
+
+    }, {
+      key: "page",
+      value: function page(rudderElement) {
+        logger.debug("in Amplitude page");
+        this.setDeviceId(rudderElement);
+        var _rudderElement$messag = rudderElement.message,
+            properties = _rudderElement$messag.properties,
+            name = _rudderElement$messag.name,
+            category = _rudderElement$messag.category; // all pages
+
+        if (this.trackAllPages) {
+          var event = "Loaded a page";
+          amplitude.getInstance().logEvent(event, properties);
+        } // categorized pages
+
+
+        if (category && this.trackCategorizedPages) {
+          var _event = "Viewed page ".concat(category);
+
+          amplitude.getInstance().logEvent(_event, properties);
+        } // named pages
+
+
+        if (name && this.trackNamedPages) {
+          var _event2 = "Viewed page ".concat(name);
+
+          amplitude.getInstance().logEvent(_event2, properties);
+        }
+      }
+    }, {
+      key: "group",
+      value: function group(rudderElement) {
+        logger.debug("in Amplitude group");
+        this.setDeviceId(rudderElement);
+        var _rudderElement$messag2 = rudderElement.message,
+            groupId = _rudderElement$messag2.groupId,
+            traits = _rudderElement$messag2.traits;
+        var groupTypeTrait = this.groupTypeTrait;
+        var groupValueTrait = this.groupValueTrait;
+
+        if (groupTypeTrait && groupValueTrait && traits) {
+          var groupType = traits[groupTypeTrait];
+          var groupValue = traits[groupValueTrait];
+        }
+
+        if (groupType && groupValue) {
+          window.amplitude.getInstance().setGroup(groupTypeTrait, groupValueTrait);
+        } else if (groupId) {
+          // Similar as segment but not sure whether we need it as our cloud mode supports only the above if block
+          window.amplitude.getInstance().setGroup("[Rudderstack] Group", groupId);
+        } // https://developers.amplitude.com/docs/setting-user-properties#setting-group-properties
+        // no other api for setting group properties for javascript
+
+      }
+    }, {
+      key: "setDeviceId",
+      value: function setDeviceId(rudderElement) {
+        var anonymousId = rudderElement.message.anonymousId;
+
+        if (this.preferAnonymousIdForDeviceId && anonymousId) {
+          window.amplitude.getInstance().setDeviceId(anonymousId);
+        }
+      }
+      /**
+       * Tracks revenue with logRevenueV2() api based on revenue/price present in event payload. If neither of revenue/price present, it returns.
+       * The event payload may contain ruddermessage of an original track event payload (from trackEvent method) or it is derived from a product
+       * array (from trackingRevenuePerProduct) in an e-comm event.
+       *
+       * @param {*} rudderMessage
+       * @returns
+       * @memberof Amplitude
+       */
+
+    }, {
+      key: "trackRevenue",
+      value: function trackRevenue(rudderMessage) {
+        var mapRevenueType = {
+          "order completed": "Purchase",
+          "completed order": "Purchase",
+          "product purchased": "Purchase"
+        };
+        var properties = rudderMessage.properties,
+            event = rudderMessage.event;
+        var price = properties.price,
+            productId = properties.productId,
+            quantity = properties.quantity,
+            revenue = properties.revenue,
+            product_id = properties.product_id;
+        var revenueType = properties.revenueType || properties.revenue_type || mapRevenueType[event.toLowerCase()];
+        productId = productId || product_id; // If neither revenue nor price is present, then return
+        // else send price and quantity from properties to amplitude
+        // If price not present set price as revenue's value and force quantity to be 1.
+        // Ultimately set quantity to 1 if not already present from above logic.
+
+        if (!revenue && !price) {
+          console.debug("revenue or price is not present.");
+          return;
+        }
+
+        if (!price) {
+          price = revenue;
+          quantity = 1;
+        }
+
+        if (!quantity) {
+          quantity = 1;
+        }
+
+        var amplitudeRevenue = new window.amplitude.Revenue().setPrice(price).setQuantity(quantity).setEventProperties(properties);
+
+        if (revenueType) {
+          amplitudeRevenue.setRevenueType(revenueType);
+        }
+
+        if (productId) {
+          amplitudeRevenue.setProductId(productId);
+        }
+
+        window.amplitude.getInstance().logRevenueV2(amplitudeRevenue);
+      }
+    }, {
+      key: "getProductAttributes",
+      value: function getProductAttributes(product) {
+        return {
+          productId: product.productId || product.product_id,
+          sku: product.sku,
+          name: product.name,
+          price: product.price,
+          quantity: product.quantity,
+          category: product.category
+        };
+      }
+    }, {
+      key: "isLoaded",
+      value: function isLoaded() {
+        logger.debug("in Amplitude isLoaded");
+        return !!(window.amplitude && window.amplitude.getInstance().options);
+      }
+    }, {
+      key: "isReady",
+      value: function isReady() {
+        return !!(window.amplitude && window.amplitude.getInstance().options);
+      }
+    }]);
+
+    return Amplitude;
+  }();
+
+  var Pendo = /*#__PURE__*/function () {
+    function Pendo(config, analytics) {
+      _classCallCheck(this, Pendo);
+
+      this.analytics = analytics;
+      this.apiKey = !config.apiKey ? "" : config.apiKey;
+      this.name = "PENDO";
+      logger.debug("Config ", config);
+    }
+
+    _createClass(Pendo, [{
+      key: "init",
+      value: function init() {
+        (function (apiKey) {
+          (function (p, e, n, d, o) {
+            var v, w, x, y, z;
+            o = p[d] = p[d] || {};
+            o._q = [];
+            v = ["initialize", "identify", "updateOptions", "pageLoad", "track"];
+
+            for (w = 0, x = v.length; w < x; ++w) {
+              (function (m) {
+                o[m] = o[m] || function () {
+                  o._q[m === v[0] ? "unshift" : "push"]([m].concat([].slice.call(arguments, 0)));
+                };
+              })(v[w]);
+            }
+
+            y = e.createElement(n);
+            y.async = !0;
+            y.src = "https://cdn.pendo.io/agent/static/".concat(apiKey, "/pendo.js");
+            z = e.getElementsByTagName(n)[0];
+            z.parentNode.insertBefore(y, z);
+          })(window, document, "script", "pendo");
+        })(this.apiKey);
+
+        this.initializeMe();
+        logger.debug("===in init Pendo===");
+      }
+    }, {
+      key: "initializeMe",
+      value: function initializeMe() {
+        var userId = this.analytics.userId || this.constructPendoAnonymousId(this.analytics.anonymousId);
+
+        var accountObj = _objectSpread2({
+          id: this.analytics.groupId
+        }, this.analytics.groupTraits);
+
+        var visitorObj = _objectSpread2({
+          id: userId
+        }, this.analytics.userTraits);
+
+        window.pendo.initialize({
+          account: accountObj,
+          visitor: visitorObj
+        });
+      }
+      /* utility functions ---Start here ---  */
+
+    }, {
+      key: "isLoaded",
+      value: function isLoaded() {
+        return !!(window.pendo && window.pendo.push !== Array.prototype.push);
+      }
+    }, {
+      key: "isReady",
+      value: function isReady() {
+        return !!(window.pendo && window.pendo.push !== Array.prototype.push);
+      }
+    }, {
+      key: "constructPendoAnonymousId",
+      value: function constructPendoAnonymousId(id) {
+        return "_PENDO_T_".concat(id);
+      }
+      /* utility functions --- Ends here ---  */
+
+      /*
+       * PENDO MAPPED FUNCTIONS :: identify, track, group
+       */
+
+      /* Pendo's identify call works intelligently, once u have identified a visitor/user,
+       *or associated a visitor to a group/account then Pendo save this data in local storage and
+       *any further upcoming calls are done taking user info from local.
+       * To track user perndo maps user to Visitor in Pendo.
+       */
+
+    }, {
+      key: "identify",
+      value: function identify(rudderElement) {
+        var visitorObj = {};
+        var accountObj = {};
+        var groupId = this.analytics.groupId;
+        var id = this.analytics.userId || this.constructPendoAnonymousId(this.analytics.anonymousId);
+        visitorObj = _objectSpread2({
+          id: id
+        }, this.analytics.userTraits);
+
+        if (groupId) {
+          accountObj = _objectSpread2({
+            id: groupId
+          }, this.analytics.groupTraits);
+        }
+
+        window.pendo.identify({
+          visitor: visitorObj,
+          account: accountObj
+        });
+      }
+      /*
+       *Group call maps to an account for which visitor belongs.
+       *It is same as identify call but here we send account object.
+       */
+
+    }, {
+      key: "group",
+      value: function group(rudderElement) {
+        var accountObj = {};
+        var visitorObj = {};
+        var _rudderElement$messag = rudderElement.message,
+            userId = _rudderElement$messag.userId,
+            traits = _rudderElement$messag.traits;
+        accountObj.id = this.analytics.groupId || this.analytics.anonymousId;
+        accountObj = _objectSpread2(_objectSpread2({}, accountObj), traits);
+
+        if (userId) {
+          visitorObj = _objectSpread2({
+            id: userId
+          }, rudderElement.message.context && rudderElement.message.context.traits);
+        }
+
+        window.pendo.identify({
+          account: accountObj,
+          visitor: visitorObj
+        });
+      }
+      /* Once user is identified Pendo makes Track call to track user activity.
+       */
+
+    }, {
+      key: "track",
+      value: function track(rudderElement) {
+        var event = rudderElement.message.event;
+
+        if (!event) {
+          throw Error("Cannot call un-named track event");
+        }
+
+        var props = rudderElement.message.properties;
+        window.pendo.track(event, props);
+      }
+    }]);
+
+    return Pendo;
+  }();
+
+  var Lytics = /*#__PURE__*/function () {
+    function Lytics(config) {
+      _classCallCheck(this, Lytics);
+
+      this.accountId = config.accountId;
+      this.stream = config.stream;
+      this.blockload = config.blockload;
+      this.loadid = config.loadid;
+      this.name = "LYTICS";
+    }
+
+    _createClass(Lytics, [{
+      key: "loadLyticsScript",
+      value: function loadLyticsScript() {
+        (function () {
+
+          var o = window.jstag || (window.jstag = {}),
+              r = [];
+
+          function n(e) {
+            o[e] = function () {
+              for (var n = arguments.length, t = new Array(n), i = 0; i < n; i++) {
+                t[i] = arguments[i];
+              }
+
+              r.push([e, t]);
+            };
+          }
+
+          n("send"), n("mock"), n("identify"), n("pageView"), n("unblock"), n("getid"), n("setid"), n("loadEntity"), n("getEntity"), n("on"), n("once"), n("call"), o.loadScript = function (n, t, i) {
+            var e = document.createElement("script");
+            e.async = !0, e.src = n, e.onload = t, e.onerror = i;
+            var o = document.getElementsByTagName("script")[0],
+                r = o && o.parentNode || document.head || document.body,
+                c = o || r.lastChild;
+            return null != c ? r.insertBefore(e, c) : r.appendChild(e), this;
+          }, o.init = function n(t) {
+            return this.config = t, this.loadScript(t.src, function () {
+              if (o.init === n) throw new Error("Load error!"); // eslint-disable-next-line no-unused-expressions
+
+              o.init(o.config), // eslint-disable-next-line func-names
+              function () {
+                for (var n = 0; n < r.length; n++) {
+                  var t = r[n][0],
+                      i = r[n][1];
+                  o[t].apply(o, i);
+                }
+
+                r = void 0;
+              }();
+            }), this;
+          };
+        })(); // Define config and initialize Lytics tracking tag.
+
+
+        window.jstag.init({
+          loadid: this.loadid,
+          blocked: this.blockload,
+          stream: this.stream,
+          sessecs: 1800,
+          src: document.location.protocal === "https:" ? "https://c.lytics.io/api/tag/".concat(this.accountId, "/latest.min.js") : "http://c.lytics.io/api/tag/".concat(this.accountId, "/latest.min.js")
+        });
+      }
+    }, {
+      key: "init",
+      value: function init() {
+        this.loadLyticsScript();
+        logger.debug("===in init Lytics===");
+      }
+    }, {
+      key: "isLoaded",
+      value: function isLoaded() {
+        logger.debug("in Lytics isLoaded");
+        logger.debug(!!(window.jstag && window.jstag.push !== Array.prototype.push));
+        return !!(window.jstag && window.jstag.push !== Array.prototype.push);
+      }
+    }, {
+      key: "isReady",
+      value: function isReady() {
+        logger.debug("in Lytics isReady");
+        return !!(window.jstag && window.jstag.push !== Array.prototype.push);
+      }
+    }, {
+      key: "identify",
+      value: function identify(rudderElement) {
+        logger.debug("in Lytics identify"); // eslint-disable-next-line camelcase
+
+        var user_id = rudderElement.message.userId || rudderElement.message.anonymousId;
+        var traits = rudderElement.message.context.traits;
+
+        var payload = _objectSpread2({
+          user_id: user_id
+        }, traits);
+
+        window.jstag.send(this.stream, payload);
+      }
+    }, {
+      key: "page",
+      value: function page(rudderElement) {
+        logger.debug("in Lytics page");
+        var properties = rudderElement.message.properties;
+
+        var payload = _objectSpread2({
+          event: rudderElement.message.name
+        }, properties);
+
+        window.jstag.pageView(this.stream, payload);
+      }
+    }, {
+      key: "track",
+      value: function track(rudderElement) {
+        logger.debug("in Lytics track");
+        var properties = rudderElement.message.properties;
+
+        var payload = _objectSpread2({
+          _e: rudderElement.message.event
+        }, properties);
+
+        window.jstag.send(this.stream, payload);
+      }
+    }]);
+
+    return Lytics;
+  }();
+
+  var Appcues = /*#__PURE__*/function () {
+    function Appcues(config) {
+      _classCallCheck(this, Appcues);
+
+      this.accountId = config.accountId;
+      this.apiKey = config.apiKey;
+      this.name = "APPCUES"; //this.sendToAllDestinations = config.sendToAll;
+    }
+
+    _createClass(Appcues, [{
+      key: "init",
+      value: function init() {
+        logger.debug("===in init Appcues===");
+        ScriptLoader("appcues-id", "https://fast.appcues.com/".concat(this.accountId, ".js"));
+      }
+    }, {
+      key: "isLoaded",
+      value: function isLoaded() {
+        logger.debug("in appcues isLoaded");
+        return !!window.Appcues;
+      }
+    }, {
+      key: "isReady",
+      value: function isReady() {
+        logger.debug("in appcues isReady"); // This block of code enables us to send Appcues Flow events to all the other destinations connected to the same source (we might use it in future)
+        // if (this.sendToAllDestinations && window.Appcues) {
+        //   window.Appcues.on("all", function(eventName, event) {
+        //     window.rudderanalytics.track(eventName, event, {
+        //       integrations: {
+        //         All: true,
+        //         APPCUES: false
+        //       }
+        //     });
+        //   });
+        // }
+
+        return !!window.Appcues;
+      }
+    }, {
+      key: "identify",
+      value: function identify(rudderElement) {
+        var traits = rudderElement.message.context.traits;
+        var userId = rudderElement.message.userId;
+
+        if (userId) {
+          window.Appcues.identify(userId, traits);
+        } else {
+          logger.error("user id is empty");
+        }
+      }
+    }, {
+      key: "track",
+      value: function track(rudderElement) {
+        var eventName = rudderElement.message.event;
+        var properties = rudderElement.message.properties;
+
+        if (eventName) {
+          window.Appcues.track(eventName, properties);
+        } else {
+          logger.error("event name is empty");
+        }
+      }
+    }, {
+      key: "page",
+      value: function page(rudderElement) {
+        var _rudderElement$messag = rudderElement.message,
+            properties = _rudderElement$messag.properties,
+            name = _rudderElement$messag.name;
+        window.Appcues.page(name, properties);
+      } // To be uncommented after adding Reset feature to our SDK
+      // reset() {
+      //   window.Appcues.reset();
+      // }
+
+    }]);
+
+    return Appcues;
+  }();
+
+  var Posthog = /*#__PURE__*/function () {
+    function Posthog(config, analytics) {
+      var _this = this;
+
+      _classCallCheck(this, Posthog);
+
+      this.name = "POSTHOG";
+      this.analytics = analytics;
+      this.teamApiKey = config.teamApiKey;
+      this.yourInstance = config.yourInstance || "https://app.posthog.com";
+      this.autocapture = config.autocapture || false;
+      this.capturePageView = config.capturePageView || false;
+      this.disableSessionRecording = config.disableSessionRecording || false;
+      this.disableCookie = config.disableCookie || false;
+      this.propertyBlackList = [];
+      this.xhrHeaders = {};
+
+      if (config.xhrHeaders && config.xhrHeaders.length > 0) {
+        config.xhrHeaders.forEach(function (header) {
+          if (header && header.key && header.value && header.key.trim() != "" && header.value.trim() != "") {
+            _this.xhrHeaders[header.key] = header.value;
+          }
+        });
+      }
+
+      if (config.propertyBlackList && config.propertyBlackList.length > 0) {
+        config.propertyBlackList.forEach(function (element) {
+          if (element && element.property && element.property.trim() != "") {
+            _this.propertyBlackList.push(element.property);
+          }
+        });
+      }
+    }
+
+    _createClass(Posthog, [{
+      key: "init",
+      value: function init() {
+        !function (t, e) {
+          var o, n, p, r;
+          e.__SV || (window.posthog = e, e._i = [], e.init = function (i, s, a) {
+            function g(t, e) {
+              var o = e.split(".");
+              2 == o.length && (t = t[o[0]], e = o[1]), t[e] = function () {
+                t.push([e].concat(Array.prototype.slice.call(arguments, 0)));
+              };
+            }
+
+            (p = t.createElement("script")).type = "text/javascript", p.async = !0, p.src = s.api_host + "/static/array.js", (r = t.getElementsByTagName("script")[0]).parentNode.insertBefore(p, r);
+            var u = e;
+
+            for (void 0 !== a ? u = e[a] = [] : a = "posthog", u.people = u.people || [], u.toString = function (t) {
+              var e = "posthog";
+              return "posthog" !== a && (e += "." + a), t || (e += " (stub)"), e;
+            }, u.people.toString = function () {
+              return u.toString(1) + ".people (stub)";
+            }, o = "capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags".split(" "), n = 0; n < o.length; n++) {
+              g(u, o[n]);
+            }
+
+            e._i.push([i, s, a]);
+          }, e.__SV = 1);
+        }(document, window.posthog || []);
+        var configObject = {
+          api_host: this.yourInstance,
+          autocapture: this.autocapture,
+          capture_pageview: this.capturePageView,
+          disable_session_recording: this.disableSessionRecording,
+          property_blacklist: this.propertyBlackList,
+          disable_cookie: this.disableCookie
+        };
+
+        if (this.xhrHeaders && Object.keys(this.xhrHeaders).length > 0) {
+          configObject.xhr_headers = this.xhrHeaders;
+        }
+
+        posthog.init(this.teamApiKey, configObject);
+      }
+      /**
+       * superproperties should be part of rudderelement.message.integrations.POSTHOG object.
+       * Once we call the posthog.register api, the corresponding property will be sent along with subsequent capture calls.
+       * To remove the superproperties, we call unregister api.
+       */
+
+    }, {
+      key: "processSuperProperties",
+      value: function processSuperProperties(rudderElement) {
+        var integrations = rudderElement.message.integrations;
+
+        if (integrations && integrations.POSTHOG) {
+          var _integrations$POSTHOG = integrations.POSTHOG,
+              superProperties = _integrations$POSTHOG.superProperties,
+              setOnceProperties = _integrations$POSTHOG.setOnceProperties,
+              unsetProperties = _integrations$POSTHOG.unsetProperties;
+
+          if (superProperties && Object.keys(superProperties).length > 0) {
+            posthog.register(superProperties);
+          }
+
+          if (setOnceProperties && Object.keys(setOnceProperties).length > 0) {
+            posthog.register_once(setOnceProperties);
+          }
+
+          if (unsetProperties && unsetProperties.length > 0) {
+            unsetProperties.forEach(function (property) {
+              if (property && property.trim() != "") {
+                posthog.unregister(property);
+              }
+            });
+          }
+        }
+      }
+    }, {
+      key: "identify",
+      value: function identify(rudderElement) {
+        logger.debug("in Posthog identify"); // rudderElement.message.context will always be present as part of identify event payload.
+
+        var traits = rudderElement.message.context.traits;
+        var userId = rudderElement.message.userId;
+
+        if (userId) {
+          posthog.identify(userId, traits);
+        }
+
+        this.processSuperProperties(rudderElement);
+      }
+    }, {
+      key: "track",
+      value: function track(rudderElement) {
+        logger.debug("in Posthog track");
+        var _rudderElement$messag = rudderElement.message,
+            event = _rudderElement$messag.event,
+            properties = _rudderElement$messag.properties;
+        this.processSuperProperties(rudderElement);
+        posthog.capture(event, properties);
+      }
+      /**
+       * 
+       *
+       * @memberof Posthog
+       */
+
+    }, {
+      key: "page",
+      value: function page(rudderElement) {
+        logger.debug("in Posthog page");
+        this.processSuperProperties(rudderElement);
+        posthog.capture('$pageview');
+      }
+    }, {
+      key: "isLoaded",
+      value: function isLoaded() {
+        logger.debug("in Posthog isLoaded");
+        return !!(window.posthog && window.posthog.__loaded);
+      }
+    }, {
+      key: "isReady",
+      value: function isReady() {
+        return !!(window.posthog && window.posthog.__loaded);
+      }
+    }]);
+
+    return Posthog;
+  }();
+
+  var Klaviyo = /*#__PURE__*/function () {
+    function Klaviyo(config) {
+      _classCallCheck(this, Klaviyo);
+
+      this.publicApiKey = config.publicApiKey;
+      this.sendPageAsTrack = config.sendPageAsTrack;
+      this.additionalPageInfo = config.additionalPageInfo;
+      this.enforceEmailAsPrimary = config.enforceEmailAsPrimary;
+      this.name = "KLAVIYO";
+      this.keysToExtract = ["context.traits"];
+      this.exclusionKeys = ["email", "E-mail", "Email", "firstName", "firstname", "first_name", "lastName", "lastname", "last_name", "phone", "Phone", "title", "organization", "city", "City", "region", "country", "Country", "zip", "image", "timezone", "anonymousId", "userId", "properties"];
+    }
+
+    _createClass(Klaviyo, [{
+      key: "init",
+      value: function init() {
+        logger.debug("===in init Klaviyo===");
+        ScriptLoader("klaviyo-integration", "https://static.klaviyo.com/onsite/js/klaviyo.js?company_id=".concat(this.publicApiKey));
+      }
+    }, {
+      key: "isLoaded",
+      value: function isLoaded() {
+        logger.debug("===in isLoaded Klaviyo===");
+        return !!(window._learnq && window._learnq.push !== Array.prototype.push);
+      }
+    }, {
+      key: "isReady",
+      value: function isReady() {
+        logger.debug("===in isReady Klaviyo===");
+        return !!(window._learnq && window._learnq.push !== Array.prototype.push);
+      }
+    }, {
+      key: "identify",
+      value: function identify(rudderElement) {
+        var message = rudderElement.message;
+
+        if (!(message.context && message.context.traits)) {
+          logger.error("user traits not present");
+          return;
+        }
+
+        var _getDefinedTraits = getDefinedTraits(message),
+            userId = _getDefinedTraits.userId,
+            email = _getDefinedTraits.email,
+            phone = _getDefinedTraits.phone,
+            firstName = _getDefinedTraits.firstName,
+            lastName = _getDefinedTraits.lastName,
+            city = _getDefinedTraits.city,
+            country = _getDefinedTraits.country;
+
+        var payload = {
+          $id: userId,
+          $email: email,
+          $phone_number: phone,
+          $first_name: firstName,
+          $last_name: lastName,
+          $city: city,
+          $country: country,
+          $organization: getValue(message, "context.traits.organization"),
+          $title: getValue(message, "context.traits.title"),
+          $region: getValue(message, "context.traits.region"),
+          $zip: getValue(message, "context.traits.zip")
+        };
+
+        if (!payload.$email && !payload.$phone_number && !payload.$id) {
+          logger.error("user id, phone or email not present");
+          return;
+        }
+
+        if (this.enforceEmailAsPrimary) {
+          delete payload.$id;
+          payload._id = userId;
+        } // Extract other K-V property from traits about user custom properties
+
+
+        try {
+          payload = extractCustomFields(message, payload, this.keysToExtract, this.exclusionKeys);
+        } catch (err) {
+          logger.debug("Error occured at extractCustomFields ".concat(err));
+        }
+
+        window._learnq.push(["identify", payload]);
+      }
+    }, {
+      key: "track",
+      value: function track(rudderElement) {
+        var message = rudderElement.message;
+
+        if (message.properties) {
+          var propsPayload = message.properties;
+
+          if (propsPayload.revenue) {
+            propsPayload.$value = propsPayload.revenue;
+            delete propsPayload.revenue;
+          }
+
+          window._learnq.push(["track", message.event, propsPayload]);
+        } else window._learnq.push(["track", message.event]);
+      }
+    }, {
+      key: "page",
+      value: function page(rudderElement) {
+        var message = rudderElement.message;
+
+        if (this.sendPageAsTrack) {
+          var eventName;
+
+          if (message.properties && message.properties.category && message.name) {
+            eventName = "Viewed ".concat(message.properties.category, " ").concat(message.name, " page");
+          } else if (message.name) {
+            eventName = "Viewed ".concat(message.name, " page");
+          } else {
+            eventName = "Viewed a Page";
+          }
+
+          if (this.additionalPageInfo && message.properties) {
+            window._learnq.push(["track", "".concat(eventName), message.properties]);
+          } else {
+            window._learnq.push(["track", "".concat(eventName)]);
+          }
+        } else {
+          window._learnq.push(["track"]);
+        }
+      }
+    }]);
+
+    return Klaviyo;
+  }();
+
+  var Clevertap = /*#__PURE__*/function () {
+    function Clevertap(config) {
+      _classCallCheck(this, Clevertap);
+
+      this.accountId = config.accountId;
+      this.apiKey = config.passcode;
+      this.name = "CLEVERTAP";
+      this.region = config.region;
+      this.keysToExtract = ["context.traits"];
+      this.exclusionKeys = ["email", "E-mail", "Email", "phone", "Phone", "name", "Name", "gender", "Gender", "birthday", "Birthday", "anonymousId", "userId", "lastName", "lastname", "last_name", "firstName", "firstname", "first_name", "employed", "education", "married", "customerType"];
+    }
+
+    _createClass(Clevertap, [{
+      key: "init",
+      value: function init() {
+        logger.debug("===in init Clevertap===");
+        var sourceUrl = document.location.protocol == "https:" ? "https://d2r1yp2w7bby2u.cloudfront.net/js/a.js" : "http://static.clevertap.com/js/a.js";
+        window.clevertap = {
+          event: [],
+          profile: [],
+          account: [],
+          onUserLogin: [],
+          notifications: []
+        };
+        window.clevertap.enablePersonalization = true;
+        window.clevertap.account.push({
+          id: this.accountId
+        });
+
+        if (this.region && this.region !== "none") {
+          window.clevertap.region.push(this.region);
+        }
+
+        ScriptLoader("clevertap-integration", sourceUrl);
+      }
+    }, {
+      key: "isLoaded",
+      value: function isLoaded() {
+        logger.debug("in clevertap isLoaded");
+        return !!window.clevertap && window.clevertap.logout !== undefined;
+      }
+    }, {
+      key: "isReady",
+      value: function isReady() {
+        logger.debug("in clevertap isReady");
+        return !!window.clevertap && window.clevertap.logout !== undefined;
+      }
+    }, {
+      key: "identify",
+      value: function identify(rudderElement) {
+        logger.debug("in clevertap identify");
+        var message = rudderElement.message;
+
+        if (!(message.context && message.context.traits)) {
+          logger.error("user traits not present");
+          return;
+        }
+
+        var _getDefinedTraits = getDefinedTraits(message),
+            userId = _getDefinedTraits.userId,
+            email = _getDefinedTraits.email,
+            phone = _getDefinedTraits.phone,
+            name = _getDefinedTraits.name;
+
+        var payload = {
+          Name: name,
+          Identity: userId,
+          Email: email,
+          Phone: phone,
+          Gender: getValue(message, "context.traits.gender"),
+          DOB: getValue(message, "context.traits.birthday"),
+          Photo: getValue(message, "context.traits.avatar"),
+          Employed: getValue(message, "context.traits.employed"),
+          Education: getValue(message, "context.traits.education"),
+          Married: getValue(message, "context.traits.married"),
+          "Customer Type": getValue(message, "context.traits.customerType")
+        }; // Extract other K-V property from traits about user custom properties
+
+        try {
+          payload = extractCustomFields(message, payload, this.keysToExtract, this.exclusionKeys);
+        } catch (err) {
+          logger.debug("Error occured at extractCustomFields ".concat(err));
+        }
+
+        Object.keys(payload).map(function (key) {
+          if (isObject$2(payload[key])) {
+            logger.debug("cannot process, unsupported traits");
+            return;
+          }
+        });
+        window.clevertap.onUserLogin.push({
+          Site: payload
+        });
+      }
+    }, {
+      key: "track",
+      value: function track(rudderElement) {
+        logger.debug("in clevertap track");
+        var _rudderElement$messag = rudderElement.message,
+            event = _rudderElement$messag.event,
+            properties = _rudderElement$messag.properties;
+
+        if (properties) {
+          if (event === "Order Completed") {
+            var ecomProperties = {
+              "Charged ID": properties.checkout_id,
+              Amount: properties.revenue,
+              Items: properties.products
+            }; // Extract other K-V property from traits about user custom properties
+
+            try {
+              ecomProperties = extractCustomFields(rudderElement.message, ecomProperties, ["properties"], ["checkout_id", "revenue", "products"]);
+            } catch (err) {
+              logger.debug("Error occured at extractCustomFields ".concat(err));
+            }
+
+            window.clevertap.event.push("Charged", ecomProperties);
+          } else {
+            Object.keys(properties).map(function (key) {
+              if (isObject$2(properties[key]) || isArray$1(properties[key])) {
+                logger.debug("cannot process, unsupported event");
+                return;
+              }
+            });
+            window.clevertap.event.push(event, properties);
+          }
+        } else if (event === "Order Completed") {
+          window.clevertap.event.push("Charged");
+        } else {
+          window.clevertap.event.push(event);
+        }
+      }
+    }, {
+      key: "page",
+      value: function page(rudderElement) {
+        logger.debug("in clevertap page");
+        var _rudderElement$messag2 = rudderElement.message,
+            name = _rudderElement$messag2.name,
+            properties = _rudderElement$messag2.properties;
+        var eventName;
+
+        if (properties && properties.category && name) {
+          eventName = "WebPage Viewed ".concat(name, " ").concat(properties.category);
+        } else if (name) {
+          eventName = "WebPage Viewed ".concat(name);
+        } else {
+          eventName = "WebPage Viewed";
+        }
+
+        if (properties) {
+          Object.keys(properties).map(function (key) {
+            if (isObject$2(properties[key]) || isArray$1(properties[key])) {
+              logger.debug("cannot process, unsupported event");
+              return;
+            }
+          });
+          window.clevertap.event.push(eventName, properties);
+        } else {
+          window.clevertap.event.push(eventName);
+        }
+      }
+    }]);
+
+    return Clevertap;
+  }();
+
+  var BingAds = function BingAds(config) {
+    var _this = this;
+
+    _classCallCheck(this, BingAds);
+
+    this.loadBingadsScript = function () {
+      (function (w, d, t, r, u) {
+        var f, n, i;
+        w[u] = w[u] || [], f = function f() {
+          var o = {
+            ti: _this.tagID
+          };
+          o.q = w[u], w[u] = new UET(o);
+        }, n = d.createElement(t), n.src = r, n.async = 1, n.onload = n.onreadystatechange = function () {
+          var s = this.readyState;
+          s && s !== "loaded" && s !== "complete" || (f(), n.onload = n.onreadystatechange = null);
+        }, i = d.getElementsByTagName(t)[0], i.parentNode.insertBefore(n, i);
+      })(window, document, "script", "https://bat.bing.com/bat.js", "uetq");
+    };
+
+    this.init = function () {
+      _this.loadBingadsScript();
+
+      logger.debug("===in init BingAds===");
+    };
+
+    this.isLoaded = function () {
+      logger.debug("in BingAds isLoaded");
+      return !!window.uetq && window.uetq.push !== Array.prototype.push;
+    };
+
+    this.isReady = function () {
+      logger.debug("in BingAds isReady");
+      return !!(window.uetq && window.uetq.push !== Array.prototype.push);
+    };
+
+    this.track = function (rudderElement) {
+      var _rudderElement$messag = rudderElement.message,
+          type = _rudderElement$messag.type,
+          properties = _rudderElement$messag.properties,
+          event = _rudderElement$messag.event;
+      var category = properties.category,
+          currency = properties.currency,
+          value = properties.value,
+          revenue = properties.revenue,
+          total = properties.total;
+      var payload = {
+        ea: type,
+        el: event
+      };
+
+      if (category) {
+        payload.ec = category;
+      }
+
+      if (currency) {
+        payload.gc = currency;
+      }
+
+      if (value) {
+        payload.gv = value;
+      }
+
+      if (revenue) {
+        payload.gv = revenue;
+      }
+
+      if (total) {
+        payload.gv = total;
+      }
+
+      window.uetq.push(payload);
+    };
+
+    this.page = function () {
+      window.uetq.push('pageLoad');
+    };
+
+    this.tagID = config.tagID;
+    this.name = "BINGADS";
+  };
+
+  var eventMapping = [{
+    src: ["checkout step completed", "order completed"],
+    dest: "Checkout"
+  }, {
+    src: ["product added"],
+    dest: "AddToCart",
+    hasEmptyProducts: true
+  }, {
+    src: ["products searched", "product list filtered"],
+    dest: "Search"
+  }];
+  var searchPropertyMapping = {
+    src: "query",
+    dest: "search_query"
+  };
+  var productPropertyMapping = [{
+    src: ["product_id", "sku"],
+    dest: "product_id"
+  }, {
+    src: "name",
+    dest: "product_name"
+  }, {
+    src: "price",
+    dest: "product_price"
+  }, {
+    src: "category",
+    dest: "product_category"
+  }, {
+    src: "variant",
+    dest: "product_variant"
+  }, {
+    src: "quantity",
+    dest: "product_quantity"
+  }, {
+    src: "brand",
+    dest: "product_brand"
+  }];
+  var pinterestPropertySupport = ["value", "order_quantity", "currency", "order_id", "product_name", "product_id", "product_category", "product_variant", "product_variant_id", "product_price", "product_quantity", "product_brand", "promo_code", "property", "video_title", "lead_type", "coupon"];
+
+  var PinterestTag = /*#__PURE__*/function () {
+    function PinterestTag(config, analytics) {
+      _classCallCheck(this, PinterestTag);
+
+      this.analytics = analytics;
+      this.tagId = !config.tagId ? "" : config.tagId;
+      this.enhancedMatch = config.enhancedMatch || false;
+      this.customProperties = config.customProperties || [];
+      this.userDefinedEventsMapping = config.eventsMapping || [];
+      this.name = "PINTEREST_TAG";
+      logger.debug("config", config);
+    }
+
+    _createClass(PinterestTag, [{
+      key: "loadScript",
+      value: function loadScript() {
+        !function (e) {
+          if (!window.pintrk) {
+            window.pintrk = function () {
+              window.pintrk.queue.push(Array.prototype.slice.call(arguments));
+            };
+
+            var n = window.pintrk;
+            n.queue = [], n.version = "3.0";
+            var t = document.createElement("script");
+            t.async = !0, t.src = e;
+            var r = document.getElementsByTagName("script")[0];
+            r.parentNode.insertBefore(t, r);
+          }
+        }("https://s.pinimg.com/ct/core.js");
+      }
+    }, {
+      key: "handleEnhancedMatch",
+      value: function handleEnhancedMatch() {
+        var email = this.analytics.userTraits && this.analytics.userTraits.email;
+
+        if (email && this.enhancedMatch) {
+          window.pintrk("load", this.tagId, {
+            em: email
+          });
+        } else {
+          window.pintrk("load", this.tagId);
+        }
+
+        window.pintrk("page");
+      }
+    }, {
+      key: "init",
+      value: function init() {
+        logger.debug("===in init Pinterest Tag===");
+        this.loadScript();
+        this.handleEnhancedMatch();
+      }
+      /* utility functions ---Start here ---  */
+
+    }, {
+      key: "isLoaded",
+      value: function isLoaded() {
+        logger.debug("===in isLoaded Pinterest Tag===");
+        return !!(window.pintrk && window.pintrk.push !== Array.prototype.push);
+      }
+    }, {
+      key: "isReady",
+      value: function isReady() {
+        logger.debug("===in isReady Pinterest Tag===");
+        return !!(window.pintrk && window.pintrk.push !== Array.prototype.push);
+      }
+      /* utility functions --- Ends here ---  */
+
+    }, {
+      key: "sendPinterestTrack",
+      value: function sendPinterestTrack(eventName, pinterestObject) {
+        window.pintrk("track", eventName, pinterestObject);
+      }
+      /**
+       * Send rudder property and mappings array. This function will return data mapping destination property
+       * @param {*} properties
+       * @param {*} mappings
+       * @returns Pinterest Products
+       */
+
+    }, {
+      key: "getMappingObject",
+      value: function getMappingObject(properties, mappings) {
+        var pinterestObject = {};
+        mappings.forEach(function (mapping) {
+          Object.keys(properties).forEach(function (p) {
+            pinterestObject = _objectSpread2(_objectSpread2({}, getDataFromSource(mapping.src, mapping.dest, p, properties)), pinterestObject);
+          });
+        });
+        return pinterestObject;
+      }
+      /**
+       * This function  simply copies data from rudder payload to new object provided all
+       * the key in properties is present in pinterestPropertySupport
+       * @param {rudder properties} properties
+       * @returns
+       */
+
+    }, {
+      key: "getRawPayload",
+      value: function getRawPayload(properties) {
+        var data = {};
+        Object.keys(properties).forEach(function (p) {
+          if (pinterestPropertySupport.includes(p)) {
+            data[p] = properties[p];
+          }
+        }); // This logic maps rudder query to search_query for Products Searched events
+
+        if (isDefinedAndNotNull(properties[searchPropertyMapping.src])) {
+          data[searchPropertyMapping.dest] = properties[searchPropertyMapping.src];
+        }
+
+        return data;
+      }
+      /**
+       * This function will generate required pinterest object to be sent.
+       * getRawPayload() will generate all the destination property excepts lineItems
+       * If rudder payload has products array then line_items is generated
+       * In case if the call is for event which has flag hasEmptyProducts to true, it will generate all
+       * properties including lineItems even if it does not have products array in it ex: Product Added
+       *
+       * @param {rudder payload} properties
+       * @param {*} hasEmptyProducts
+       * @returns
+       */
+
+    }, {
+      key: "generatePinterestObject",
+      value: function generatePinterestObject(properties) {
+        var _this = this;
+
+        var hasEmptyProducts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+        var pinterestObject = this.getRawPayload(properties);
+        var products = properties.products;
+
+        if (hasEmptyProducts && !products) {
+          products = [properties];
+        }
+
+        if (products) {
+          var lineItems = [];
+          products.forEach(function (p) {
+            var product = _this.getMappingObject(p, productPropertyMapping);
+
+            lineItems.push(product);
+          });
+          pinterestObject.line_items = lineItems;
+        }
+
+        if (this.customProperties.length > 0 && Object.keys(properties).length > 0) {
+          var flattenPayload = flattenJsonPayload(properties);
+          this.customProperties.forEach(function (custom) {
+            // This check fails if user is sending boolean value as false
+            // Adding toString because if the property value is boolean then it never gets reflected in destination
+            if (isDefinedAndNotNull(flattenPayload[custom.properties])) {
+              pinterestObject[custom.properties] = flattenPayload[custom.properties].toString();
+            }
+          });
+        }
+
+        return pinterestObject;
+      }
+      /**
+       * This gives destination events .
+       * Logics: If our eventMapping is not able to map the event that is sent by user payload then it will look into
+       * userDefinedEventsMapping array. In case if it is not found there as well, it will return undefined.
+       * @param {rudder event name} event
+       * @returns
+       */
+
+    }, {
+      key: "getDestinationEventName",
+      value: function getDestinationEventName(event) {
+        var destinationEvent = eventMapping.find(function (p) {
+          return p.src.includes(event.toLowerCase());
+        });
+
+        if (!destinationEvent && this.userDefinedEventsMapping.length > 0) {
+          var userDefinedEvent = this.userDefinedEventsMapping.find(function (e) {
+            return e.from.toLowerCase() === event.toLowerCase();
+          });
+
+          if (userDefinedEvent && userDefinedEvent.to) {
+            return {
+              dest: userDefinedEvent.to,
+              isUserDefinedEvent: true
+            };
+          }
+        }
+
+        return destinationEvent;
+      }
+    }, {
+      key: "track",
+      value: function track(rudderElement) {
+        if (!rudderElement.message || !rudderElement.message.event) {
+          return;
+        }
+
+        var _rudderElement$messag = rudderElement.message,
+            properties = _rudderElement$messag.properties,
+            event = _rudderElement$messag.event;
+        var eventName = event;
+        var destEvent = this.getDestinationEventName(event);
+
+        if (isDefinedAndNotNull(destEvent)) {
+          eventName = destEvent.dest;
+        }
+
+        var pinterestObject = this.generatePinterestObject(properties, destEvent === null || destEvent === void 0 ? void 0 : destEvent.hasEmptyProducts, destEvent === null || destEvent === void 0 ? void 0 : destEvent.isUserDefinedEvent);
+        this.sendPinterestTrack(eventName, pinterestObject);
+      }
+    }, {
+      key: "page",
+      value: function page(rudderElement) {
+        var _rudderElement$messag2 = rudderElement.message,
+            category = _rudderElement$messag2.category,
+            name = _rudderElement$messag2.name;
+        var pageObject = {
+          name: name || ""
+        };
+        var event = "PageVisit";
+
+        if (category) {
+          pageObject.category = category;
+          event = "ViewCategory";
+        }
+
+        window.pintrk("track", event, pageObject);
+      }
+    }, {
+      key: "identify",
+      value: function identify() {
+        var email = this.analytics.userTraits && this.analytics.userTraits.email;
+
+        if (email) {
+          window.pintrk("set", {
+            em: email
+          });
+        }
+      }
+    }]);
+
+    return PinterestTag;
+  }();
+
   var lodash=createCommonjsModule(function(module,exports){(function(){/** Used as a safe reference for `undefined` in pre-ES5 environments. */var undefined$1;/** Used as the semantic version number. */var VERSION='4.17.21';/** Used as the size to enable large array optimizations. */var LARGE_ARRAY_SIZE=200;/** Error message constants. */var CORE_ERROR_TEXT='Unsupported core-js use. Try https://npms.io/search?q=ponyfill.',FUNC_ERROR_TEXT='Expected a function',INVALID_TEMPL_VAR_ERROR_TEXT='Invalid `variable` option passed into `_.template`';/** Used to stand-in for `undefined` hash values. */var HASH_UNDEFINED='__lodash_hash_undefined__';/** Used as the maximum memoize cache size. */var MAX_MEMOIZE_SIZE=500;/** Used as the internal argument placeholder. */var PLACEHOLDER='__lodash_placeholder__';/** Used to compose bitmasks for cloning. */var CLONE_DEEP_FLAG=1,CLONE_FLAT_FLAG=2,CLONE_SYMBOLS_FLAG=4;/** Used to compose bitmasks for value comparisons. */var COMPARE_PARTIAL_FLAG=1,COMPARE_UNORDERED_FLAG=2;/** Used to compose bitmasks for function metadata. */var WRAP_BIND_FLAG=1,WRAP_BIND_KEY_FLAG=2,WRAP_CURRY_BOUND_FLAG=4,WRAP_CURRY_FLAG=8,WRAP_CURRY_RIGHT_FLAG=16,WRAP_PARTIAL_FLAG=32,WRAP_PARTIAL_RIGHT_FLAG=64,WRAP_ARY_FLAG=128,WRAP_REARG_FLAG=256,WRAP_FLIP_FLAG=512;/** Used as default options for `_.truncate`. */var DEFAULT_TRUNC_LENGTH=30,DEFAULT_TRUNC_OMISSION='...';/** Used to detect hot functions by number of calls within a span of milliseconds. */var HOT_COUNT=800,HOT_SPAN=16;/** Used to indicate the type of lazy iteratees. */var LAZY_FILTER_FLAG=1,LAZY_MAP_FLAG=2,LAZY_WHILE_FLAG=3;/** Used as references for various `Number` constants. */var INFINITY=1/0,MAX_SAFE_INTEGER=9007199254740991,MAX_INTEGER=1.7976931348623157e+308,NAN=0/0;/** Used as references for the maximum length and index of an array. */var MAX_ARRAY_LENGTH=4294967295,MAX_ARRAY_INDEX=MAX_ARRAY_LENGTH-1,HALF_MAX_ARRAY_LENGTH=MAX_ARRAY_LENGTH>>>1;/** Used to associate wrap methods with their bit flags. */var wrapFlags=[['ary',WRAP_ARY_FLAG],['bind',WRAP_BIND_FLAG],['bindKey',WRAP_BIND_KEY_FLAG],['curry',WRAP_CURRY_FLAG],['curryRight',WRAP_CURRY_RIGHT_FLAG],['flip',WRAP_FLIP_FLAG],['partial',WRAP_PARTIAL_FLAG],['partialRight',WRAP_PARTIAL_RIGHT_FLAG],['rearg',WRAP_REARG_FLAG]];/** `Object#toString` result references. */var argsTag='[object Arguments]',arrayTag='[object Array]',asyncTag='[object AsyncFunction]',boolTag='[object Boolean]',dateTag='[object Date]',domExcTag='[object DOMException]',errorTag='[object Error]',funcTag='[object Function]',genTag='[object GeneratorFunction]',mapTag='[object Map]',numberTag='[object Number]',nullTag='[object Null]',objectTag='[object Object]',promiseTag='[object Promise]',proxyTag='[object Proxy]',regexpTag='[object RegExp]',setTag='[object Set]',stringTag='[object String]',symbolTag='[object Symbol]',undefinedTag='[object Undefined]',weakMapTag='[object WeakMap]',weakSetTag='[object WeakSet]';var arrayBufferTag='[object ArrayBuffer]',dataViewTag='[object DataView]',float32Tag='[object Float32Array]',float64Tag='[object Float64Array]',int8Tag='[object Int8Array]',int16Tag='[object Int16Array]',int32Tag='[object Int32Array]',uint8Tag='[object Uint8Array]',uint8ClampedTag='[object Uint8ClampedArray]',uint16Tag='[object Uint16Array]',uint32Tag='[object Uint32Array]';/** Used to match empty string literals in compiled template source. */var reEmptyStringLeading=/\b__p \+= '';/g,reEmptyStringMiddle=/\b(__p \+=) '' \+/g,reEmptyStringTrailing=/(__e\(.*?\)|\b__t\)) \+\n'';/g;/** Used to match HTML entities and HTML characters. */var reEscapedHtml=/&(?:amp|lt|gt|quot|#39);/g,reUnescapedHtml=/[&<>"']/g,reHasEscapedHtml=RegExp(reEscapedHtml.source),reHasUnescapedHtml=RegExp(reUnescapedHtml.source);/** Used to match template delimiters. */var reEscape=/<%-([\s\S]+?)%>/g,reEvaluate=/<%([\s\S]+?)%>/g,reInterpolate=/<%=([\s\S]+?)%>/g;/** Used to match property names within property paths. */var reIsDeepProp=/\.|\[(?:[^[\]]*|(["'])(?:(?!\1)[^\\]|\\.)*?\1)\]/,reIsPlainProp=/^\w*$/,rePropName=/[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g;/**
      * Used to match `RegExp`
      * [syntax characters](http://ecma-international.org/ecma-262/7.0/#sec-patterns).
@@ -24224,3871 +28042,6 @@ var rudderanalytics = (function (exports) {
     return new Date(timestamp).toISOString();
   };
 
-  var FacebookPixel = /*#__PURE__*/function () {
-    function FacebookPixel(config) {
-      _classCallCheck(this, FacebookPixel);
-
-      this.blacklistPiiProperties = config.blacklistPiiProperties;
-      this.categoryToContent = config.categoryToContent;
-      this.pixelId = config.pixelId;
-      this.eventsToEvents = config.eventsToEvents;
-      this.eventCustomProperties = config.eventCustomProperties;
-      this.valueFieldIdentifier = config.valueFieldIdentifier;
-      this.advancedMapping = config.advancedMapping;
-      this.traitKeyToExternalId = config.traitKeyToExternalId;
-      this.legacyConversionPixelId = config.legacyConversionPixelId;
-      this.userIdAsPixelId = config.userIdAsPixelId;
-      this.whitelistPiiProperties = config.whitelistPiiProperties;
-      this.name = "FB_PIXEL";
-    }
-
-    _createClass(FacebookPixel, [{
-      key: "init",
-      value: function init() {
-        if (this.categoryToContent === undefined) {
-          this.categoryToContent = [];
-        }
-
-        if (this.legacyConversionPixelId === undefined) {
-          this.legacyConversionPixelId = [];
-        }
-
-        if (this.userIdAsPixelId === undefined) {
-          this.userIdAsPixelId = [];
-        }
-
-        logger.debug("===in init FbPixel===");
-
-        window._fbq = function () {
-          if (window.fbq.callMethod) {
-            window.fbq.callMethod.apply(window.fbq, arguments);
-          } else {
-            window.fbq.queue.push(arguments);
-          }
-        };
-
-        window.fbq = window.fbq || window._fbq;
-        window.fbq.push = window.fbq;
-        window.fbq.loaded = true;
-        window.fbq.disablePushState = true; // disables automatic pageview tracking
-
-        window.fbq.allowDuplicatePageViews = true; // enables fb
-
-        window.fbq.version = "2.0";
-        window.fbq.queue = [];
-        window.fbq("init", this.pixelId);
-        ScriptLoader("fbpixel-integration", "https://connect.facebook.net/en_US/fbevents.js");
-      }
-    }, {
-      key: "isLoaded",
-      value: function isLoaded() {
-        logger.debug("in FBPixel isLoaded");
-        return !!(window.fbq && window.fbq.callMethod);
-      }
-    }, {
-      key: "isReady",
-      value: function isReady() {
-        logger.debug("in FBPixel isReady");
-        return !!(window.fbq && window.fbq.callMethod);
-      }
-    }, {
-      key: "page",
-      value: function page() {
-        window.fbq("track", "PageView");
-      }
-    }, {
-      key: "identify",
-      value: function identify(rudderElement) {
-        if (this.advancedMapping) {
-          var traits = rudderElement.message.context ? rudderElement.message.context.traits : undefined;
-          window.fbq("init", this.pixelId, traits);
-        }
-      }
-    }, {
-      key: "track",
-      value: function track(rudderElement) {
-        var _this = this;
-
-        var self = this;
-        var _rudderElement$messag = rudderElement.message,
-            event = _rudderElement$messag.event,
-            properties = _rudderElement$messag.properties,
-            messageId = _rudderElement$messag.messageId;
-        var revValue;
-        var currVal;
-
-        if (properties) {
-          var revenue = properties.revenue,
-              currency = properties.currency;
-          revValue = this.formatRevenue(revenue);
-          currVal = currency || "USD";
-        }
-
-        var payload = this.buildPayLoad(rudderElement, true);
-
-        if (this.categoryToContent === undefined) {
-          this.categoryToContent = [];
-        }
-
-        if (this.legacyConversionPixelId === undefined) {
-          this.legacyConversionPixelId = [];
-        }
-
-        if (this.userIdAsPixelId === undefined) {
-          this.userIdAsPixelId = [];
-        }
-
-        payload.value = revValue;
-        var standard = this.eventsToEvents;
-        var legacy = this.legacyConversionPixelId;
-        var standardTo = getHashFromArray(standard);
-        var legacyTo = getHashFromArray(legacy);
-        var useValue = this.valueFieldIdentifier === "properties.value";
-        var products;
-        var quantity;
-        var category;
-        var prodId;
-        var prodName;
-        var value;
-        var price;
-        var query;
-
-        if (properties) {
-          products = properties.products;
-          quantity = properties.quantity;
-          category = properties.category;
-          prodId = properties.product_id || properties.id || properties.sku || "";
-          prodName = properties.product_name;
-          value = properties.value;
-          price = properties.price;
-          query = properties.query;
-        }
-
-        var customProperties = this.buildPayLoad(rudderElement, true);
-
-        if (event === "Product List Viewed") {
-          var contentType;
-          var contentIds = [];
-          var contents = [];
-
-          if (products && Array.isArray(products)) {
-            products.forEach(function (product) {
-              var productId = product.product_id;
-
-              if (productId) {
-                contentIds.push(productId);
-                contents.push({
-                  id: productId,
-                  quantity: quantity || 1
-                });
-              }
-            });
-          } else {
-            logger.error("No product array found");
-          }
-
-          if (contentIds.length) {
-            contentType = ["product"];
-          } else {
-            contentIds.push(category || "");
-            contents.push({
-              id: category || "",
-              quantity: 1
-            });
-            contentType = ["product_group"];
-          }
-
-          window.fbq("trackSingle", self.pixelId, "ViewContent", this.merge({
-            content_ids: contentIds,
-            content_type: this.getContentType(rudderElement, contentType),
-            contents: contents
-          }, customProperties), {
-            eventID: messageId
-          });
-          each_1(function (val, key) {
-            if (key === event.toLowerCase()) {
-              window.fbq("trackSingle", self.pixelId, val, {
-                currency: currVal,
-                value: revValue
-              }, {
-                eventID: messageId
-              });
-            }
-          }, legacyTo);
-        } else if (event === "Product Viewed") {
-          window.fbq("trackSingle", self.pixelId, "ViewContent", this.merge({
-            content_ids: [prodId],
-            content_type: this.getContentType(rudderElement, ["product"]),
-            content_name: prodName || "",
-            content_category: category || "",
-            currency: currVal,
-            value: useValue ? this.formatRevenue(value) : this.formatRevenue(price),
-            contents: [{
-              id: prodId,
-              quantity: quantity,
-              item_price: price
-            }]
-          }, customProperties), {
-            eventID: messageId
-          });
-          each_1(function (val, key) {
-            if (key === event.toLowerCase()) {
-              window.fbq("trackSingle", self.pixelId, val, {
-                currency: currVal,
-                value: useValue ? _this.formatRevenue(value) : _this.formatRevenue(price)
-              }, {
-                eventID: messageId
-              });
-            }
-          }, legacyTo);
-        } else if (event === "Product Added") {
-          window.fbq("trackSingle", self.pixelId, "AddToCart", this.merge({
-            content_ids: [prodId],
-            content_type: this.getContentType(rudderElement, ["product"]),
-            content_name: prodName || "",
-            content_category: category || "",
-            currency: currVal,
-            value: useValue ? this.formatRevenue(value) : this.formatRevenue(price),
-            contents: [{
-              id: prodId,
-              quantity: quantity,
-              item_price: price
-            }]
-          }, customProperties), {
-            eventID: messageId
-          });
-          each_1(function (val, key) {
-            if (key === event.toLowerCase()) {
-              window.fbq("trackSingle", self.pixelId, val, {
-                currency: currVal,
-                value: useValue ? _this.formatRevenue(value) : _this.formatRevenue(price)
-              }, {
-                eventID: messageId
-              });
-            }
-          }, legacyTo);
-          this.merge({
-            content_ids: [prodId],
-            content_type: this.getContentType(rudderElement, ["product"]),
-            content_name: prodName || "",
-            content_category: category || "",
-            currency: currVal,
-            value: useValue ? this.formatRevenue(value) : this.formatRevenue(price),
-            contents: [{
-              id: prodId,
-              quantity: quantity,
-              item_price: price
-            }]
-          }, customProperties);
-        } else if (event === "Order Completed") {
-          var _contentType = this.getContentType(rudderElement, ["product"]);
-
-          var _contentIds = [];
-          var _contents = [];
-
-          if (products) {
-            for (var i = 0; i < products.length; i++) {
-              var pId = products[i].product_id;
-
-              _contentIds.push(pId);
-
-              var content = {
-                id: pId,
-                quantity: quantity
-              };
-              content.item_price = price;
-
-              _contents.push(content);
-            }
-
-            window.fbq("trackSingle", self.pixelId, "Purchase", this.merge({
-              content_ids: _contentIds,
-              content_type: _contentType,
-              currency: currVal,
-              value: revValue,
-              contents: _contents,
-              num_items: _contentIds.length
-            }, customProperties), {
-              eventID: messageId
-            });
-            each_1(function (val, key) {
-              if (key === event.toLowerCase()) {
-                window.fbq("trackSingle", self.pixelId, val, {
-                  currency: currVal,
-                  value: revValue
-                }, {
-                  eventID: messageId
-                });
-              }
-            }, legacyTo);
-          } else {
-            logger.error("No product array found");
-          }
-        } else if (event === "Products Searched") {
-          window.fbq("trackSingle", self.pixelId, "Search", this.merge({
-            search_string: query
-          }, customProperties), {
-            eventID: messageId
-          });
-          each_1(function (val, key) {
-            if (key === event.toLowerCase()) {
-              window.fbq("trackSingle", self.pixelId, val, {
-                currency: currVal,
-                value: revValue
-              }, {
-                eventID: messageId
-              });
-            }
-          }, legacyTo);
-        } else if (event === "Checkout Started") {
-          var contentCategory = category;
-          var _contentIds2 = [];
-          var _contents2 = [];
-
-          if (products) {
-            for (var _i = 0; _i < products.length; _i++) {
-              var product = products[_i];
-              var _pId = product.product_id;
-
-              _contentIds2.push(_pId);
-
-              var _content = {
-                id: _pId,
-                quantity: quantity,
-                item_price: price
-              };
-              _content.item_price = price;
-
-              _contents2.push(_content);
-            }
-
-            if (!contentCategory && products[0] && products[0].category) {
-              contentCategory = products[0].category;
-            }
-
-            window.fbq("trackSingle", self.pixelId, "InitiateCheckout", this.merge({
-              content_category: contentCategory,
-              content_ids: _contentIds2,
-              content_type: this.getContentType(rudderElement, ["product"]),
-              currency: currVal,
-              value: revValue,
-              contents: _contents2,
-              num_items: _contentIds2.length
-            }, customProperties), {
-              eventID: messageId
-            });
-            each_1(function (val, key) {
-              if (key === event.toLowerCase()) {
-                window.fbq("trackSingle", self.pixelId, val, {
-                  currency: currVal,
-                  value: revValue
-                }, {
-                  eventID: messageId
-                });
-              }
-            }, legacyTo);
-          } else {
-            logger.error("No product array found");
-          }
-        } else {
-          console.log("inside custom");
-
-          if (!standardTo[event.toLowerCase()] && !legacyTo[event.toLowerCase()]) {
-            console.log("inside custom not mapped");
-            var payloadVal = this.buildPayLoad(rudderElement, false);
-            payloadVal.value = revValue;
-            window.fbq("trackSingleCustom", self.pixelId, event, payloadVal, {
-              eventID: messageId
-            });
-          } else {
-            each_1(function (val, key) {
-              if (key === event.toLowerCase()) {
-                payload.currency = currVal;
-                window.fbq("trackSingle", self.pixelId, val, payload, {
-                  eventID: messageId
-                });
-              }
-            }, standardTo);
-            each_1(function (val, key) {
-              if (key === event.toLowerCase()) {
-                window.fbq("trackSingle", self.pixelId, val, {
-                  currency: currVal,
-                  value: revValue
-                }, {
-                  eventID: messageId
-                });
-              }
-            }, legacyTo);
-          }
-        }
-      }
-    }, {
-      key: "getContentType",
-      value: function getContentType(rudderElement, defaultValue) {
-        var _rudderElement$messag2 = rudderElement.message,
-            options = _rudderElement$messag2.options,
-            properties = _rudderElement$messag2.properties;
-
-        if (options && options.contentType) {
-          return [options.contentType];
-        }
-
-        var category = properties.category;
-        var products = properties.products;
-
-        if (!category) {
-          if (products && products.length) {
-            category = products[0].category;
-          }
-        }
-
-        if (category) {
-          var mapped = this.categoryToContent;
-          var mappedTo = mapped.reduce(function (filtered, mappedVal) {
-            if (mappedVal.from === category) {
-              filtered.push(mappedVal.to);
-            }
-
-            return filtered;
-          }, []);
-
-          if (mappedTo.length) {
-            return mappedTo;
-          }
-        }
-
-        return defaultValue;
-      }
-    }, {
-      key: "merge",
-      value: function merge(obj1, obj2) {
-        var res = {}; // All properties of obj1
-
-        for (var propObj1 in obj1) {
-          if (obj1.hasOwnProperty(propObj1)) {
-            res[propObj1] = obj1[propObj1];
-          }
-        } // Extra properties of obj2
-
-
-        for (var propObj2 in obj2) {
-          if (obj2.hasOwnProperty(propObj2) && !res.hasOwnProperty(propObj2)) {
-            res[propObj2] = obj2[propObj2];
-          }
-        }
-
-        return res;
-      }
-    }, {
-      key: "formatRevenue",
-      value: function formatRevenue(revenue) {
-        return Number(revenue || 0).toFixed(2);
-      }
-    }, {
-      key: "buildPayLoad",
-      value: function buildPayLoad(rudderElement, isStandardEvent) {
-        var dateFields = ["checkinDate", "checkoutDate", "departingArrivalDate", "departingDepartureDate", "returningArrivalDate", "returningDepartureDate", "travelEnd", "travelStart"];
-        var defaultPiiProperties = ["email", "firstName", "lastName", "gender", "city", "country", "phone", "state", "zip", "birthday"];
-        var whitelistPiiProperties = this.whitelistPiiProperties || [];
-        var blacklistPiiProperties = this.blacklistPiiProperties || [];
-        var eventCustomProperties = this.eventCustomProperties || [];
-        var customPiiProperties = {};
-
-        for (var i = 0; i < blacklistPiiProperties[i]; i++) {
-          var configuration = blacklistPiiProperties[i];
-          customPiiProperties[configuration.blacklistPiiProperties] = configuration.blacklistPiiHash;
-        }
-
-        var payload = {};
-        var properties = rudderElement.message.properties;
-
-        for (var property in properties) {
-          if (!properties.hasOwnProperty(property)) {
-            continue;
-          }
-
-          if (isStandardEvent && eventCustomProperties.indexOf(property) < 0) {
-            continue;
-          }
-
-          var value = properties[property];
-
-          if (dateFields.indexOf(properties) >= 0) {
-            if (is_1.date(value)) {
-              payload[property] = value.toISOTring().split("T")[0];
-              continue;
-            }
-          }
-
-          if (customPiiProperties.hasOwnProperty(property)) {
-            if (customPiiProperties[property] && typeof value === "string") {
-              payload[property] = sha256(value);
-            }
-
-            continue;
-          }
-
-          var isPropertyPii = defaultPiiProperties.indexOf(property) >= 0;
-          var isProperyWhiteListed = whitelistPiiProperties.indexOf(property) >= 0;
-
-          if (!isPropertyPii || isProperyWhiteListed) {
-            payload[property] = value;
-          }
-        }
-
-        return payload;
-      }
-    }]);
-
-    return FacebookPixel;
-  }();
-
-  var defaults$2 = {
-    lotame_synch_time_key: "lt_synch_timestamp"
-  };
-
-  var LotameStorage = /*#__PURE__*/function () {
-    function LotameStorage() {
-      _classCallCheck(this, LotameStorage);
-
-      this.storage = Storage$1; // new Storage();
-    }
-
-    _createClass(LotameStorage, [{
-      key: "setLotameSynchTime",
-      value: function setLotameSynchTime(value) {
-        this.storage.setItem(defaults$2.lotame_synch_time_key, value);
-      }
-    }, {
-      key: "getLotameSynchTime",
-      value: function getLotameSynchTime() {
-        return this.storage.getItem(defaults$2.lotame_synch_time_key);
-      }
-    }]);
-
-    return LotameStorage;
-  }();
-
-  var lotameStorage = new LotameStorage();
-
-  var Lotame = /*#__PURE__*/function () {
-    function Lotame(config, analytics) {
-      var _this = this;
-
-      _classCallCheck(this, Lotame);
-
-      this.name = "LOTAME";
-      this.analytics = analytics;
-      this.storage = lotameStorage;
-      this.bcpUrlSettingsPixel = config.bcpUrlSettingsPixel;
-      this.bcpUrlSettingsIframe = config.bcpUrlSettingsIframe;
-      this.dspUrlSettingsPixel = config.dspUrlSettingsPixel;
-      this.dspUrlSettingsIframe = config.dspUrlSettingsIframe;
-      this.mappings = {};
-      config.mappings.forEach(function (mapping) {
-        var key = mapping.key;
-        var value = mapping.value;
-        _this.mappings[key] = value;
-      });
-    }
-
-    _createClass(Lotame, [{
-      key: "init",
-      value: function init() {
-        logger.debug("===in init Lotame===");
-
-        window.LOTAME_SYNCH_CALLBACK = function () {};
-      }
-    }, {
-      key: "addPixel",
-      value: function addPixel(source, width, height) {
-        logger.debug("Adding pixel for :: ".concat(source));
-        var image = document.createElement("img");
-        image.src = source;
-        image.setAttribute("width", width);
-        image.setAttribute("height", height);
-        logger.debug("Image Pixel :: ".concat(image));
-        document.getElementsByTagName("body")[0].appendChild(image);
-      }
-    }, {
-      key: "addIFrame",
-      value: function addIFrame(source) {
-        logger.debug("Adding iframe for :: ".concat(source));
-        var iframe = document.createElement("iframe");
-        iframe.src = source;
-        iframe.title = "empty";
-        iframe.setAttribute("id", "LOTCCFrame");
-        iframe.setAttribute("tabindex", "-1");
-        iframe.setAttribute("role", "presentation");
-        iframe.setAttribute("aria-hidden", "true");
-        iframe.setAttribute("style", "border: 0px; width: 0px; height: 0px; display: block;");
-        logger.debug("IFrame :: ".concat(iframe));
-        document.getElementsByTagName("body")[0].appendChild(iframe);
-      }
-    }, {
-      key: "syncPixel",
-      value: function syncPixel(userId) {
-        var _this2 = this;
-
-        logger.debug("===== in syncPixel ======");
-        logger.debug("Firing DSP Pixel URLs");
-
-        if (this.dspUrlSettingsPixel && this.dspUrlSettingsPixel.length > 0) {
-          var currentTime = Date.now();
-          this.dspUrlSettingsPixel.forEach(function (urlSettings) {
-            var dspUrl = _this2.compileUrl(_objectSpread2(_objectSpread2({}, _this2.mappings), {}, {
-              userId: userId,
-              random: currentTime
-            }), urlSettings.dspUrlTemplate);
-
-            _this2.addPixel(dspUrl, "1", "1");
-          });
-        }
-
-        logger.debug("Firing DSP IFrame URLs");
-
-        if (this.dspUrlSettingsIframe && this.dspUrlSettingsIframe.length > 0) {
-          var _currentTime = Date.now();
-
-          this.dspUrlSettingsIframe.forEach(function (urlSettings) {
-            var dspUrl = _this2.compileUrl(_objectSpread2(_objectSpread2({}, _this2.mappings), {}, {
-              userId: userId,
-              random: _currentTime
-            }), urlSettings.dspUrlTemplate);
-
-            _this2.addIFrame(dspUrl);
-          });
-        }
-
-        this.storage.setLotameSynchTime(Date.now()); // emit on syncPixel
-
-        if (this.analytics.methodToCallbackMapping.syncPixel) {
-          this.analytics.emit("syncPixel", {
-            destination: this.name
-          });
-        }
-      }
-    }, {
-      key: "compileUrl",
-      value: function compileUrl(map, url) {
-        Object.keys(map).forEach(function (key) {
-          if (map.hasOwnProperty(key)) {
-            var replaceKey = "{{".concat(key, "}}");
-            var regex = new RegExp(replaceKey, "gi");
-            url = url.replace(regex, map[key]);
-          }
-        });
-        return url;
-      }
-    }, {
-      key: "identify",
-      value: function identify(rudderElement) {
-        logger.debug("in Lotame identify");
-        var userId = rudderElement.message.userId;
-        this.syncPixel(userId);
-      }
-    }, {
-      key: "track",
-      value: function track(rudderElement) {
-        logger.debug("track not supported for lotame");
-      }
-    }, {
-      key: "page",
-      value: function page(rudderElement) {
-        var _this3 = this;
-
-        logger.debug("in Lotame page");
-        logger.debug("Firing BCP Pixel URLs");
-
-        if (this.bcpUrlSettingsPixel && this.bcpUrlSettingsPixel.length > 0) {
-          var currentTime = Date.now();
-          this.bcpUrlSettingsPixel.forEach(function (urlSettings) {
-            var bcpUrl = _this3.compileUrl(_objectSpread2(_objectSpread2({}, _this3.mappings), {}, {
-              random: currentTime
-            }), urlSettings.bcpUrlTemplate);
-
-            _this3.addPixel(bcpUrl, "1", "1");
-          });
-        }
-
-        logger.debug("Firing BCP IFrame URLs");
-
-        if (this.bcpUrlSettingsIframe && this.bcpUrlSettingsIframe.length > 0) {
-          var _currentTime2 = Date.now();
-
-          this.bcpUrlSettingsIframe.forEach(function (urlSettings) {
-            var bcpUrl = _this3.compileUrl(_objectSpread2(_objectSpread2({}, _this3.mappings), {}, {
-              random: _currentTime2
-            }), urlSettings.bcpUrlTemplate);
-
-            _this3.addIFrame(bcpUrl);
-          });
-        }
-
-        if (rudderElement.message.userId && this.isPixelToBeSynched()) {
-          this.syncPixel(rudderElement.message.userId);
-        }
-      }
-    }, {
-      key: "isPixelToBeSynched",
-      value: function isPixelToBeSynched() {
-        var lastSynchedTime = this.storage.getLotameSynchTime();
-        var currentTime = Date.now();
-
-        if (!lastSynchedTime) {
-          return true;
-        }
-
-        var difference = Math.floor((currentTime - lastSynchedTime) / (1000 * 3600 * 24));
-        return difference >= 7;
-      }
-    }, {
-      key: "isLoaded",
-      value: function isLoaded() {
-        logger.debug("in Lotame isLoaded");
-        return true;
-      }
-    }, {
-      key: "isReady",
-      value: function isReady() {
-        return true;
-      }
-    }]);
-
-    return Lotame;
-  }();
-
-  var Optimizely = /*#__PURE__*/function () {
-    function Optimizely(config, analytics) {
-      var _this = this;
-
-      _classCallCheck(this, Optimizely);
-
-      this.referrerOverride = function (referrer) {
-        if (referrer) {
-          window.optimizelyEffectiveReferrer = referrer;
-          return referrer;
-        }
-
-        return undefined;
-      };
-
-      this.sendDataToRudder = function (campaignState) {
-        logger.debug(campaignState);
-        var experiment = campaignState.experiment;
-        var variation = campaignState.variation;
-        var context = {
-          integrations: {
-            All: true
-          }
-        };
-        var audiences = campaignState.audiences; // Reformatting this data structure into hash map so concatenating variation ids and names is easier later
-
-        var audiencesMap = {};
-        audiences.forEach(function (audience) {
-          audiencesMap[audience.id] = audience.name;
-        });
-        var audienceIds = Object.keys(audiencesMap).sort().join();
-        var audienceNames = Object.values(audiencesMap).sort().join(", ");
-
-        if (_this.sendExperimentTrack) {
-          var props = {
-            campaignName: campaignState.campaignName,
-            campaignId: campaignState.id,
-            experimentId: experiment.id,
-            experimentName: experiment.name,
-            variationName: variation.name,
-            variationId: variation.id,
-            audienceId: audienceIds,
-            // eg. '7527562222,7527111138'
-            audienceName: audienceNames,
-            // eg. 'Peaky Blinders, Trust Tree'
-            isInCampaignHoldback: campaignState.isInCampaignHoldback
-          }; // If this was a redirect experiment and the effective referrer is different from document.referrer,
-          // this value is made available. So if a customer came in via google.com/ad -> tb12.com -> redirect experiment -> Belichickgoat.com
-          // `experiment.referrer` would be google.com/ad here NOT `tb12.com`.
-
-          if (experiment.referrer) {
-            props.referrer = experiment.referrer;
-            context.page = {
-              referrer: experiment.referrer
-            };
-          } // For Google's nonInteraction flag
-
-
-          if (_this.sendExperimentTrackAsNonInteractive) props.nonInteraction = 1; // If customCampaignProperties is provided overide the props with it.
-          // If valid customCampaignProperties present it will override existing props.
-          // const data = window.optimizely && window.optimizely.get("data");
-
-          var data = campaignState;
-
-          if (data && _this.customCampaignProperties.length > 0) {
-            for (var index = 0; index < _this.customCampaignProperties.length; index += 1) {
-              var rudderProp = _this.customCampaignProperties[index].from;
-              var optimizelyProp = _this.customCampaignProperties[index].to;
-
-              if (typeof props[optimizelyProp] !== "undefined") {
-                props[rudderProp] = props[optimizelyProp];
-                delete props[optimizelyProp];
-              }
-            }
-          } // Send to Rudder
-
-
-          _this.analytics.track("Experiment Viewed", props, context);
-        }
-
-        if (_this.sendExperimentIdentify) {
-          var traits = {};
-          traits["Experiment: ".concat(experiment.name)] = variation.name; // Send to Rudder
-
-          _this.analytics.identify(traits);
-        }
-      };
-
-      this.analytics = analytics;
-      this.sendExperimentTrack = config.sendExperimentTrack;
-      this.sendExperimentIdentify = config.sendExperimentIdentify;
-      this.sendExperimentTrackAsNonInteractive = config.sendExperimentTrackAsNonInteractive;
-      this.revenueOnlyOnOrderCompleted = config.revenueOnlyOnOrderCompleted;
-      this.trackCategorizedPages = config.trackCategorizedPages;
-      this.trackNamedPages = config.trackNamedPages;
-      this.customCampaignProperties = config.customCampaignProperties ? config.customCampaignProperties : [];
-      this.customExperimentProperties = config.customExperimentProperties ? config.customExperimentProperties : [];
-      this.name = "OPTIMIZELY";
-    }
-
-    _createClass(Optimizely, [{
-      key: "init",
-      value: function init() {
-        logger.debug("=== in optimizely init ===");
-        this.initOptimizelyIntegration(this.referrerOverride, this.sendDataToRudder);
-      }
-    }, {
-      key: "initOptimizelyIntegration",
-      value: function initOptimizelyIntegration(referrerOverride, sendCampaignData) {
-        var newActiveCampaign = function newActiveCampaign(id, referrer) {
-          var state = window.optimizely.get && window.optimizely.get("state");
-
-          if (state) {
-            var activeCampaigns = state.getCampaignStates({
-              isActive: true
-            });
-            var campaignState = activeCampaigns[id];
-            if (referrer) campaignState.experiment.referrer = referrer;
-            sendCampaignData(campaignState);
-          }
-        };
-
-        var checkReferrer = function checkReferrer() {
-          var state = window.optimizely.get && window.optimizely.get("state");
-
-          if (state) {
-            var referrer = state.getRedirectInfo() && state.getRedirectInfo().referrer;
-
-            if (referrer) {
-              referrerOverride(referrer);
-              return referrer;
-            }
-          }
-
-          return undefined;
-        };
-
-        var registerFutureActiveCampaigns = function registerFutureActiveCampaigns() {
-          window.optimizely = window.optimizely || [];
-          window.optimizely.push({
-            type: "addListener",
-            filter: {
-              type: "lifecycle",
-              name: "campaignDecided"
-            },
-            handler: function handler(event) {
-              var id = event.data.campaign.id;
-              newActiveCampaign(id);
-            }
-          });
-        };
-
-        var registerCurrentlyActiveCampaigns = function registerCurrentlyActiveCampaigns() {
-          window.optimizely = window.optimizely || [];
-          var state = window.optimizely.get && window.optimizely.get("state");
-
-          if (state) {
-            var referrer = checkReferrer();
-            var activeCampaigns = state.getCampaignStates({
-              isActive: true
-            });
-            Object.keys(activeCampaigns).forEach(function (id) {
-              if (referrer) {
-                newActiveCampaign(id, referrer);
-              } else {
-                newActiveCampaign(id);
-              }
-            });
-          } else {
-            window.optimizely.push({
-              type: "addListener",
-              filter: {
-                type: "lifecycle",
-                name: "initialized"
-              },
-              handler: function handler() {
-                checkReferrer();
-              }
-            });
-          }
-        };
-
-        registerCurrentlyActiveCampaigns();
-        registerFutureActiveCampaigns();
-      }
-    }, {
-      key: "track",
-      value: function track(rudderElement) {
-        logger.debug("in Optimizely web track");
-        var eventProperties = rudderElement.message.properties;
-        var event = rudderElement.message.event;
-
-        if (eventProperties.revenue && this.revenueOnlyOnOrderCompleted) {
-          if (event === "Order Completed") {
-            eventProperties.revenue = Math.round(eventProperties.revenue * 100);
-          } else if (event !== "Order Completed") {
-            delete eventProperties.revenue;
-          }
-        }
-
-        var eventName = event.replace(/:/g, "_"); // can't have colons so replacing with underscores
-
-        var payload = {
-          type: "event",
-          eventName: eventName,
-          tags: eventProperties
-        };
-        window.optimizely.push(payload);
-      }
-    }, {
-      key: "page",
-      value: function page(rudderElement) {
-        logger.debug("in Optimizely web page");
-        var category = rudderElement.message.properties.category;
-        var name = rudderElement.message.name;
-        /* const contextOptimizely = {
-          integrations: { All: false, Optimizely: true },
-        }; */
-        // categorized pages
-
-        if (category && this.trackCategorizedPages) {
-          // this.analytics.track(`Viewed ${category} page`, {}, contextOptimizely);
-          rudderElement.message.event = "Viewed ".concat(category, " page");
-          rudderElement.message.type = "track";
-          this.track(rudderElement);
-        } // named pages
-
-
-        if (name && this.trackNamedPages) {
-          // this.analytics.track(`Viewed ${name} page`, {}, contextOptimizely);
-          rudderElement.message.event = "Viewed ".concat(name, " page");
-          rudderElement.message.type = "track";
-          this.track(rudderElement);
-        }
-      }
-    }, {
-      key: "isLoaded",
-      value: function isLoaded() {
-        return !!(window.optimizely && window.optimizely.push !== Array.prototype.push);
-      }
-    }, {
-      key: "isReady",
-      value: function isReady() {
-        return !!(window.optimizely && window.optimizely.push !== Array.prototype.push);
-      }
-    }]);
-
-    return Optimizely;
-  }();
-
-  var Bugsnag = /*#__PURE__*/function () {
-    function Bugsnag(config) {
-      _classCallCheck(this, Bugsnag);
-
-      this.releaseStage = config.releaseStage;
-      this.apiKey = config.apiKey;
-      this.name = "BUGSNAG";
-      this.setIntervalHandler = undefined;
-    }
-
-    _createClass(Bugsnag, [{
-      key: "init",
-      value: function init() {
-        logger.debug("===in init Bugsnag===");
-        ScriptLoader("bugsnag-id", "https://d2wy8f7a9ursnm.cloudfront.net/v6/bugsnag.min.js");
-        this.setIntervalHandler = setInterval(this.initBugsnagClient.bind(this), 1000);
-      }
-    }, {
-      key: "initBugsnagClient",
-      value: function initBugsnagClient() {
-        if (window.bugsnag !== undefined) {
-          window.bugsnagClient = window.bugsnag(this.apiKey);
-          window.bugsnagClient.releaseStage = this.releaseStage;
-          clearInterval(this.setIntervalHandler);
-        }
-      }
-    }, {
-      key: "isLoaded",
-      value: function isLoaded() {
-        logger.debug("in bugsnag isLoaded");
-        return !!window.bugsnagClient;
-      }
-    }, {
-      key: "isReady",
-      value: function isReady() {
-        logger.debug("in bugsnag isReady");
-        return !!window.bugsnagClient;
-      }
-    }, {
-      key: "identify",
-      value: function identify(rudderElement) {
-        var traits = rudderElement.message.context.traits;
-        var traitsFinal = {
-          id: rudderElement.message.userId || rudderElement.message.anonymousId,
-          name: traits.name,
-          email: traits.email
-        };
-        window.bugsnagClient.user = traitsFinal;
-        window.bugsnagClient.notify(new Error("error in identify"));
-      }
-    }]);
-
-    return Bugsnag;
-  }();
-
-  var preserveCamelCase = function preserveCamelCase(string, locale) {
-    var isLastCharLower = false;
-    var isLastCharUpper = false;
-    var isLastLastCharUpper = false;
-
-    for (var i = 0; i < string.length; i++) {
-      var character = string[i];
-
-      if (isLastCharLower && /(?:[A-Z\xC0-\xD6\xD8-\xDE\u0100\u0102\u0104\u0106\u0108\u010A\u010C\u010E\u0110\u0112\u0114\u0116\u0118\u011A\u011C\u011E\u0120\u0122\u0124\u0126\u0128\u012A\u012C\u012E\u0130\u0132\u0134\u0136\u0139\u013B\u013D\u013F\u0141\u0143\u0145\u0147\u014A\u014C\u014E\u0150\u0152\u0154\u0156\u0158\u015A\u015C\u015E\u0160\u0162\u0164\u0166\u0168\u016A\u016C\u016E\u0170\u0172\u0174\u0176\u0178\u0179\u017B\u017D\u0181\u0182\u0184\u0186\u0187\u0189-\u018B\u018E-\u0191\u0193\u0194\u0196-\u0198\u019C\u019D\u019F\u01A0\u01A2\u01A4\u01A6\u01A7\u01A9\u01AC\u01AE\u01AF\u01B1-\u01B3\u01B5\u01B7\u01B8\u01BC\u01C4\u01C7\u01CA\u01CD\u01CF\u01D1\u01D3\u01D5\u01D7\u01D9\u01DB\u01DE\u01E0\u01E2\u01E4\u01E6\u01E8\u01EA\u01EC\u01EE\u01F1\u01F4\u01F6-\u01F8\u01FA\u01FC\u01FE\u0200\u0202\u0204\u0206\u0208\u020A\u020C\u020E\u0210\u0212\u0214\u0216\u0218\u021A\u021C\u021E\u0220\u0222\u0224\u0226\u0228\u022A\u022C\u022E\u0230\u0232\u023A\u023B\u023D\u023E\u0241\u0243-\u0246\u0248\u024A\u024C\u024E\u0370\u0372\u0376\u037F\u0386\u0388-\u038A\u038C\u038E\u038F\u0391-\u03A1\u03A3-\u03AB\u03CF\u03D2-\u03D4\u03D8\u03DA\u03DC\u03DE\u03E0\u03E2\u03E4\u03E6\u03E8\u03EA\u03EC\u03EE\u03F4\u03F7\u03F9\u03FA\u03FD-\u042F\u0460\u0462\u0464\u0466\u0468\u046A\u046C\u046E\u0470\u0472\u0474\u0476\u0478\u047A\u047C\u047E\u0480\u048A\u048C\u048E\u0490\u0492\u0494\u0496\u0498\u049A\u049C\u049E\u04A0\u04A2\u04A4\u04A6\u04A8\u04AA\u04AC\u04AE\u04B0\u04B2\u04B4\u04B6\u04B8\u04BA\u04BC\u04BE\u04C0\u04C1\u04C3\u04C5\u04C7\u04C9\u04CB\u04CD\u04D0\u04D2\u04D4\u04D6\u04D8\u04DA\u04DC\u04DE\u04E0\u04E2\u04E4\u04E6\u04E8\u04EA\u04EC\u04EE\u04F0\u04F2\u04F4\u04F6\u04F8\u04FA\u04FC\u04FE\u0500\u0502\u0504\u0506\u0508\u050A\u050C\u050E\u0510\u0512\u0514\u0516\u0518\u051A\u051C\u051E\u0520\u0522\u0524\u0526\u0528\u052A\u052C\u052E\u0531-\u0556\u10A0-\u10C5\u10C7\u10CD\u13A0-\u13F5\u1C90-\u1CBA\u1CBD-\u1CBF\u1E00\u1E02\u1E04\u1E06\u1E08\u1E0A\u1E0C\u1E0E\u1E10\u1E12\u1E14\u1E16\u1E18\u1E1A\u1E1C\u1E1E\u1E20\u1E22\u1E24\u1E26\u1E28\u1E2A\u1E2C\u1E2E\u1E30\u1E32\u1E34\u1E36\u1E38\u1E3A\u1E3C\u1E3E\u1E40\u1E42\u1E44\u1E46\u1E48\u1E4A\u1E4C\u1E4E\u1E50\u1E52\u1E54\u1E56\u1E58\u1E5A\u1E5C\u1E5E\u1E60\u1E62\u1E64\u1E66\u1E68\u1E6A\u1E6C\u1E6E\u1E70\u1E72\u1E74\u1E76\u1E78\u1E7A\u1E7C\u1E7E\u1E80\u1E82\u1E84\u1E86\u1E88\u1E8A\u1E8C\u1E8E\u1E90\u1E92\u1E94\u1E9E\u1EA0\u1EA2\u1EA4\u1EA6\u1EA8\u1EAA\u1EAC\u1EAE\u1EB0\u1EB2\u1EB4\u1EB6\u1EB8\u1EBA\u1EBC\u1EBE\u1EC0\u1EC2\u1EC4\u1EC6\u1EC8\u1ECA\u1ECC\u1ECE\u1ED0\u1ED2\u1ED4\u1ED6\u1ED8\u1EDA\u1EDC\u1EDE\u1EE0\u1EE2\u1EE4\u1EE6\u1EE8\u1EEA\u1EEC\u1EEE\u1EF0\u1EF2\u1EF4\u1EF6\u1EF8\u1EFA\u1EFC\u1EFE\u1F08-\u1F0F\u1F18-\u1F1D\u1F28-\u1F2F\u1F38-\u1F3F\u1F48-\u1F4D\u1F59\u1F5B\u1F5D\u1F5F\u1F68-\u1F6F\u1FB8-\u1FBB\u1FC8-\u1FCB\u1FD8-\u1FDB\u1FE8-\u1FEC\u1FF8-\u1FFB\u2102\u2107\u210B-\u210D\u2110-\u2112\u2115\u2119-\u211D\u2124\u2126\u2128\u212A-\u212D\u2130-\u2133\u213E\u213F\u2145\u2183\u2C00-\u2C2E\u2C60\u2C62-\u2C64\u2C67\u2C69\u2C6B\u2C6D-\u2C70\u2C72\u2C75\u2C7E-\u2C80\u2C82\u2C84\u2C86\u2C88\u2C8A\u2C8C\u2C8E\u2C90\u2C92\u2C94\u2C96\u2C98\u2C9A\u2C9C\u2C9E\u2CA0\u2CA2\u2CA4\u2CA6\u2CA8\u2CAA\u2CAC\u2CAE\u2CB0\u2CB2\u2CB4\u2CB6\u2CB8\u2CBA\u2CBC\u2CBE\u2CC0\u2CC2\u2CC4\u2CC6\u2CC8\u2CCA\u2CCC\u2CCE\u2CD0\u2CD2\u2CD4\u2CD6\u2CD8\u2CDA\u2CDC\u2CDE\u2CE0\u2CE2\u2CEB\u2CED\u2CF2\uA640\uA642\uA644\uA646\uA648\uA64A\uA64C\uA64E\uA650\uA652\uA654\uA656\uA658\uA65A\uA65C\uA65E\uA660\uA662\uA664\uA666\uA668\uA66A\uA66C\uA680\uA682\uA684\uA686\uA688\uA68A\uA68C\uA68E\uA690\uA692\uA694\uA696\uA698\uA69A\uA722\uA724\uA726\uA728\uA72A\uA72C\uA72E\uA732\uA734\uA736\uA738\uA73A\uA73C\uA73E\uA740\uA742\uA744\uA746\uA748\uA74A\uA74C\uA74E\uA750\uA752\uA754\uA756\uA758\uA75A\uA75C\uA75E\uA760\uA762\uA764\uA766\uA768\uA76A\uA76C\uA76E\uA779\uA77B\uA77D\uA77E\uA780\uA782\uA784\uA786\uA78B\uA78D\uA790\uA792\uA796\uA798\uA79A\uA79C\uA79E\uA7A0\uA7A2\uA7A4\uA7A6\uA7A8\uA7AA-\uA7AE\uA7B0-\uA7B4\uA7B6\uA7B8\uA7BA\uA7BC\uA7BE\uA7C2\uA7C4-\uA7C7\uA7C9\uA7F5\uFF21-\uFF3A]|\uD801[\uDC00-\uDC27\uDCB0-\uDCD3]|\uD803[\uDC80-\uDCB2]|\uD806[\uDCA0-\uDCBF]|\uD81B[\uDE40-\uDE5F]|\uD835[\uDC00-\uDC19\uDC34-\uDC4D\uDC68-\uDC81\uDC9C\uDC9E\uDC9F\uDCA2\uDCA5\uDCA6\uDCA9-\uDCAC\uDCAE-\uDCB5\uDCD0-\uDCE9\uDD04\uDD05\uDD07-\uDD0A\uDD0D-\uDD14\uDD16-\uDD1C\uDD38\uDD39\uDD3B-\uDD3E\uDD40-\uDD44\uDD46\uDD4A-\uDD50\uDD6C-\uDD85\uDDA0-\uDDB9\uDDD4-\uDDED\uDE08-\uDE21\uDE3C-\uDE55\uDE70-\uDE89\uDEA8-\uDEC0\uDEE2-\uDEFA\uDF1C-\uDF34\uDF56-\uDF6E\uDF90-\uDFA8\uDFCA]|\uD83A[\uDD00-\uDD21])/.test(character)) {
-        string = string.slice(0, i) + '-' + string.slice(i);
-        isLastCharLower = false;
-        isLastLastCharUpper = isLastCharUpper;
-        isLastCharUpper = true;
-        i++;
-      } else if (isLastCharUpper && isLastLastCharUpper && /(?:[a-z\xB5\xDF-\xF6\xF8-\xFF\u0101\u0103\u0105\u0107\u0109\u010B\u010D\u010F\u0111\u0113\u0115\u0117\u0119\u011B\u011D\u011F\u0121\u0123\u0125\u0127\u0129\u012B\u012D\u012F\u0131\u0133\u0135\u0137\u0138\u013A\u013C\u013E\u0140\u0142\u0144\u0146\u0148\u0149\u014B\u014D\u014F\u0151\u0153\u0155\u0157\u0159\u015B\u015D\u015F\u0161\u0163\u0165\u0167\u0169\u016B\u016D\u016F\u0171\u0173\u0175\u0177\u017A\u017C\u017E-\u0180\u0183\u0185\u0188\u018C\u018D\u0192\u0195\u0199-\u019B\u019E\u01A1\u01A3\u01A5\u01A8\u01AA\u01AB\u01AD\u01B0\u01B4\u01B6\u01B9\u01BA\u01BD-\u01BF\u01C6\u01C9\u01CC\u01CE\u01D0\u01D2\u01D4\u01D6\u01D8\u01DA\u01DC\u01DD\u01DF\u01E1\u01E3\u01E5\u01E7\u01E9\u01EB\u01ED\u01EF\u01F0\u01F3\u01F5\u01F9\u01FB\u01FD\u01FF\u0201\u0203\u0205\u0207\u0209\u020B\u020D\u020F\u0211\u0213\u0215\u0217\u0219\u021B\u021D\u021F\u0221\u0223\u0225\u0227\u0229\u022B\u022D\u022F\u0231\u0233-\u0239\u023C\u023F\u0240\u0242\u0247\u0249\u024B\u024D\u024F-\u0293\u0295-\u02AF\u0371\u0373\u0377\u037B-\u037D\u0390\u03AC-\u03CE\u03D0\u03D1\u03D5-\u03D7\u03D9\u03DB\u03DD\u03DF\u03E1\u03E3\u03E5\u03E7\u03E9\u03EB\u03ED\u03EF-\u03F3\u03F5\u03F8\u03FB\u03FC\u0430-\u045F\u0461\u0463\u0465\u0467\u0469\u046B\u046D\u046F\u0471\u0473\u0475\u0477\u0479\u047B\u047D\u047F\u0481\u048B\u048D\u048F\u0491\u0493\u0495\u0497\u0499\u049B\u049D\u049F\u04A1\u04A3\u04A5\u04A7\u04A9\u04AB\u04AD\u04AF\u04B1\u04B3\u04B5\u04B7\u04B9\u04BB\u04BD\u04BF\u04C2\u04C4\u04C6\u04C8\u04CA\u04CC\u04CE\u04CF\u04D1\u04D3\u04D5\u04D7\u04D9\u04DB\u04DD\u04DF\u04E1\u04E3\u04E5\u04E7\u04E9\u04EB\u04ED\u04EF\u04F1\u04F3\u04F5\u04F7\u04F9\u04FB\u04FD\u04FF\u0501\u0503\u0505\u0507\u0509\u050B\u050D\u050F\u0511\u0513\u0515\u0517\u0519\u051B\u051D\u051F\u0521\u0523\u0525\u0527\u0529\u052B\u052D\u052F\u0560-\u0588\u10D0-\u10FA\u10FD-\u10FF\u13F8-\u13FD\u1C80-\u1C88\u1D00-\u1D2B\u1D6B-\u1D77\u1D79-\u1D9A\u1E01\u1E03\u1E05\u1E07\u1E09\u1E0B\u1E0D\u1E0F\u1E11\u1E13\u1E15\u1E17\u1E19\u1E1B\u1E1D\u1E1F\u1E21\u1E23\u1E25\u1E27\u1E29\u1E2B\u1E2D\u1E2F\u1E31\u1E33\u1E35\u1E37\u1E39\u1E3B\u1E3D\u1E3F\u1E41\u1E43\u1E45\u1E47\u1E49\u1E4B\u1E4D\u1E4F\u1E51\u1E53\u1E55\u1E57\u1E59\u1E5B\u1E5D\u1E5F\u1E61\u1E63\u1E65\u1E67\u1E69\u1E6B\u1E6D\u1E6F\u1E71\u1E73\u1E75\u1E77\u1E79\u1E7B\u1E7D\u1E7F\u1E81\u1E83\u1E85\u1E87\u1E89\u1E8B\u1E8D\u1E8F\u1E91\u1E93\u1E95-\u1E9D\u1E9F\u1EA1\u1EA3\u1EA5\u1EA7\u1EA9\u1EAB\u1EAD\u1EAF\u1EB1\u1EB3\u1EB5\u1EB7\u1EB9\u1EBB\u1EBD\u1EBF\u1EC1\u1EC3\u1EC5\u1EC7\u1EC9\u1ECB\u1ECD\u1ECF\u1ED1\u1ED3\u1ED5\u1ED7\u1ED9\u1EDB\u1EDD\u1EDF\u1EE1\u1EE3\u1EE5\u1EE7\u1EE9\u1EEB\u1EED\u1EEF\u1EF1\u1EF3\u1EF5\u1EF7\u1EF9\u1EFB\u1EFD\u1EFF-\u1F07\u1F10-\u1F15\u1F20-\u1F27\u1F30-\u1F37\u1F40-\u1F45\u1F50-\u1F57\u1F60-\u1F67\u1F70-\u1F7D\u1F80-\u1F87\u1F90-\u1F97\u1FA0-\u1FA7\u1FB0-\u1FB4\u1FB6\u1FB7\u1FBE\u1FC2-\u1FC4\u1FC6\u1FC7\u1FD0-\u1FD3\u1FD6\u1FD7\u1FE0-\u1FE7\u1FF2-\u1FF4\u1FF6\u1FF7\u210A\u210E\u210F\u2113\u212F\u2134\u2139\u213C\u213D\u2146-\u2149\u214E\u2184\u2C30-\u2C5E\u2C61\u2C65\u2C66\u2C68\u2C6A\u2C6C\u2C71\u2C73\u2C74\u2C76-\u2C7B\u2C81\u2C83\u2C85\u2C87\u2C89\u2C8B\u2C8D\u2C8F\u2C91\u2C93\u2C95\u2C97\u2C99\u2C9B\u2C9D\u2C9F\u2CA1\u2CA3\u2CA5\u2CA7\u2CA9\u2CAB\u2CAD\u2CAF\u2CB1\u2CB3\u2CB5\u2CB7\u2CB9\u2CBB\u2CBD\u2CBF\u2CC1\u2CC3\u2CC5\u2CC7\u2CC9\u2CCB\u2CCD\u2CCF\u2CD1\u2CD3\u2CD5\u2CD7\u2CD9\u2CDB\u2CDD\u2CDF\u2CE1\u2CE3\u2CE4\u2CEC\u2CEE\u2CF3\u2D00-\u2D25\u2D27\u2D2D\uA641\uA643\uA645\uA647\uA649\uA64B\uA64D\uA64F\uA651\uA653\uA655\uA657\uA659\uA65B\uA65D\uA65F\uA661\uA663\uA665\uA667\uA669\uA66B\uA66D\uA681\uA683\uA685\uA687\uA689\uA68B\uA68D\uA68F\uA691\uA693\uA695\uA697\uA699\uA69B\uA723\uA725\uA727\uA729\uA72B\uA72D\uA72F-\uA731\uA733\uA735\uA737\uA739\uA73B\uA73D\uA73F\uA741\uA743\uA745\uA747\uA749\uA74B\uA74D\uA74F\uA751\uA753\uA755\uA757\uA759\uA75B\uA75D\uA75F\uA761\uA763\uA765\uA767\uA769\uA76B\uA76D\uA76F\uA771-\uA778\uA77A\uA77C\uA77F\uA781\uA783\uA785\uA787\uA78C\uA78E\uA791\uA793-\uA795\uA797\uA799\uA79B\uA79D\uA79F\uA7A1\uA7A3\uA7A5\uA7A7\uA7A9\uA7AF\uA7B5\uA7B7\uA7B9\uA7BB\uA7BD\uA7BF\uA7C3\uA7C8\uA7CA\uA7F6\uA7FA\uAB30-\uAB5A\uAB60-\uAB68\uAB70-\uABBF\uFB00-\uFB06\uFB13-\uFB17\uFF41-\uFF5A]|\uD801[\uDC28-\uDC4F\uDCD8-\uDCFB]|\uD803[\uDCC0-\uDCF2]|\uD806[\uDCC0-\uDCDF]|\uD81B[\uDE60-\uDE7F]|\uD835[\uDC1A-\uDC33\uDC4E-\uDC54\uDC56-\uDC67\uDC82-\uDC9B\uDCB6-\uDCB9\uDCBB\uDCBD-\uDCC3\uDCC5-\uDCCF\uDCEA-\uDD03\uDD1E-\uDD37\uDD52-\uDD6B\uDD86-\uDD9F\uDDBA-\uDDD3\uDDEE-\uDE07\uDE22-\uDE3B\uDE56-\uDE6F\uDE8A-\uDEA5\uDEC2-\uDEDA\uDEDC-\uDEE1\uDEFC-\uDF14\uDF16-\uDF1B\uDF36-\uDF4E\uDF50-\uDF55\uDF70-\uDF88\uDF8A-\uDF8F\uDFAA-\uDFC2\uDFC4-\uDFC9\uDFCB]|\uD83A[\uDD22-\uDD43])/.test(character)) {
-        string = string.slice(0, i - 1) + '-' + string.slice(i - 1);
-        isLastLastCharUpper = isLastCharUpper;
-        isLastCharUpper = false;
-        isLastCharLower = true;
-      } else {
-        isLastCharLower = character.toLocaleLowerCase(locale) === character && character.toLocaleUpperCase(locale) !== character;
-        isLastLastCharUpper = isLastCharUpper;
-        isLastCharUpper = character.toLocaleUpperCase(locale) === character && character.toLocaleLowerCase(locale) !== character;
-      }
-    }
-
-    return string;
-  };
-
-  var preserveConsecutiveUppercase = function preserveConsecutiveUppercase(input) {
-    return input.replace(/^(?:[A-Z\xC0-\xD6\xD8-\xDE\u0100\u0102\u0104\u0106\u0108\u010A\u010C\u010E\u0110\u0112\u0114\u0116\u0118\u011A\u011C\u011E\u0120\u0122\u0124\u0126\u0128\u012A\u012C\u012E\u0130\u0132\u0134\u0136\u0139\u013B\u013D\u013F\u0141\u0143\u0145\u0147\u014A\u014C\u014E\u0150\u0152\u0154\u0156\u0158\u015A\u015C\u015E\u0160\u0162\u0164\u0166\u0168\u016A\u016C\u016E\u0170\u0172\u0174\u0176\u0178\u0179\u017B\u017D\u0181\u0182\u0184\u0186\u0187\u0189-\u018B\u018E-\u0191\u0193\u0194\u0196-\u0198\u019C\u019D\u019F\u01A0\u01A2\u01A4\u01A6\u01A7\u01A9\u01AC\u01AE\u01AF\u01B1-\u01B3\u01B5\u01B7\u01B8\u01BC\u01C4\u01C7\u01CA\u01CD\u01CF\u01D1\u01D3\u01D5\u01D7\u01D9\u01DB\u01DE\u01E0\u01E2\u01E4\u01E6\u01E8\u01EA\u01EC\u01EE\u01F1\u01F4\u01F6-\u01F8\u01FA\u01FC\u01FE\u0200\u0202\u0204\u0206\u0208\u020A\u020C\u020E\u0210\u0212\u0214\u0216\u0218\u021A\u021C\u021E\u0220\u0222\u0224\u0226\u0228\u022A\u022C\u022E\u0230\u0232\u023A\u023B\u023D\u023E\u0241\u0243-\u0246\u0248\u024A\u024C\u024E\u0370\u0372\u0376\u037F\u0386\u0388-\u038A\u038C\u038E\u038F\u0391-\u03A1\u03A3-\u03AB\u03CF\u03D2-\u03D4\u03D8\u03DA\u03DC\u03DE\u03E0\u03E2\u03E4\u03E6\u03E8\u03EA\u03EC\u03EE\u03F4\u03F7\u03F9\u03FA\u03FD-\u042F\u0460\u0462\u0464\u0466\u0468\u046A\u046C\u046E\u0470\u0472\u0474\u0476\u0478\u047A\u047C\u047E\u0480\u048A\u048C\u048E\u0490\u0492\u0494\u0496\u0498\u049A\u049C\u049E\u04A0\u04A2\u04A4\u04A6\u04A8\u04AA\u04AC\u04AE\u04B0\u04B2\u04B4\u04B6\u04B8\u04BA\u04BC\u04BE\u04C0\u04C1\u04C3\u04C5\u04C7\u04C9\u04CB\u04CD\u04D0\u04D2\u04D4\u04D6\u04D8\u04DA\u04DC\u04DE\u04E0\u04E2\u04E4\u04E6\u04E8\u04EA\u04EC\u04EE\u04F0\u04F2\u04F4\u04F6\u04F8\u04FA\u04FC\u04FE\u0500\u0502\u0504\u0506\u0508\u050A\u050C\u050E\u0510\u0512\u0514\u0516\u0518\u051A\u051C\u051E\u0520\u0522\u0524\u0526\u0528\u052A\u052C\u052E\u0531-\u0556\u10A0-\u10C5\u10C7\u10CD\u13A0-\u13F5\u1C90-\u1CBA\u1CBD-\u1CBF\u1E00\u1E02\u1E04\u1E06\u1E08\u1E0A\u1E0C\u1E0E\u1E10\u1E12\u1E14\u1E16\u1E18\u1E1A\u1E1C\u1E1E\u1E20\u1E22\u1E24\u1E26\u1E28\u1E2A\u1E2C\u1E2E\u1E30\u1E32\u1E34\u1E36\u1E38\u1E3A\u1E3C\u1E3E\u1E40\u1E42\u1E44\u1E46\u1E48\u1E4A\u1E4C\u1E4E\u1E50\u1E52\u1E54\u1E56\u1E58\u1E5A\u1E5C\u1E5E\u1E60\u1E62\u1E64\u1E66\u1E68\u1E6A\u1E6C\u1E6E\u1E70\u1E72\u1E74\u1E76\u1E78\u1E7A\u1E7C\u1E7E\u1E80\u1E82\u1E84\u1E86\u1E88\u1E8A\u1E8C\u1E8E\u1E90\u1E92\u1E94\u1E9E\u1EA0\u1EA2\u1EA4\u1EA6\u1EA8\u1EAA\u1EAC\u1EAE\u1EB0\u1EB2\u1EB4\u1EB6\u1EB8\u1EBA\u1EBC\u1EBE\u1EC0\u1EC2\u1EC4\u1EC6\u1EC8\u1ECA\u1ECC\u1ECE\u1ED0\u1ED2\u1ED4\u1ED6\u1ED8\u1EDA\u1EDC\u1EDE\u1EE0\u1EE2\u1EE4\u1EE6\u1EE8\u1EEA\u1EEC\u1EEE\u1EF0\u1EF2\u1EF4\u1EF6\u1EF8\u1EFA\u1EFC\u1EFE\u1F08-\u1F0F\u1F18-\u1F1D\u1F28-\u1F2F\u1F38-\u1F3F\u1F48-\u1F4D\u1F59\u1F5B\u1F5D\u1F5F\u1F68-\u1F6F\u1FB8-\u1FBB\u1FC8-\u1FCB\u1FD8-\u1FDB\u1FE8-\u1FEC\u1FF8-\u1FFB\u2102\u2107\u210B-\u210D\u2110-\u2112\u2115\u2119-\u211D\u2124\u2126\u2128\u212A-\u212D\u2130-\u2133\u213E\u213F\u2145\u2183\u2C00-\u2C2E\u2C60\u2C62-\u2C64\u2C67\u2C69\u2C6B\u2C6D-\u2C70\u2C72\u2C75\u2C7E-\u2C80\u2C82\u2C84\u2C86\u2C88\u2C8A\u2C8C\u2C8E\u2C90\u2C92\u2C94\u2C96\u2C98\u2C9A\u2C9C\u2C9E\u2CA0\u2CA2\u2CA4\u2CA6\u2CA8\u2CAA\u2CAC\u2CAE\u2CB0\u2CB2\u2CB4\u2CB6\u2CB8\u2CBA\u2CBC\u2CBE\u2CC0\u2CC2\u2CC4\u2CC6\u2CC8\u2CCA\u2CCC\u2CCE\u2CD0\u2CD2\u2CD4\u2CD6\u2CD8\u2CDA\u2CDC\u2CDE\u2CE0\u2CE2\u2CEB\u2CED\u2CF2\uA640\uA642\uA644\uA646\uA648\uA64A\uA64C\uA64E\uA650\uA652\uA654\uA656\uA658\uA65A\uA65C\uA65E\uA660\uA662\uA664\uA666\uA668\uA66A\uA66C\uA680\uA682\uA684\uA686\uA688\uA68A\uA68C\uA68E\uA690\uA692\uA694\uA696\uA698\uA69A\uA722\uA724\uA726\uA728\uA72A\uA72C\uA72E\uA732\uA734\uA736\uA738\uA73A\uA73C\uA73E\uA740\uA742\uA744\uA746\uA748\uA74A\uA74C\uA74E\uA750\uA752\uA754\uA756\uA758\uA75A\uA75C\uA75E\uA760\uA762\uA764\uA766\uA768\uA76A\uA76C\uA76E\uA779\uA77B\uA77D\uA77E\uA780\uA782\uA784\uA786\uA78B\uA78D\uA790\uA792\uA796\uA798\uA79A\uA79C\uA79E\uA7A0\uA7A2\uA7A4\uA7A6\uA7A8\uA7AA-\uA7AE\uA7B0-\uA7B4\uA7B6\uA7B8\uA7BA\uA7BC\uA7BE\uA7C2\uA7C4-\uA7C7\uA7C9\uA7F5\uFF21-\uFF3A]|\uD801[\uDC00-\uDC27\uDCB0-\uDCD3]|\uD803[\uDC80-\uDCB2]|\uD806[\uDCA0-\uDCBF]|\uD81B[\uDE40-\uDE5F]|\uD835[\uDC00-\uDC19\uDC34-\uDC4D\uDC68-\uDC81\uDC9C\uDC9E\uDC9F\uDCA2\uDCA5\uDCA6\uDCA9-\uDCAC\uDCAE-\uDCB5\uDCD0-\uDCE9\uDD04\uDD05\uDD07-\uDD0A\uDD0D-\uDD14\uDD16-\uDD1C\uDD38\uDD39\uDD3B-\uDD3E\uDD40-\uDD44\uDD46\uDD4A-\uDD50\uDD6C-\uDD85\uDDA0-\uDDB9\uDDD4-\uDDED\uDE08-\uDE21\uDE3C-\uDE55\uDE70-\uDE89\uDEA8-\uDEC0\uDEE2-\uDEFA\uDF1C-\uDF34\uDF56-\uDF6E\uDF90-\uDFA8\uDFCA]|\uD83A[\uDD00-\uDD21])(?!(?:[A-Z\xC0-\xD6\xD8-\xDE\u0100\u0102\u0104\u0106\u0108\u010A\u010C\u010E\u0110\u0112\u0114\u0116\u0118\u011A\u011C\u011E\u0120\u0122\u0124\u0126\u0128\u012A\u012C\u012E\u0130\u0132\u0134\u0136\u0139\u013B\u013D\u013F\u0141\u0143\u0145\u0147\u014A\u014C\u014E\u0150\u0152\u0154\u0156\u0158\u015A\u015C\u015E\u0160\u0162\u0164\u0166\u0168\u016A\u016C\u016E\u0170\u0172\u0174\u0176\u0178\u0179\u017B\u017D\u0181\u0182\u0184\u0186\u0187\u0189-\u018B\u018E-\u0191\u0193\u0194\u0196-\u0198\u019C\u019D\u019F\u01A0\u01A2\u01A4\u01A6\u01A7\u01A9\u01AC\u01AE\u01AF\u01B1-\u01B3\u01B5\u01B7\u01B8\u01BC\u01C4\u01C7\u01CA\u01CD\u01CF\u01D1\u01D3\u01D5\u01D7\u01D9\u01DB\u01DE\u01E0\u01E2\u01E4\u01E6\u01E8\u01EA\u01EC\u01EE\u01F1\u01F4\u01F6-\u01F8\u01FA\u01FC\u01FE\u0200\u0202\u0204\u0206\u0208\u020A\u020C\u020E\u0210\u0212\u0214\u0216\u0218\u021A\u021C\u021E\u0220\u0222\u0224\u0226\u0228\u022A\u022C\u022E\u0230\u0232\u023A\u023B\u023D\u023E\u0241\u0243-\u0246\u0248\u024A\u024C\u024E\u0370\u0372\u0376\u037F\u0386\u0388-\u038A\u038C\u038E\u038F\u0391-\u03A1\u03A3-\u03AB\u03CF\u03D2-\u03D4\u03D8\u03DA\u03DC\u03DE\u03E0\u03E2\u03E4\u03E6\u03E8\u03EA\u03EC\u03EE\u03F4\u03F7\u03F9\u03FA\u03FD-\u042F\u0460\u0462\u0464\u0466\u0468\u046A\u046C\u046E\u0470\u0472\u0474\u0476\u0478\u047A\u047C\u047E\u0480\u048A\u048C\u048E\u0490\u0492\u0494\u0496\u0498\u049A\u049C\u049E\u04A0\u04A2\u04A4\u04A6\u04A8\u04AA\u04AC\u04AE\u04B0\u04B2\u04B4\u04B6\u04B8\u04BA\u04BC\u04BE\u04C0\u04C1\u04C3\u04C5\u04C7\u04C9\u04CB\u04CD\u04D0\u04D2\u04D4\u04D6\u04D8\u04DA\u04DC\u04DE\u04E0\u04E2\u04E4\u04E6\u04E8\u04EA\u04EC\u04EE\u04F0\u04F2\u04F4\u04F6\u04F8\u04FA\u04FC\u04FE\u0500\u0502\u0504\u0506\u0508\u050A\u050C\u050E\u0510\u0512\u0514\u0516\u0518\u051A\u051C\u051E\u0520\u0522\u0524\u0526\u0528\u052A\u052C\u052E\u0531-\u0556\u10A0-\u10C5\u10C7\u10CD\u13A0-\u13F5\u1C90-\u1CBA\u1CBD-\u1CBF\u1E00\u1E02\u1E04\u1E06\u1E08\u1E0A\u1E0C\u1E0E\u1E10\u1E12\u1E14\u1E16\u1E18\u1E1A\u1E1C\u1E1E\u1E20\u1E22\u1E24\u1E26\u1E28\u1E2A\u1E2C\u1E2E\u1E30\u1E32\u1E34\u1E36\u1E38\u1E3A\u1E3C\u1E3E\u1E40\u1E42\u1E44\u1E46\u1E48\u1E4A\u1E4C\u1E4E\u1E50\u1E52\u1E54\u1E56\u1E58\u1E5A\u1E5C\u1E5E\u1E60\u1E62\u1E64\u1E66\u1E68\u1E6A\u1E6C\u1E6E\u1E70\u1E72\u1E74\u1E76\u1E78\u1E7A\u1E7C\u1E7E\u1E80\u1E82\u1E84\u1E86\u1E88\u1E8A\u1E8C\u1E8E\u1E90\u1E92\u1E94\u1E9E\u1EA0\u1EA2\u1EA4\u1EA6\u1EA8\u1EAA\u1EAC\u1EAE\u1EB0\u1EB2\u1EB4\u1EB6\u1EB8\u1EBA\u1EBC\u1EBE\u1EC0\u1EC2\u1EC4\u1EC6\u1EC8\u1ECA\u1ECC\u1ECE\u1ED0\u1ED2\u1ED4\u1ED6\u1ED8\u1EDA\u1EDC\u1EDE\u1EE0\u1EE2\u1EE4\u1EE6\u1EE8\u1EEA\u1EEC\u1EEE\u1EF0\u1EF2\u1EF4\u1EF6\u1EF8\u1EFA\u1EFC\u1EFE\u1F08-\u1F0F\u1F18-\u1F1D\u1F28-\u1F2F\u1F38-\u1F3F\u1F48-\u1F4D\u1F59\u1F5B\u1F5D\u1F5F\u1F68-\u1F6F\u1FB8-\u1FBB\u1FC8-\u1FCB\u1FD8-\u1FDB\u1FE8-\u1FEC\u1FF8-\u1FFB\u2102\u2107\u210B-\u210D\u2110-\u2112\u2115\u2119-\u211D\u2124\u2126\u2128\u212A-\u212D\u2130-\u2133\u213E\u213F\u2145\u2183\u2C00-\u2C2E\u2C60\u2C62-\u2C64\u2C67\u2C69\u2C6B\u2C6D-\u2C70\u2C72\u2C75\u2C7E-\u2C80\u2C82\u2C84\u2C86\u2C88\u2C8A\u2C8C\u2C8E\u2C90\u2C92\u2C94\u2C96\u2C98\u2C9A\u2C9C\u2C9E\u2CA0\u2CA2\u2CA4\u2CA6\u2CA8\u2CAA\u2CAC\u2CAE\u2CB0\u2CB2\u2CB4\u2CB6\u2CB8\u2CBA\u2CBC\u2CBE\u2CC0\u2CC2\u2CC4\u2CC6\u2CC8\u2CCA\u2CCC\u2CCE\u2CD0\u2CD2\u2CD4\u2CD6\u2CD8\u2CDA\u2CDC\u2CDE\u2CE0\u2CE2\u2CEB\u2CED\u2CF2\uA640\uA642\uA644\uA646\uA648\uA64A\uA64C\uA64E\uA650\uA652\uA654\uA656\uA658\uA65A\uA65C\uA65E\uA660\uA662\uA664\uA666\uA668\uA66A\uA66C\uA680\uA682\uA684\uA686\uA688\uA68A\uA68C\uA68E\uA690\uA692\uA694\uA696\uA698\uA69A\uA722\uA724\uA726\uA728\uA72A\uA72C\uA72E\uA732\uA734\uA736\uA738\uA73A\uA73C\uA73E\uA740\uA742\uA744\uA746\uA748\uA74A\uA74C\uA74E\uA750\uA752\uA754\uA756\uA758\uA75A\uA75C\uA75E\uA760\uA762\uA764\uA766\uA768\uA76A\uA76C\uA76E\uA779\uA77B\uA77D\uA77E\uA780\uA782\uA784\uA786\uA78B\uA78D\uA790\uA792\uA796\uA798\uA79A\uA79C\uA79E\uA7A0\uA7A2\uA7A4\uA7A6\uA7A8\uA7AA-\uA7AE\uA7B0-\uA7B4\uA7B6\uA7B8\uA7BA\uA7BC\uA7BE\uA7C2\uA7C4-\uA7C7\uA7C9\uA7F5\uFF21-\uFF3A]|\uD801[\uDC00-\uDC27\uDCB0-\uDCD3]|\uD803[\uDC80-\uDCB2]|\uD806[\uDCA0-\uDCBF]|\uD81B[\uDE40-\uDE5F]|\uD835[\uDC00-\uDC19\uDC34-\uDC4D\uDC68-\uDC81\uDC9C\uDC9E\uDC9F\uDCA2\uDCA5\uDCA6\uDCA9-\uDCAC\uDCAE-\uDCB5\uDCD0-\uDCE9\uDD04\uDD05\uDD07-\uDD0A\uDD0D-\uDD14\uDD16-\uDD1C\uDD38\uDD39\uDD3B-\uDD3E\uDD40-\uDD44\uDD46\uDD4A-\uDD50\uDD6C-\uDD85\uDDA0-\uDDB9\uDDD4-\uDDED\uDE08-\uDE21\uDE3C-\uDE55\uDE70-\uDE89\uDEA8-\uDEC0\uDEE2-\uDEFA\uDF1C-\uDF34\uDF56-\uDF6E\uDF90-\uDFA8\uDFCA]|\uD83A[\uDD00-\uDD21]))/g, function (m1) {
-      return m1.toLowerCase();
-    });
-  };
-
-  var postProcess = function postProcess(input, options) {
-    return input.replace(/[ \x2D\._]+((?:[0-9A-Z_a-z\xAA\xB2\xB3\xB5\xB9\xBA\xBC-\xBE\xC0-\xD6\xD8-\xF6\xF8-\u02C1\u02C6-\u02D1\u02E0-\u02E4\u02EC\u02EE\u0345\u0370-\u0374\u0376\u0377\u037A-\u037D\u037F\u0386\u0388-\u038A\u038C\u038E-\u03A1\u03A3-\u03F5\u03F7-\u0481\u048A-\u052F\u0531-\u0556\u0559\u0560-\u0588\u05B0-\u05BD\u05BF\u05C1\u05C2\u05C4\u05C5\u05C7\u05D0-\u05EA\u05EF-\u05F2\u0610-\u061A\u0620-\u0657\u0659-\u0669\u066E-\u06D3\u06D5-\u06DC\u06E1-\u06E8\u06ED-\u06FC\u06FF\u0710-\u073F\u074D-\u07B1\u07C0-\u07EA\u07F4\u07F5\u07FA\u0800-\u0817\u081A-\u082C\u0840-\u0858\u0860-\u086A\u08A0-\u08B4\u08B6-\u08C7\u08D4-\u08DF\u08E3-\u08E9\u08F0-\u093B\u093D-\u094C\u094E-\u0950\u0955-\u0963\u0966-\u096F\u0971-\u0983\u0985-\u098C\u098F\u0990\u0993-\u09A8\u09AA-\u09B0\u09B2\u09B6-\u09B9\u09BD-\u09C4\u09C7\u09C8\u09CB\u09CC\u09CE\u09D7\u09DC\u09DD\u09DF-\u09E3\u09E6-\u09F1\u09F4-\u09F9\u09FC\u0A01-\u0A03\u0A05-\u0A0A\u0A0F\u0A10\u0A13-\u0A28\u0A2A-\u0A30\u0A32\u0A33\u0A35\u0A36\u0A38\u0A39\u0A3E-\u0A42\u0A47\u0A48\u0A4B\u0A4C\u0A51\u0A59-\u0A5C\u0A5E\u0A66-\u0A75\u0A81-\u0A83\u0A85-\u0A8D\u0A8F-\u0A91\u0A93-\u0AA8\u0AAA-\u0AB0\u0AB2\u0AB3\u0AB5-\u0AB9\u0ABD-\u0AC5\u0AC7-\u0AC9\u0ACB\u0ACC\u0AD0\u0AE0-\u0AE3\u0AE6-\u0AEF\u0AF9-\u0AFC\u0B01-\u0B03\u0B05-\u0B0C\u0B0F\u0B10\u0B13-\u0B28\u0B2A-\u0B30\u0B32\u0B33\u0B35-\u0B39\u0B3D-\u0B44\u0B47\u0B48\u0B4B\u0B4C\u0B56\u0B57\u0B5C\u0B5D\u0B5F-\u0B63\u0B66-\u0B6F\u0B71-\u0B77\u0B82\u0B83\u0B85-\u0B8A\u0B8E-\u0B90\u0B92-\u0B95\u0B99\u0B9A\u0B9C\u0B9E\u0B9F\u0BA3\u0BA4\u0BA8-\u0BAA\u0BAE-\u0BB9\u0BBE-\u0BC2\u0BC6-\u0BC8\u0BCA-\u0BCC\u0BD0\u0BD7\u0BE6-\u0BF2\u0C00-\u0C03\u0C05-\u0C0C\u0C0E-\u0C10\u0C12-\u0C28\u0C2A-\u0C39\u0C3D-\u0C44\u0C46-\u0C48\u0C4A-\u0C4C\u0C55\u0C56\u0C58-\u0C5A\u0C60-\u0C63\u0C66-\u0C6F\u0C78-\u0C7E\u0C80-\u0C83\u0C85-\u0C8C\u0C8E-\u0C90\u0C92-\u0CA8\u0CAA-\u0CB3\u0CB5-\u0CB9\u0CBD-\u0CC4\u0CC6-\u0CC8\u0CCA-\u0CCC\u0CD5\u0CD6\u0CDE\u0CE0-\u0CE3\u0CE6-\u0CEF\u0CF1\u0CF2\u0D00-\u0D0C\u0D0E-\u0D10\u0D12-\u0D3A\u0D3D-\u0D44\u0D46-\u0D48\u0D4A-\u0D4C\u0D4E\u0D54-\u0D63\u0D66-\u0D78\u0D7A-\u0D7F\u0D81-\u0D83\u0D85-\u0D96\u0D9A-\u0DB1\u0DB3-\u0DBB\u0DBD\u0DC0-\u0DC6\u0DCF-\u0DD4\u0DD6\u0DD8-\u0DDF\u0DE6-\u0DEF\u0DF2\u0DF3\u0E01-\u0E3A\u0E40-\u0E46\u0E4D\u0E50-\u0E59\u0E81\u0E82\u0E84\u0E86-\u0E8A\u0E8C-\u0EA3\u0EA5\u0EA7-\u0EB9\u0EBB-\u0EBD\u0EC0-\u0EC4\u0EC6\u0ECD\u0ED0-\u0ED9\u0EDC-\u0EDF\u0F00\u0F20-\u0F33\u0F40-\u0F47\u0F49-\u0F6C\u0F71-\u0F81\u0F88-\u0F97\u0F99-\u0FBC\u1000-\u1036\u1038\u103B-\u1049\u1050-\u109D\u10A0-\u10C5\u10C7\u10CD\u10D0-\u10FA\u10FC-\u1248\u124A-\u124D\u1250-\u1256\u1258\u125A-\u125D\u1260-\u1288\u128A-\u128D\u1290-\u12B0\u12B2-\u12B5\u12B8-\u12BE\u12C0\u12C2-\u12C5\u12C8-\u12D6\u12D8-\u1310\u1312-\u1315\u1318-\u135A\u1369-\u137C\u1380-\u138F\u13A0-\u13F5\u13F8-\u13FD\u1401-\u166C\u166F-\u167F\u1681-\u169A\u16A0-\u16EA\u16EE-\u16F8\u1700-\u170C\u170E-\u1713\u1720-\u1733\u1740-\u1753\u1760-\u176C\u176E-\u1770\u1772\u1773\u1780-\u17B3\u17B6-\u17C8\u17D7\u17DC\u17E0-\u17E9\u17F0-\u17F9\u1810-\u1819\u1820-\u1878\u1880-\u18AA\u18B0-\u18F5\u1900-\u191E\u1920-\u192B\u1930-\u1938\u1946-\u196D\u1970-\u1974\u1980-\u19AB\u19B0-\u19C9\u19D0-\u19DA\u1A00-\u1A1B\u1A20-\u1A5E\u1A61-\u1A74\u1A80-\u1A89\u1A90-\u1A99\u1AA7\u1ABF\u1AC0\u1B00-\u1B33\u1B35-\u1B43\u1B45-\u1B4B\u1B50-\u1B59\u1B80-\u1BA9\u1BAC-\u1BE5\u1BE7-\u1BF1\u1C00-\u1C36\u1C40-\u1C49\u1C4D-\u1C7D\u1C80-\u1C88\u1C90-\u1CBA\u1CBD-\u1CBF\u1CE9-\u1CEC\u1CEE-\u1CF3\u1CF5\u1CF6\u1CFA\u1D00-\u1DBF\u1DE7-\u1DF4\u1E00-\u1F15\u1F18-\u1F1D\u1F20-\u1F45\u1F48-\u1F4D\u1F50-\u1F57\u1F59\u1F5B\u1F5D\u1F5F-\u1F7D\u1F80-\u1FB4\u1FB6-\u1FBC\u1FBE\u1FC2-\u1FC4\u1FC6-\u1FCC\u1FD0-\u1FD3\u1FD6-\u1FDB\u1FE0-\u1FEC\u1FF2-\u1FF4\u1FF6-\u1FFC\u2070\u2071\u2074-\u2079\u207F-\u2089\u2090-\u209C\u2102\u2107\u210A-\u2113\u2115\u2119-\u211D\u2124\u2126\u2128\u212A-\u212D\u212F-\u2139\u213C-\u213F\u2145-\u2149\u214E\u2160-\u2189\u2150-\u2182\u2460-\u249B\u24B6-\u24FF\u2776-\u2793\u2C00-\u2C2E\u2C30-\u2C5E\u2C60-\u2CE4\u2CEB-\u2CEE\u2CF2\u2CF3\u2CFD\u2D00-\u2D25\u2D27\u2D2D\u2D30-\u2D67\u2D6F\u2D80-\u2D96\u2DA0-\u2DA6\u2DA8-\u2DAE\u2DB0-\u2DB6\u2DB8-\u2DBE\u2DC0-\u2DC6\u2DC8-\u2DCE\u2DD0-\u2DD6\u2DD8-\u2DDE\u2DE0-\u2DFF\u2E2F\u3005-\u3007\u3021-\u3029\u3031-\u3035\u3038-\u303C\u3041-\u3096\u309D-\u309F\u30A1-\u30FA\u30FC-\u30FF\u3105-\u312F\u3131-\u318E\u3192-\u3195\u31A0-\u31BF\u31F0-\u31FF\u3220-\u3229\u3248-\u324F\u3251-\u325F\u3280-\u3289\u32B1-\u32BF\u3400-\u4DBF\u4E00-\u9FFC\uA000-\uA48C\uA4D0-\uA4FD\uA500-\uA60C\uA610-\uA62B\uA640-\uA66E\uA674-\uA67B\uA67F-\uA6EF\uA717-\uA71F\uA722-\uA788\uA78B-\uA7BF\uA7C2-\uA7CA\uA7F5-\uA805\uA807-\uA827\uA830-\uA835\uA840-\uA873\uA880-\uA8C3\uA8C5\uA8D0-\uA8D9\uA8F2-\uA8F7\uA8FB\uA8FD-\uA92A\uA930-\uA952\uA960-\uA97C\uA980-\uA9B2\uA9B4-\uA9BF\uA9CF-\uA9D9\uA9E0-\uA9FE\uAA00-\uAA36\uAA40-\uAA4D\uAA50-\uAA59\uAA60-\uAA76\uAA7A-\uAABE\uAAC0\uAAC2\uAADB-\uAADD\uAAE0-\uAAEF\uAAF2-\uAAF5\uAB01-\uAB06\uAB09-\uAB0E\uAB11-\uAB16\uAB20-\uAB26\uAB28-\uAB2E\uAB30-\uAB5A\uAB5C-\uAB69\uAB70-\uABEA\uABF0-\uABF9\uAC00-\uD7A3\uD7B0-\uD7C6\uD7CB-\uD7FB\uF900-\uFA6D\uFA70-\uFAD9\uFB00-\uFB06\uFB13-\uFB17\uFB1D-\uFB28\uFB2A-\uFB36\uFB38-\uFB3C\uFB3E\uFB40\uFB41\uFB43\uFB44\uFB46-\uFBB1\uFBD3-\uFD3D\uFD50-\uFD8F\uFD92-\uFDC7\uFDF0-\uFDFB\uFE70-\uFE74\uFE76-\uFEFC\uFF10-\uFF19\uFF21-\uFF3A\uFF41-\uFF5A\uFF66-\uFFBE\uFFC2-\uFFC7\uFFCA-\uFFCF\uFFD2-\uFFD7\uFFDA-\uFFDC]|\uD800[\uDC00-\uDC0B\uDC0D-\uDC26\uDC28-\uDC3A\uDC3C\uDC3D\uDC3F-\uDC4D\uDC50-\uDC5D\uDC80-\uDCFA\uDD07-\uDD33\uDD40-\uDD78\uDD8A\uDD8B\uDE80-\uDE9C\uDEA0-\uDED0\uDEE1-\uDEFB\uDF00-\uDF23\uDF2D-\uDF4A\uDF50-\uDF7A\uDF80-\uDF9D\uDFA0-\uDFC3\uDFC8-\uDFCF\uDFD1-\uDFD5]|\uD801[\uDC00-\uDC9D\uDCA0-\uDCA9\uDCB0-\uDCD3\uDCD8-\uDCFB\uDD00-\uDD27\uDD30-\uDD63\uDE00-\uDF36\uDF40-\uDF55\uDF60-\uDF67]|\uD802[\uDC00-\uDC05\uDC08\uDC0A-\uDC35\uDC37\uDC38\uDC3C\uDC3F-\uDC55\uDC58-\uDC76\uDC79-\uDC9E\uDCA7-\uDCAF\uDCE0-\uDCF2\uDCF4\uDCF5\uDCFB-\uDD1B\uDD20-\uDD39\uDD80-\uDDB7\uDDBC-\uDDCF\uDDD2-\uDE03\uDE05\uDE06\uDE0C-\uDE13\uDE15-\uDE17\uDE19-\uDE35\uDE40-\uDE48\uDE60-\uDE7E\uDE80-\uDE9F\uDEC0-\uDEC7\uDEC9-\uDEE4\uDEEB-\uDEEF\uDF00-\uDF35\uDF40-\uDF55\uDF58-\uDF72\uDF78-\uDF91\uDFA9-\uDFAF]|\uD803[\uDC00-\uDC48\uDC80-\uDCB2\uDCC0-\uDCF2\uDCFA-\uDD27\uDD30-\uDD39\uDE60-\uDE7E\uDE80-\uDEA9\uDEAB\uDEAC\uDEB0\uDEB1\uDF00-\uDF27\uDF30-\uDF45\uDF51-\uDF54\uDFB0-\uDFCB\uDFE0-\uDFF6]|\uD804[\uDC00-\uDC45\uDC52-\uDC6F\uDC82-\uDCB8\uDCD0-\uDCE8\uDCF0-\uDCF9\uDD00-\uDD32\uDD36-\uDD3F\uDD44-\uDD47\uDD50-\uDD72\uDD76\uDD80-\uDDBF\uDDC1-\uDDC4\uDDCE-\uDDDA\uDDDC\uDDE1-\uDDF4\uDE00-\uDE11\uDE13-\uDE34\uDE37\uDE3E\uDE80-\uDE86\uDE88\uDE8A-\uDE8D\uDE8F-\uDE9D\uDE9F-\uDEA8\uDEB0-\uDEE8\uDEF0-\uDEF9\uDF00-\uDF03\uDF05-\uDF0C\uDF0F\uDF10\uDF13-\uDF28\uDF2A-\uDF30\uDF32\uDF33\uDF35-\uDF39\uDF3D-\uDF44\uDF47\uDF48\uDF4B\uDF4C\uDF50\uDF57\uDF5D-\uDF63]|\uD805[\uDC00-\uDC41\uDC43-\uDC45\uDC47-\uDC4A\uDC50-\uDC59\uDC5F-\uDC61\uDC80-\uDCC1\uDCC4\uDCC5\uDCC7\uDCD0-\uDCD9\uDD80-\uDDB5\uDDB8-\uDDBE\uDDD8-\uDDDD\uDE00-\uDE3E\uDE40\uDE44\uDE50-\uDE59\uDE80-\uDEB5\uDEB8\uDEC0-\uDEC9\uDF00-\uDF1A\uDF1D-\uDF2A\uDF30-\uDF3B]|\uD806[\uDC00-\uDC38\uDCA0-\uDCF2\uDCFF-\uDD06\uDD09\uDD0C-\uDD13\uDD15\uDD16\uDD18-\uDD35\uDD37\uDD38\uDD3B\uDD3C\uDD3F-\uDD42\uDD50-\uDD59\uDDA0-\uDDA7\uDDAA-\uDDD7\uDDDA-\uDDDF\uDDE1\uDDE3\uDDE4\uDE00-\uDE32\uDE35-\uDE3E\uDE50-\uDE97\uDE9D\uDEC0-\uDEF8]|\uD807[\uDC00-\uDC08\uDC0A-\uDC36\uDC38-\uDC3E\uDC40\uDC50-\uDC6C\uDC72-\uDC8F\uDC92-\uDCA7\uDCA9-\uDCB6\uDD00-\uDD06\uDD08\uDD09\uDD0B-\uDD36\uDD3A\uDD3C\uDD3D\uDD3F-\uDD41\uDD43\uDD46\uDD47\uDD50-\uDD59\uDD60-\uDD65\uDD67\uDD68\uDD6A-\uDD8E\uDD90\uDD91\uDD93-\uDD96\uDD98\uDDA0-\uDDA9\uDEE0-\uDEF6\uDFB0\uDFC0-\uDFD4]|\uD808[\uDC00-\uDF99]|\uD809[\uDC00-\uDC6E\uDC80-\uDD43]|[\uD80C\uD81C-\uD820\uD822\uD840-\uD868\uD86A-\uD86C\uD86F-\uD872\uD874-\uD879\uD880-\uD883][\uDC00-\uDFFF]|\uD80D[\uDC00-\uDC2E]|\uD811[\uDC00-\uDE46]|\uD81A[\uDC00-\uDE38\uDE40-\uDE5E\uDE60-\uDE69\uDED0-\uDEED\uDF00-\uDF2F\uDF40-\uDF43\uDF50-\uDF59\uDF5B-\uDF61\uDF63-\uDF77\uDF7D-\uDF8F]|\uD81B[\uDE40-\uDE96\uDF00-\uDF4A\uDF4F-\uDF87\uDF8F-\uDF9F\uDFE0\uDFE1\uDFE3\uDFF0\uDFF1]|\uD821[\uDC00-\uDFF7]|\uD823[\uDC00-\uDCD5\uDD00-\uDD08]|\uD82C[\uDC00-\uDD1E\uDD50-\uDD52\uDD64-\uDD67\uDD70-\uDEFB]|\uD82F[\uDC00-\uDC6A\uDC70-\uDC7C\uDC80-\uDC88\uDC90-\uDC99\uDC9E]|\uD834[\uDEE0-\uDEF3\uDF60-\uDF78]|\uD835[\uDC00-\uDC54\uDC56-\uDC9C\uDC9E\uDC9F\uDCA2\uDCA5\uDCA6\uDCA9-\uDCAC\uDCAE-\uDCB9\uDCBB\uDCBD-\uDCC3\uDCC5-\uDD05\uDD07-\uDD0A\uDD0D-\uDD14\uDD16-\uDD1C\uDD1E-\uDD39\uDD3B-\uDD3E\uDD40-\uDD44\uDD46\uDD4A-\uDD50\uDD52-\uDEA5\uDEA8-\uDEC0\uDEC2-\uDEDA\uDEDC-\uDEFA\uDEFC-\uDF14\uDF16-\uDF34\uDF36-\uDF4E\uDF50-\uDF6E\uDF70-\uDF88\uDF8A-\uDFA8\uDFAA-\uDFC2\uDFC4-\uDFCB\uDFCE-\uDFFF]|\uD838[\uDC00-\uDC06\uDC08-\uDC18\uDC1B-\uDC21\uDC23\uDC24\uDC26-\uDC2A\uDD00-\uDD2C\uDD37-\uDD3D\uDD40-\uDD49\uDD4E\uDEC0-\uDEEB\uDEF0-\uDEF9]|\uD83A[\uDC00-\uDCC4\uDCC7-\uDCCF\uDD00-\uDD43\uDD47\uDD4B\uDD50-\uDD59]|\uD83B[\uDC71-\uDCAB\uDCAD-\uDCAF\uDCB1-\uDCB4\uDD01-\uDD2D\uDD2F-\uDD3D\uDE00-\uDE03\uDE05-\uDE1F\uDE21\uDE22\uDE24\uDE27\uDE29-\uDE32\uDE34-\uDE37\uDE39\uDE3B\uDE42\uDE47\uDE49\uDE4B\uDE4D-\uDE4F\uDE51\uDE52\uDE54\uDE57\uDE59\uDE5B\uDE5D\uDE5F\uDE61\uDE62\uDE64\uDE67-\uDE6A\uDE6C-\uDE72\uDE74-\uDE77\uDE79-\uDE7C\uDE7E\uDE80-\uDE89\uDE8B-\uDE9B\uDEA1-\uDEA3\uDEA5-\uDEA9\uDEAB-\uDEBB]|\uD83C[\uDD00-\uDD0C\uDD30-\uDD49\uDD50-\uDD69\uDD70-\uDD89]|\uD83E[\uDFF0-\uDFF9]|\uD869[\uDC00-\uDEDD\uDF00-\uDFFF]|\uD86D[\uDC00-\uDF34\uDF40-\uDFFF]|\uD86E[\uDC00-\uDC1D\uDC20-\uDFFF]|\uD873[\uDC00-\uDEA1\uDEB0-\uDFFF]|\uD87A[\uDC00-\uDFE0]|\uD87E[\uDC00-\uDE1D]|\uD884[\uDC00-\uDF4A])|$)/g, function (_, p1) {
-      return p1.toLocaleUpperCase(options.locale);
-    }).replace(/[0-9]+((?:[0-9A-Z_a-z\xAA\xB2\xB3\xB5\xB9\xBA\xBC-\xBE\xC0-\xD6\xD8-\xF6\xF8-\u02C1\u02C6-\u02D1\u02E0-\u02E4\u02EC\u02EE\u0345\u0370-\u0374\u0376\u0377\u037A-\u037D\u037F\u0386\u0388-\u038A\u038C\u038E-\u03A1\u03A3-\u03F5\u03F7-\u0481\u048A-\u052F\u0531-\u0556\u0559\u0560-\u0588\u05B0-\u05BD\u05BF\u05C1\u05C2\u05C4\u05C5\u05C7\u05D0-\u05EA\u05EF-\u05F2\u0610-\u061A\u0620-\u0657\u0659-\u0669\u066E-\u06D3\u06D5-\u06DC\u06E1-\u06E8\u06ED-\u06FC\u06FF\u0710-\u073F\u074D-\u07B1\u07C0-\u07EA\u07F4\u07F5\u07FA\u0800-\u0817\u081A-\u082C\u0840-\u0858\u0860-\u086A\u08A0-\u08B4\u08B6-\u08C7\u08D4-\u08DF\u08E3-\u08E9\u08F0-\u093B\u093D-\u094C\u094E-\u0950\u0955-\u0963\u0966-\u096F\u0971-\u0983\u0985-\u098C\u098F\u0990\u0993-\u09A8\u09AA-\u09B0\u09B2\u09B6-\u09B9\u09BD-\u09C4\u09C7\u09C8\u09CB\u09CC\u09CE\u09D7\u09DC\u09DD\u09DF-\u09E3\u09E6-\u09F1\u09F4-\u09F9\u09FC\u0A01-\u0A03\u0A05-\u0A0A\u0A0F\u0A10\u0A13-\u0A28\u0A2A-\u0A30\u0A32\u0A33\u0A35\u0A36\u0A38\u0A39\u0A3E-\u0A42\u0A47\u0A48\u0A4B\u0A4C\u0A51\u0A59-\u0A5C\u0A5E\u0A66-\u0A75\u0A81-\u0A83\u0A85-\u0A8D\u0A8F-\u0A91\u0A93-\u0AA8\u0AAA-\u0AB0\u0AB2\u0AB3\u0AB5-\u0AB9\u0ABD-\u0AC5\u0AC7-\u0AC9\u0ACB\u0ACC\u0AD0\u0AE0-\u0AE3\u0AE6-\u0AEF\u0AF9-\u0AFC\u0B01-\u0B03\u0B05-\u0B0C\u0B0F\u0B10\u0B13-\u0B28\u0B2A-\u0B30\u0B32\u0B33\u0B35-\u0B39\u0B3D-\u0B44\u0B47\u0B48\u0B4B\u0B4C\u0B56\u0B57\u0B5C\u0B5D\u0B5F-\u0B63\u0B66-\u0B6F\u0B71-\u0B77\u0B82\u0B83\u0B85-\u0B8A\u0B8E-\u0B90\u0B92-\u0B95\u0B99\u0B9A\u0B9C\u0B9E\u0B9F\u0BA3\u0BA4\u0BA8-\u0BAA\u0BAE-\u0BB9\u0BBE-\u0BC2\u0BC6-\u0BC8\u0BCA-\u0BCC\u0BD0\u0BD7\u0BE6-\u0BF2\u0C00-\u0C03\u0C05-\u0C0C\u0C0E-\u0C10\u0C12-\u0C28\u0C2A-\u0C39\u0C3D-\u0C44\u0C46-\u0C48\u0C4A-\u0C4C\u0C55\u0C56\u0C58-\u0C5A\u0C60-\u0C63\u0C66-\u0C6F\u0C78-\u0C7E\u0C80-\u0C83\u0C85-\u0C8C\u0C8E-\u0C90\u0C92-\u0CA8\u0CAA-\u0CB3\u0CB5-\u0CB9\u0CBD-\u0CC4\u0CC6-\u0CC8\u0CCA-\u0CCC\u0CD5\u0CD6\u0CDE\u0CE0-\u0CE3\u0CE6-\u0CEF\u0CF1\u0CF2\u0D00-\u0D0C\u0D0E-\u0D10\u0D12-\u0D3A\u0D3D-\u0D44\u0D46-\u0D48\u0D4A-\u0D4C\u0D4E\u0D54-\u0D63\u0D66-\u0D78\u0D7A-\u0D7F\u0D81-\u0D83\u0D85-\u0D96\u0D9A-\u0DB1\u0DB3-\u0DBB\u0DBD\u0DC0-\u0DC6\u0DCF-\u0DD4\u0DD6\u0DD8-\u0DDF\u0DE6-\u0DEF\u0DF2\u0DF3\u0E01-\u0E3A\u0E40-\u0E46\u0E4D\u0E50-\u0E59\u0E81\u0E82\u0E84\u0E86-\u0E8A\u0E8C-\u0EA3\u0EA5\u0EA7-\u0EB9\u0EBB-\u0EBD\u0EC0-\u0EC4\u0EC6\u0ECD\u0ED0-\u0ED9\u0EDC-\u0EDF\u0F00\u0F20-\u0F33\u0F40-\u0F47\u0F49-\u0F6C\u0F71-\u0F81\u0F88-\u0F97\u0F99-\u0FBC\u1000-\u1036\u1038\u103B-\u1049\u1050-\u109D\u10A0-\u10C5\u10C7\u10CD\u10D0-\u10FA\u10FC-\u1248\u124A-\u124D\u1250-\u1256\u1258\u125A-\u125D\u1260-\u1288\u128A-\u128D\u1290-\u12B0\u12B2-\u12B5\u12B8-\u12BE\u12C0\u12C2-\u12C5\u12C8-\u12D6\u12D8-\u1310\u1312-\u1315\u1318-\u135A\u1369-\u137C\u1380-\u138F\u13A0-\u13F5\u13F8-\u13FD\u1401-\u166C\u166F-\u167F\u1681-\u169A\u16A0-\u16EA\u16EE-\u16F8\u1700-\u170C\u170E-\u1713\u1720-\u1733\u1740-\u1753\u1760-\u176C\u176E-\u1770\u1772\u1773\u1780-\u17B3\u17B6-\u17C8\u17D7\u17DC\u17E0-\u17E9\u17F0-\u17F9\u1810-\u1819\u1820-\u1878\u1880-\u18AA\u18B0-\u18F5\u1900-\u191E\u1920-\u192B\u1930-\u1938\u1946-\u196D\u1970-\u1974\u1980-\u19AB\u19B0-\u19C9\u19D0-\u19DA\u1A00-\u1A1B\u1A20-\u1A5E\u1A61-\u1A74\u1A80-\u1A89\u1A90-\u1A99\u1AA7\u1ABF\u1AC0\u1B00-\u1B33\u1B35-\u1B43\u1B45-\u1B4B\u1B50-\u1B59\u1B80-\u1BA9\u1BAC-\u1BE5\u1BE7-\u1BF1\u1C00-\u1C36\u1C40-\u1C49\u1C4D-\u1C7D\u1C80-\u1C88\u1C90-\u1CBA\u1CBD-\u1CBF\u1CE9-\u1CEC\u1CEE-\u1CF3\u1CF5\u1CF6\u1CFA\u1D00-\u1DBF\u1DE7-\u1DF4\u1E00-\u1F15\u1F18-\u1F1D\u1F20-\u1F45\u1F48-\u1F4D\u1F50-\u1F57\u1F59\u1F5B\u1F5D\u1F5F-\u1F7D\u1F80-\u1FB4\u1FB6-\u1FBC\u1FBE\u1FC2-\u1FC4\u1FC6-\u1FCC\u1FD0-\u1FD3\u1FD6-\u1FDB\u1FE0-\u1FEC\u1FF2-\u1FF4\u1FF6-\u1FFC\u2070\u2071\u2074-\u2079\u207F-\u2089\u2090-\u209C\u2102\u2107\u210A-\u2113\u2115\u2119-\u211D\u2124\u2126\u2128\u212A-\u212D\u212F-\u2139\u213C-\u213F\u2145-\u2149\u214E\u2160-\u2189\u2150-\u2182\u2460-\u249B\u24B6-\u24FF\u2776-\u2793\u2C00-\u2C2E\u2C30-\u2C5E\u2C60-\u2CE4\u2CEB-\u2CEE\u2CF2\u2CF3\u2CFD\u2D00-\u2D25\u2D27\u2D2D\u2D30-\u2D67\u2D6F\u2D80-\u2D96\u2DA0-\u2DA6\u2DA8-\u2DAE\u2DB0-\u2DB6\u2DB8-\u2DBE\u2DC0-\u2DC6\u2DC8-\u2DCE\u2DD0-\u2DD6\u2DD8-\u2DDE\u2DE0-\u2DFF\u2E2F\u3005-\u3007\u3021-\u3029\u3031-\u3035\u3038-\u303C\u3041-\u3096\u309D-\u309F\u30A1-\u30FA\u30FC-\u30FF\u3105-\u312F\u3131-\u318E\u3192-\u3195\u31A0-\u31BF\u31F0-\u31FF\u3220-\u3229\u3248-\u324F\u3251-\u325F\u3280-\u3289\u32B1-\u32BF\u3400-\u4DBF\u4E00-\u9FFC\uA000-\uA48C\uA4D0-\uA4FD\uA500-\uA60C\uA610-\uA62B\uA640-\uA66E\uA674-\uA67B\uA67F-\uA6EF\uA717-\uA71F\uA722-\uA788\uA78B-\uA7BF\uA7C2-\uA7CA\uA7F5-\uA805\uA807-\uA827\uA830-\uA835\uA840-\uA873\uA880-\uA8C3\uA8C5\uA8D0-\uA8D9\uA8F2-\uA8F7\uA8FB\uA8FD-\uA92A\uA930-\uA952\uA960-\uA97C\uA980-\uA9B2\uA9B4-\uA9BF\uA9CF-\uA9D9\uA9E0-\uA9FE\uAA00-\uAA36\uAA40-\uAA4D\uAA50-\uAA59\uAA60-\uAA76\uAA7A-\uAABE\uAAC0\uAAC2\uAADB-\uAADD\uAAE0-\uAAEF\uAAF2-\uAAF5\uAB01-\uAB06\uAB09-\uAB0E\uAB11-\uAB16\uAB20-\uAB26\uAB28-\uAB2E\uAB30-\uAB5A\uAB5C-\uAB69\uAB70-\uABEA\uABF0-\uABF9\uAC00-\uD7A3\uD7B0-\uD7C6\uD7CB-\uD7FB\uF900-\uFA6D\uFA70-\uFAD9\uFB00-\uFB06\uFB13-\uFB17\uFB1D-\uFB28\uFB2A-\uFB36\uFB38-\uFB3C\uFB3E\uFB40\uFB41\uFB43\uFB44\uFB46-\uFBB1\uFBD3-\uFD3D\uFD50-\uFD8F\uFD92-\uFDC7\uFDF0-\uFDFB\uFE70-\uFE74\uFE76-\uFEFC\uFF10-\uFF19\uFF21-\uFF3A\uFF41-\uFF5A\uFF66-\uFFBE\uFFC2-\uFFC7\uFFCA-\uFFCF\uFFD2-\uFFD7\uFFDA-\uFFDC]|\uD800[\uDC00-\uDC0B\uDC0D-\uDC26\uDC28-\uDC3A\uDC3C\uDC3D\uDC3F-\uDC4D\uDC50-\uDC5D\uDC80-\uDCFA\uDD07-\uDD33\uDD40-\uDD78\uDD8A\uDD8B\uDE80-\uDE9C\uDEA0-\uDED0\uDEE1-\uDEFB\uDF00-\uDF23\uDF2D-\uDF4A\uDF50-\uDF7A\uDF80-\uDF9D\uDFA0-\uDFC3\uDFC8-\uDFCF\uDFD1-\uDFD5]|\uD801[\uDC00-\uDC9D\uDCA0-\uDCA9\uDCB0-\uDCD3\uDCD8-\uDCFB\uDD00-\uDD27\uDD30-\uDD63\uDE00-\uDF36\uDF40-\uDF55\uDF60-\uDF67]|\uD802[\uDC00-\uDC05\uDC08\uDC0A-\uDC35\uDC37\uDC38\uDC3C\uDC3F-\uDC55\uDC58-\uDC76\uDC79-\uDC9E\uDCA7-\uDCAF\uDCE0-\uDCF2\uDCF4\uDCF5\uDCFB-\uDD1B\uDD20-\uDD39\uDD80-\uDDB7\uDDBC-\uDDCF\uDDD2-\uDE03\uDE05\uDE06\uDE0C-\uDE13\uDE15-\uDE17\uDE19-\uDE35\uDE40-\uDE48\uDE60-\uDE7E\uDE80-\uDE9F\uDEC0-\uDEC7\uDEC9-\uDEE4\uDEEB-\uDEEF\uDF00-\uDF35\uDF40-\uDF55\uDF58-\uDF72\uDF78-\uDF91\uDFA9-\uDFAF]|\uD803[\uDC00-\uDC48\uDC80-\uDCB2\uDCC0-\uDCF2\uDCFA-\uDD27\uDD30-\uDD39\uDE60-\uDE7E\uDE80-\uDEA9\uDEAB\uDEAC\uDEB0\uDEB1\uDF00-\uDF27\uDF30-\uDF45\uDF51-\uDF54\uDFB0-\uDFCB\uDFE0-\uDFF6]|\uD804[\uDC00-\uDC45\uDC52-\uDC6F\uDC82-\uDCB8\uDCD0-\uDCE8\uDCF0-\uDCF9\uDD00-\uDD32\uDD36-\uDD3F\uDD44-\uDD47\uDD50-\uDD72\uDD76\uDD80-\uDDBF\uDDC1-\uDDC4\uDDCE-\uDDDA\uDDDC\uDDE1-\uDDF4\uDE00-\uDE11\uDE13-\uDE34\uDE37\uDE3E\uDE80-\uDE86\uDE88\uDE8A-\uDE8D\uDE8F-\uDE9D\uDE9F-\uDEA8\uDEB0-\uDEE8\uDEF0-\uDEF9\uDF00-\uDF03\uDF05-\uDF0C\uDF0F\uDF10\uDF13-\uDF28\uDF2A-\uDF30\uDF32\uDF33\uDF35-\uDF39\uDF3D-\uDF44\uDF47\uDF48\uDF4B\uDF4C\uDF50\uDF57\uDF5D-\uDF63]|\uD805[\uDC00-\uDC41\uDC43-\uDC45\uDC47-\uDC4A\uDC50-\uDC59\uDC5F-\uDC61\uDC80-\uDCC1\uDCC4\uDCC5\uDCC7\uDCD0-\uDCD9\uDD80-\uDDB5\uDDB8-\uDDBE\uDDD8-\uDDDD\uDE00-\uDE3E\uDE40\uDE44\uDE50-\uDE59\uDE80-\uDEB5\uDEB8\uDEC0-\uDEC9\uDF00-\uDF1A\uDF1D-\uDF2A\uDF30-\uDF3B]|\uD806[\uDC00-\uDC38\uDCA0-\uDCF2\uDCFF-\uDD06\uDD09\uDD0C-\uDD13\uDD15\uDD16\uDD18-\uDD35\uDD37\uDD38\uDD3B\uDD3C\uDD3F-\uDD42\uDD50-\uDD59\uDDA0-\uDDA7\uDDAA-\uDDD7\uDDDA-\uDDDF\uDDE1\uDDE3\uDDE4\uDE00-\uDE32\uDE35-\uDE3E\uDE50-\uDE97\uDE9D\uDEC0-\uDEF8]|\uD807[\uDC00-\uDC08\uDC0A-\uDC36\uDC38-\uDC3E\uDC40\uDC50-\uDC6C\uDC72-\uDC8F\uDC92-\uDCA7\uDCA9-\uDCB6\uDD00-\uDD06\uDD08\uDD09\uDD0B-\uDD36\uDD3A\uDD3C\uDD3D\uDD3F-\uDD41\uDD43\uDD46\uDD47\uDD50-\uDD59\uDD60-\uDD65\uDD67\uDD68\uDD6A-\uDD8E\uDD90\uDD91\uDD93-\uDD96\uDD98\uDDA0-\uDDA9\uDEE0-\uDEF6\uDFB0\uDFC0-\uDFD4]|\uD808[\uDC00-\uDF99]|\uD809[\uDC00-\uDC6E\uDC80-\uDD43]|[\uD80C\uD81C-\uD820\uD822\uD840-\uD868\uD86A-\uD86C\uD86F-\uD872\uD874-\uD879\uD880-\uD883][\uDC00-\uDFFF]|\uD80D[\uDC00-\uDC2E]|\uD811[\uDC00-\uDE46]|\uD81A[\uDC00-\uDE38\uDE40-\uDE5E\uDE60-\uDE69\uDED0-\uDEED\uDF00-\uDF2F\uDF40-\uDF43\uDF50-\uDF59\uDF5B-\uDF61\uDF63-\uDF77\uDF7D-\uDF8F]|\uD81B[\uDE40-\uDE96\uDF00-\uDF4A\uDF4F-\uDF87\uDF8F-\uDF9F\uDFE0\uDFE1\uDFE3\uDFF0\uDFF1]|\uD821[\uDC00-\uDFF7]|\uD823[\uDC00-\uDCD5\uDD00-\uDD08]|\uD82C[\uDC00-\uDD1E\uDD50-\uDD52\uDD64-\uDD67\uDD70-\uDEFB]|\uD82F[\uDC00-\uDC6A\uDC70-\uDC7C\uDC80-\uDC88\uDC90-\uDC99\uDC9E]|\uD834[\uDEE0-\uDEF3\uDF60-\uDF78]|\uD835[\uDC00-\uDC54\uDC56-\uDC9C\uDC9E\uDC9F\uDCA2\uDCA5\uDCA6\uDCA9-\uDCAC\uDCAE-\uDCB9\uDCBB\uDCBD-\uDCC3\uDCC5-\uDD05\uDD07-\uDD0A\uDD0D-\uDD14\uDD16-\uDD1C\uDD1E-\uDD39\uDD3B-\uDD3E\uDD40-\uDD44\uDD46\uDD4A-\uDD50\uDD52-\uDEA5\uDEA8-\uDEC0\uDEC2-\uDEDA\uDEDC-\uDEFA\uDEFC-\uDF14\uDF16-\uDF34\uDF36-\uDF4E\uDF50-\uDF6E\uDF70-\uDF88\uDF8A-\uDFA8\uDFAA-\uDFC2\uDFC4-\uDFCB\uDFCE-\uDFFF]|\uD838[\uDC00-\uDC06\uDC08-\uDC18\uDC1B-\uDC21\uDC23\uDC24\uDC26-\uDC2A\uDD00-\uDD2C\uDD37-\uDD3D\uDD40-\uDD49\uDD4E\uDEC0-\uDEEB\uDEF0-\uDEF9]|\uD83A[\uDC00-\uDCC4\uDCC7-\uDCCF\uDD00-\uDD43\uDD47\uDD4B\uDD50-\uDD59]|\uD83B[\uDC71-\uDCAB\uDCAD-\uDCAF\uDCB1-\uDCB4\uDD01-\uDD2D\uDD2F-\uDD3D\uDE00-\uDE03\uDE05-\uDE1F\uDE21\uDE22\uDE24\uDE27\uDE29-\uDE32\uDE34-\uDE37\uDE39\uDE3B\uDE42\uDE47\uDE49\uDE4B\uDE4D-\uDE4F\uDE51\uDE52\uDE54\uDE57\uDE59\uDE5B\uDE5D\uDE5F\uDE61\uDE62\uDE64\uDE67-\uDE6A\uDE6C-\uDE72\uDE74-\uDE77\uDE79-\uDE7C\uDE7E\uDE80-\uDE89\uDE8B-\uDE9B\uDEA1-\uDEA3\uDEA5-\uDEA9\uDEAB-\uDEBB]|\uD83C[\uDD00-\uDD0C\uDD30-\uDD49\uDD50-\uDD69\uDD70-\uDD89]|\uD83E[\uDFF0-\uDFF9]|\uD869[\uDC00-\uDEDD\uDF00-\uDFFF]|\uD86D[\uDC00-\uDF34\uDF40-\uDFFF]|\uD86E[\uDC00-\uDC1D\uDC20-\uDFFF]|\uD873[\uDC00-\uDEA1\uDEB0-\uDFFF]|\uD87A[\uDC00-\uDFE0]|\uD87E[\uDC00-\uDE1D]|\uD884[\uDC00-\uDF4A])|$)/g, function (m) {
-      return m.toLocaleUpperCase(options.locale);
-    });
-  };
-
-  var camelCase = function camelCase(input, options) {
-    if (!(typeof input === 'string' || Array.isArray(input))) {
-      throw new TypeError('Expected the input to be `string | string[]`');
-    }
-
-    options = _objectSpread2({
-      pascalCase: false,
-      preserveConsecutiveUppercase: false
-    }, options);
-
-    if (Array.isArray(input)) {
-      input = input.map(function (x) {
-        return x.trim();
-      }).filter(function (x) {
-        return x.length;
-      }).join('-');
-    } else {
-      input = input.trim();
-    }
-
-    if (input.length === 0) {
-      return '';
-    }
-
-    if (input.length === 1) {
-      return options.pascalCase ? input.toLocaleUpperCase(options.locale) : input.toLocaleLowerCase(options.locale);
-    }
-
-    var hasUpperCase = input !== input.toLocaleLowerCase(options.locale);
-
-    if (hasUpperCase) {
-      input = preserveCamelCase(input, options.locale);
-    }
-
-    input = input.replace(/^[_.\- ]+/, '');
-
-    if (options.preserveConsecutiveUppercase) {
-      input = preserveConsecutiveUppercase(input);
-    } else {
-      input = input.toLocaleLowerCase();
-    }
-
-    if (options.pascalCase) {
-      input = input.charAt(0).toLocaleUpperCase(options.locale) + input.slice(1);
-    }
-
-    return postProcess(input, options);
-  };
-
-  var camelcase = camelCase; // TODO: Remove this for the next major release
-
-  var default_1 = camelCase;
-  camelcase["default"] = default_1;
-
-  var Fullstory = /*#__PURE__*/function () {
-    function Fullstory(config) {
-      _classCallCheck(this, Fullstory);
-
-      this.fs_org = config.fs_org;
-      this.fs_debug_mode = config.fs_debug_mode;
-      this.name = "FULLSTORY";
-    }
-
-    _createClass(Fullstory, [{
-      key: "init",
-      value: function init() {
-        logger.debug("===in init FULLSTORY===");
-        window._fs_debug = this.fs_debug_mode;
-        window._fs_host = "fullstory.com";
-        window._fs_script = "edge.fullstory.com/s/fs.js";
-        window._fs_org = this.fs_org;
-        window._fs_namespace = "FS";
-
-        (function (m, n, e, t, l, o, g, y) {
-          if (e in m) {
-            if (m.console && m.console.log) {
-              m.console.log('FullStory namespace conflict. Please set window["_fs_namespace"].');
-            }
-
-            return;
-          }
-
-          g = m[e] = function (a, b, s) {
-            g.q ? g.q.push([a, b, s]) : g._api(a, b, s);
-          };
-
-          g.q = [];
-          o = n.createElement(t);
-          o.async = 1;
-          o.crossOrigin = "anonymous";
-          o.src = "https://".concat(_fs_script);
-          y = n.getElementsByTagName(t)[0];
-          y.parentNode.insertBefore(o, y);
-
-          g.identify = function (i, v, s) {
-            g(l, {
-              uid: i
-            }, s);
-            if (v) g(l, v, s);
-          };
-
-          g.setUserVars = function (v, s) {
-            g(l, v, s);
-          };
-
-          g.event = function (i, v, s) {
-            g("event", {
-              n: i,
-              p: v
-            }, s);
-          };
-
-          g.shutdown = function () {
-            g("rec", !1);
-          };
-
-          g.restart = function () {
-            g("rec", !0);
-          };
-
-          g.log = function (a, b) {
-            g("log", [a, b]);
-          };
-
-          g.consent = function (a) {
-            g("consent", !arguments.length || a);
-          };
-
-          g.identifyAccount = function (i, v) {
-            o = "account";
-            v = v || {};
-            v.acctId = i;
-            g(o, v);
-          };
-
-          g.clearUserCookie = function () {};
-
-          g._w = {};
-          y = "XMLHttpRequest";
-          g._w[y] = m[y];
-          y = "fetch";
-          g._w[y] = m[y];
-          if (m[y]) m[y] = function () {
-            return g._w[y].apply(this, arguments);
-          };
-        })(window, document, window._fs_namespace, "script", "user");
-      }
-    }, {
-      key: "page",
-      value: function page(rudderElement) {
-        logger.debug("in FULLSORY page");
-        var rudderMessage = rudderElement.message;
-        var pageName = rudderMessage.name;
-
-        var props = _objectSpread2({
-          name: pageName
-        }, rudderMessage.properties);
-
-        window.FS.event("Viewed a Page", Fullstory.getFSProperties(props));
-      }
-    }, {
-      key: "identify",
-      value: function identify(rudderElement) {
-        logger.debug("in FULLSORY identify");
-        var userId = rudderElement.message.userId;
-        var traits = rudderElement.message.context.traits;
-        if (!userId) userId = rudderElement.message.anonymousId;
-        if (Object.keys(traits).length === 0 && traits.constructor === Object) window.FS.identify(userId);else window.FS.identify(userId, Fullstory.getFSProperties(traits));
-      }
-    }, {
-      key: "track",
-      value: function track(rudderElement) {
-        logger.debug("in FULLSTORY track");
-        window.FS.event(rudderElement.message.event, Fullstory.getFSProperties(rudderElement.message.properties));
-      }
-    }, {
-      key: "isLoaded",
-      value: function isLoaded() {
-        logger.debug("in FULLSTORY isLoaded");
-        return !!window.FS;
-      }
-    }], [{
-      key: "getFSProperties",
-      value: function getFSProperties(properties) {
-        var FS_properties = {};
-        Object.keys(properties).map(function (key, index) {
-          FS_properties[key === "displayName" || key === "email" ? key : Fullstory.camelCaseField(key)] = properties[key];
-        });
-        return FS_properties;
-      }
-    }, {
-      key: "camelCaseField",
-      value: function camelCaseField(fieldName) {
-        // Do not camel case across type suffixes.
-        var parts = fieldName.split("_");
-
-        if (parts.length > 1) {
-          var typeSuffix = parts.pop();
-
-          switch (typeSuffix) {
-            case "str":
-            case "int":
-            case "date":
-            case "real":
-            case "bool":
-            case "strs":
-            case "ints":
-            case "dates":
-            case "reals":
-            case "bools":
-              return "".concat(camelcase(parts.join("_")), "_").concat(typeSuffix);
-
-          }
-        } // No type suffix found. Camel case the whole field name.
-
-
-        return camelcase(fieldName);
-      }
-    }]);
-
-    return Fullstory;
-  }();
-
-  var TVSquared = /*#__PURE__*/function () {
-    function TVSquared(config) {
-      _classCallCheck(this, TVSquared);
-
-      this.isLoaded = function () {
-        logger.debug("in TVSqaured isLoaded");
-        return !!(window._tvq && window._tvq.push !== Array.prototype.push);
-      };
-
-      this.isReady = function () {
-        logger.debug("in TVSqaured isReady");
-        return !!(window._tvq && window._tvq.push !== Array.prototype.push);
-      };
-
-      this.page = function () {
-        window._tvq.push(["trackPageView"]);
-      };
-
-      this.formatRevenue = function (revenue) {
-        var rev = revenue;
-        rev = parseFloat(rev.toString().replace(/^[^\d.]*/, ""));
-        return rev;
-      };
-
-      this.brandId = config.brandId;
-      this.clientId = config.clientId;
-      this.eventWhiteList = config.eventWhiteList || [];
-      this.customMetrics = config.customMetrics || [];
-      this.name = "TVSquared";
-    }
-
-    _createClass(TVSquared, [{
-      key: "init",
-      value: function init() {
-        logger.debug("===in init TVSquared===");
-        window._tvq = window._tvq || [];
-        var url = document.location.protocol === "https:" ? "https://" : "http://";
-        url += "collector-".concat(this.clientId, ".tvsquared.com/");
-
-        window._tvq.push(["setSiteId", this.brandId]);
-
-        window._tvq.push(["setTrackerUrl", "".concat(url, "tv2track.php")]);
-
-        ScriptLoader("TVSquared-integration", "".concat(url, "tv2track.js"));
-      }
-    }, {
-      key: "track",
-      value: function track(rudderElement) {
-        var _rudderElement$messag = rudderElement.message,
-            event = _rudderElement$messag.event,
-            userId = _rudderElement$messag.userId,
-            anonymousId = _rudderElement$messag.anonymousId;
-        var _rudderElement$messag2 = rudderElement.message.properties,
-            revenue = _rudderElement$messag2.revenue,
-            productType = _rudderElement$messag2.productType,
-            category = _rudderElement$messag2.category,
-            order_id = _rudderElement$messag2.order_id,
-            promotion_id = _rudderElement$messag2.promotion_id;
-        var i;
-        var j;
-        var whitelist = this.eventWhiteList.slice();
-        whitelist = whitelist.filter(function (wl) {
-          return wl.event !== "";
-        });
-
-        for (i = 0; i < whitelist.length; i += 1) {
-          if (event.toUpperCase() === whitelist[i].event.toUpperCase()) {
-            break;
-          }
-
-          if (i === whitelist.length - 1) {
-            return;
-          }
-        }
-
-        var session = {
-          user: userId || anonymousId || ""
-        };
-        var action = {
-          rev: revenue ? this.formatRevenue(revenue) : "",
-          prod: category || productType || "",
-          id: order_id || "",
-          promo: promotion_id || ""
-        };
-        var customMetrics = this.customMetrics.slice();
-        customMetrics = customMetrics.filter(function (cm) {
-          return cm.propertyName !== "";
-        });
-
-        if (customMetrics.length) {
-          for (j = 0; j < customMetrics.length; j += 1) {
-            var key = customMetrics[j].propertyName;
-            var value = rudderElement.message.properties[key];
-
-            if (value) {
-              action[key] = value;
-            }
-          }
-        }
-
-        window._tvq.push([function () {
-          this.setCustomVariable(5, "session", JSON.stringify(session), "visit");
-        }]);
-
-        if (event.toUpperCase() !== "RESPONSE") {
-          window._tvq.push([function () {
-            this.setCustomVariable(5, event, JSON.stringify(action), "page");
-          }]);
-
-          window._tvq.push(["trackPageView"]);
-        }
-      }
-    }]);
-
-    return TVSquared;
-  }();
-
-  var requiredEventParameters = {
-    PromotionId: "promotion_id",
-    PromotionName: "promotion_name",
-    Search: "search_term",
-    ProductId: "item_id",
-    ProductName: "item_name"
-  }; // To Do : Future Scope :: We can remove this one and add everything in include list.
-  // This will also simplify our existing code and complex logics related to that
-
-  var includeParams = {
-    CartShare: {
-      defaults: {
-        content_type: "Cart"
-      },
-      mappings: {
-        share_via: "method",
-        cart_id: "content_id"
-      }
-    },
-    ProductShare: {
-      defaults: {
-        content_type: "Product"
-      },
-      mappings: {
-        share_via: "method",
-        product_id: "content_id"
-      }
-    },
-    Search: {
-      mappings: {
-        query: "search_term"
-      }
-    },
-    Promotion: {
-      mappings: {
-        position: "location_id"
-      }
-    }
-  };
-  var eventParametersConfigArray = {
-    ListId: {
-      src: "list_id",
-      dest: "item_list_id",
-      inItems: true
-    },
-    Category: {
-      src: "category",
-      dest: "item_list_name",
-      inItems: true
-    },
-    Price: {
-      src: "price",
-      dest: "value"
-    },
-    Currency: {
-      src: "currency",
-      dest: "currency",
-      inItems: true
-    },
-    Coupon: {
-      src: "coupon",
-      dest: "coupon",
-      inItems: true
-    },
-    Affiliation: {
-      src: "affiliation",
-      dest: "affiliation",
-      inItems: true
-    },
-    Shipping: {
-      src: "shipping",
-      dest: "shipping"
-    },
-    Tax: {
-      src: "tax",
-      dest: "tax"
-    },
-    Total: {
-      src: "total",
-      dest: "value"
-    },
-    CheckoutId: {
-      src: "checkout_id",
-      dest: "transaction_id"
-    },
-    ShippingMethod: {
-      src: "shipping_method",
-      dest: "shipping_tier"
-    },
-    PaymentMethod: {
-      src: "payment_method",
-      dest: "payment_type"
-    }
-  };
-  var itemParametersConfigArray = [{
-    src: "product_id",
-    dest: "item_id"
-  }, {
-    src: "order_id",
-    dest: "item_id"
-  }, {
-    src: "name",
-    dest: "item_name"
-  }, {
-    src: "coupon",
-    dest: "coupon"
-  }, {
-    src: "category",
-    dest: "item_category"
-  }, {
-    src: "brand",
-    dest: "item_brand"
-  }, {
-    src: "variant",
-    dest: "item_variant"
-  }, {
-    src: "price",
-    dest: "price"
-  }, {
-    src: "quantity",
-    dest: "quantity"
-  }, {
-    src: "position",
-    dest: "index"
-  }];
-  var eventNamesConfigArray = [// Browsing Section
-  {
-    src: ["products searched", "product searched"],
-    dest: "search",
-    requiredParams: requiredEventParameters.Search,
-    onlyIncludeParams: includeParams.Search
-  }, {
-    src: ["product list viewed"],
-    dest: "view_item_list",
-    requiredParams: [requiredEventParameters.ProductId, requiredEventParameters.ProductName],
-    hasItem: true,
-    includeList: [eventParametersConfigArray.ListId, eventParametersConfigArray.Category]
-  }, // Promotion Section
-  {
-    src: ["promotion viewed"],
-    dest: "view_promotion",
-    onlyIncludeParams: includeParams.Promotion
-  }, {
-    src: ["promotion clicked"],
-    dest: "select_promotion",
-    onlyIncludeParams: includeParams.Promotion
-  }, // Ordering Section
-  {
-    src: ["product clicked", "products clicked"],
-    dest: "select_item",
-    requiredParams: [requiredEventParameters.ProductId, requiredEventParameters.ProductName],
-    hasItem: true,
-    includeList: [eventParametersConfigArray.ListId, eventParametersConfigArray.Category]
-  }, {
-    src: ["product viewed"],
-    dest: "view_item",
-    requiredParams: [requiredEventParameters.ProductId, requiredEventParameters.ProductName],
-    hasItem: true,
-    includeList: [eventParametersConfigArray.Currency, eventParametersConfigArray.Total]
-  }, {
-    src: ["product added"],
-    dest: "add_to_cart",
-    requiredParams: [requiredEventParameters.ProductId, requiredEventParameters.ProductName],
-    hasItem: true,
-    includeList: [eventParametersConfigArray.Currency, eventParametersConfigArray.Total]
-  }, {
-    src: ["product removed"],
-    dest: "remove_from_cart",
-    requiredParams: [requiredEventParameters.ProductId, requiredEventParameters.ProductName],
-    hasItem: true,
-    includeList: [eventParametersConfigArray.Currency, eventParametersConfigArray.Total]
-  }, {
-    src: ["cart viewed"],
-    dest: "view_cart",
-    requiredParams: [requiredEventParameters.ProductId, requiredEventParameters.ProductName],
-    hasItem: true,
-    includeList: [eventParametersConfigArray.Currency, eventParametersConfigArray.Total]
-  }, {
-    src: ["checkout started"],
-    dest: "begin_checkout",
-    requiredParams: [requiredEventParameters.ProductId, requiredEventParameters.ProductName],
-    hasItem: true,
-    includeList: [eventParametersConfigArray.Coupon, eventParametersConfigArray.Currency, eventParametersConfigArray.Total]
-  }, {
-    src: ["payment info entered"],
-    dest: "add_payment_info",
-    hasItem: false,
-    includeList: [eventParametersConfigArray.PaymentMethod]
-  }, {
-    src: ["payment info entered"],
-    dest: "add_shipping_info",
-    hasItem: false,
-    includeList: [eventParametersConfigArray.ShippingMethod]
-  }, {
-    src: ["order completed"],
-    dest: "purchase",
-    requiredParams: [requiredEventParameters.ProductId, requiredEventParameters.ProductName],
-    hasItem: true,
-    includeList: [eventParametersConfigArray.Affiliation, eventParametersConfigArray.Coupon, eventParametersConfigArray.Currency, eventParametersConfigArray.CheckoutId, eventParametersConfigArray.Shipping, eventParametersConfigArray.Tax, eventParametersConfigArray.Total]
-  }, {
-    src: ["order refunded"],
-    dest: "refund",
-    hasItem: true,
-    includeList: [eventParametersConfigArray.Affiliation, eventParametersConfigArray.Coupon, eventParametersConfigArray.Currency, eventParametersConfigArray.CheckoutId, eventParametersConfigArray.Shipping, eventParametersConfigArray.Tax, eventParametersConfigArray.Total]
-  },
-  /* Coupon Section
-    No Coupon Events present in GA4
-  /----------  */
-  // Wishlist Section
-  {
-    src: ["product added to wishlist"],
-    dest: "add_to_wishlist",
-    requiredParams: [requiredEventParameters.ProductId, requiredEventParameters.ProductName],
-    hasItem: true,
-    includeList: [eventParametersConfigArray.Currency, eventParametersConfigArray.Total]
-  }, //-------
-  // Sharing Section
-  {
-    src: ["product shared"],
-    dest: "share",
-    hasItem: false,
-    onlyIncludeParams: includeParams.ProductShare
-  }, {
-    src: ["cart shared"],
-    dest: "share",
-    hasItem: false,
-    onlyIncludeParams: includeParams.CartShare
-  } //---------
-  ];
-
-  var pageEventParametersConfigArray = [{
-    src: "path",
-    dest: "page_location"
-  }, {
-    src: "referrer",
-    dest: "page_referrer"
-  }, {
-    src: "title",
-    dest: "page_title"
-  }];
-
-  /**
-   * Check if event name is not one of the following reserved names
-   * @param {*} name
-   */
-
-  function isReservedName(name) {
-    var reservedEventNames = ["ad_activeview", "ad_click", "ad_exposure", "ad_impression", "ad_query", "adunit_exposure", "app_clear_data", "app_install", "app_update", "app_remove", "error", "first_open", "first_visit", "in_app_purchase", "notification_dismiss", "notification_foreground", "notification_open", "notification_receive", "os_update", "screen_view", "session_start", "user_engagement"];
-    return reservedEventNames.includes(name);
-  }
-  /**
-   * map rudder event name to ga4 ecomm event name and return array
-   * @param {*} event
-   */
-
-
-  function getDestinationEventName(event) {
-    return eventNamesConfigArray.filter(function (p) {
-      return p.src.includes(event.toLowerCase());
-    });
-  }
-  /**
-   * Create item array and add into destination parameters
-   * If 'items' prop is present push new key value into it else create a new and push data
-   * 'items' -> name of GA4 Ecommerce property name.
-   * For now its hard coded, we can think of some better soln. later.
-   * @param {*} dest
-   * @param {*} key
-   * @param {*} value
-   */
-
-
-  function createItemProperty(dest, key, value) {
-    var destinationProperties = dest;
-
-    if (!destinationProperties.items) {
-      destinationProperties.items = [];
-      destinationProperties.items.push(_defineProperty({}, key, value));
-    } else {
-      destinationProperties.items[0][key] = value;
-    }
-
-    return destinationProperties;
-  }
-  /**
-   * Check if your payload contains required parameters to map to ga4 ecomm
-   * @param {*} includeRequiredParams this can be boolean or an array or required object
-   * @param {*} key
-   * @param {*} src
-   */
-
-
-  function hasRequiredParameters(props, eventMappingObj) {
-    var requiredParams = eventMappingObj.requiredParams || false;
-    if (!requiredParams) return true;
-
-    if (!Array.isArray(requiredParams)) {
-      if (props[requiredParams]) {
-        return true;
-      }
-
-      return false;
-    }
-
-    for (var i in props.items) {
-      for (var p in requiredParams) {
-        if (!props.items[i][requiredParams[p]]) {
-          return false;
-        }
-      }
-    }
-
-    return true;
-  }
-  /**
-   * TO DO Future Improvement ::::
-   * Here we only support mapping single level object mapping.
-   * Implement using recursion to handle multi level prop mapping.
-   * @param {*} props { product_id: 123456_abcdef, name: "chess-board", list_id: "ls_abcdef", category: games }
-   * @param {*} destParameterConfig
-   * Defined Parameter present GA4/utils.js ex: [{ src: "category", dest: "item_list_name", inItems: true }]
-   * @param {*} includeRequiredParams contains object of required parameter to be mapped from source payload
-   * output: {
-    "item_list_id": "ls_abcdef",
-    "items": [
-      {
-        "item_id": "123456_abcdef",
-        "item_name": "chess-board",
-        "item_list_id": "ls_abc",
-        "item_list_name": "games"
-      }
-    ],
-    "item_list_name": "games"
-  }
-  */
-
-
-  function getDestinationEventProperties(props, destParameterConfig) {
-    var hasItem = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
-    var destinationProperties = {};
-    Object.keys(props).forEach(function (key) {
-      destParameterConfig.forEach(function (param) {
-        if (key === param.src) {
-          // handle case where the key needs to go inside items as well as top level params in GA4
-          if (param.inItems && hasItem) {
-            destinationProperties = createItemProperty(destinationProperties, param.dest, props[key]);
-          }
-
-          destinationProperties[param.dest] = props[key]; // eslint-disable-next-line no-param-reassign
-
-          delete props[key];
-        }
-      });
-    });
-    return destinationProperties;
-  }
-  /**
-   * Map rudder products arrays payload to ga4 ecomm items array
-   * @param {*} products
-   * @param {*} item
-   */
-
-
-  function getDestinationItemProperties(products, item) {
-    var items = [];
-    var obj = {};
-
-    if (type(products) !== "array") {
-      logger.debug("Event payload doesn't have products array");
-    } else {
-      // get the dest keys from itemParameters config
-      // append the already created item object keys (this is done to get the keys that are actually top level props in Rudder payload but GA expects them under items too)
-      products.forEach(function (p) {
-        obj = _objectSpread2(_objectSpread2({}, getDestinationEventProperties(p, itemParametersConfigArray)), item && type(item) === "array" && item[0] || {});
-        items.push(obj);
-      });
-    }
-
-    return items;
-  }
-  /**
-   * Generate ga4 page_view events payload
-   * @param {*} props
-   */
-
-
-  function getPageViewProperty(props) {
-    return getDestinationEventProperties(props, pageEventParametersConfigArray);
-  }
-
-  var GA4 = /*#__PURE__*/function () {
-    function GA4(config, analytics) {
-      _classCallCheck(this, GA4);
-
-      this.measurementId = config.measurementId;
-      this.analytics = analytics;
-      this.sendUserId = config.sendUserId || false;
-      this.blockPageView = config.blockPageViewEvent || false;
-      this.extendPageViewParams = config.extendPageViewParams || false;
-      this.name = "GA4";
-    }
-
-    _createClass(GA4, [{
-      key: "loadScript",
-      value: function loadScript(measurementId, userId) {
-        window.dataLayer = window.dataLayer || [];
-
-        window.gtag = window.gtag || function gt() {
-          // eslint-disable-next-line prefer-rest-params
-          window.dataLayer.push(arguments);
-        };
-
-        window.gtag("js", new Date()); // This condition is not working, even after disabling page view
-        // page_view is even getting called on page load
-
-        if (this.blockPageView) {
-          if (this.sendUserId) {
-            window.gtag("config", measurementId, {
-              user_id: userId,
-              send_page_view: false
-            });
-          } else {
-            window.gtag("config", measurementId, {
-              send_page_view: false
-            });
-          }
-        } else if (this.sendUserId) {
-          window.gtag("config", measurementId, {
-            user_id: userId
-          });
-        } else {
-          window.gtag("config", measurementId);
-        }
-
-        ScriptLoader("google-analytics 4", "https://www.googletagmanager.com/gtag/js?id=".concat(measurementId));
-      }
-    }, {
-      key: "init",
-      value: function init() {
-        // To do :: check how custom dimension and metrics is used
-        var userId = this.analytics.userId || this.analytics.anonymousId;
-        this.loadScript(this.measurementId, userId);
-      }
-      /* utility functions ---Start here ---  */
-
-    }, {
-      key: "isLoaded",
-      value: function isLoaded() {
-        return !!(window.gtag && window.gtag.push !== Array.prototype.push);
-      }
-    }, {
-      key: "isReady",
-      value: function isReady() {
-        return !!(window.gtag && window.gtag.push !== Array.prototype.push);
-      }
-      /* utility functions --- Ends here ---  */
-
-      /**
-       * Function to get destination properties for both event parameters and items array if present
-       * For top level properties, include only those properties that are in the includeList
-       * @param {*} properties
-       * @param {*} hasItem
-       * @param {*} products
-       * @param {*} includeList
-       */
-
-    }, {
-      key: "getdestinationProperties",
-      value: function getdestinationProperties(properties, hasItem, products, includeList) {
-        var destinationProperties = {};
-        destinationProperties = getDestinationEventProperties(properties, includeList, hasItem);
-
-        if (hasItem) {
-          // only for events where GA requires an items array to be sent
-          // get the product related destination keys || if products is not present use the rudder message properties to get the product related destination keys
-          destinationProperties.items = getDestinationItemProperties(products || [properties], destinationProperties.items);
-        }
-
-        return destinationProperties;
-      }
-      /**
-       * Only include params that are present in given mapping config for things like Cart/Product shared, Product/Products shared
-       * @param {*} params
-       * @param {*} properties
-       */
-
-    }, {
-      key: "getIncludedParameters",
-      value: function getIncludedParameters(params, properties) {
-        var destinationProperties = {};
-
-        if (type(params) === "object") {
-          var defaults = params.defaults,
-              mappings = params.mappings;
-
-          if (type(defaults) === "object") {
-            Object.keys(defaults).forEach(function (key) {
-              destinationProperties[key] = defaults[key];
-            });
-          }
-
-          if (type(mappings) === "object") {
-            Object.keys(mappings).forEach(function (key) {
-              destinationProperties[mappings[key]] = properties[key];
-            });
-          }
-        }
-
-        return destinationProperties;
-      }
-    }, {
-      key: "sendGAEvent",
-      value: function sendGAEvent(event, parameters, checkRequiredParameters, eventMappingObj) {
-        if (checkRequiredParameters) {
-          if (!hasRequiredParameters(parameters, eventMappingObj)) {
-            throw Error("Payload must have required parameters..");
-          }
-        }
-
-        window.gtag("event", event, parameters);
-      }
-    }, {
-      key: "handleEventMapper",
-      value: function handleEventMapper(eventMappingObj, properties, products) {
-        var destinationProperties = {};
-        var event = eventMappingObj.dest;
-
-        if (eventMappingObj.onlyIncludeParams) {
-          /* Only include params that are present in given mapping config for things like Cart/Product shared, Product/Products shared
-           */
-          var includeParams = eventMappingObj.onlyIncludeParams;
-          destinationProperties = this.getIncludedParameters(includeParams, properties);
-        } else {
-          destinationProperties = this.getdestinationProperties(properties, eventMappingObj.hasItem, products, eventMappingObj.includeList);
-        }
-
-        this.sendGAEvent(event, destinationProperties, true, eventMappingObj);
-      }
-      /**
-       *
-       * @param {*} rudderElement
-       */
-
-    }, {
-      key: "track",
-      value: function track(rudderElement) {
-        var _this = this;
-
-        var event = rudderElement.message.event;
-        var properties = rudderElement.message.properties;
-        var products = properties.products;
-
-        if (!event || isReservedName(event)) {
-          throw Error("Cannot call un-named/reserved named track event");
-        } // get GA4 event name and corresponding configs defined to add properties to that event
-
-
-        var eventMappingArray = getDestinationEventName(event);
-
-        if (eventMappingArray && eventMappingArray.length) {
-          eventMappingArray.forEach(function (events) {
-            _this.handleEventMapper(events, properties, products);
-          });
-        } else {
-          this.sendGAEvent(event, flattenJsonPayload(properties), false);
-        }
-      }
-    }, {
-      key: "identify",
-      value: function identify(rudderElement) {
-        window.gtag("set", "user_properties", flattenJsonPayload(this.analytics.userTraits));
-
-        if (this.sendUserId && rudderElement.message.userId) {
-          var userId = this.analytics.userId || this.analytics.anonymousId;
-
-          if (this.blockPageView) {
-            window.gtag("config", this.measurementId, {
-              user_id: userId,
-              send_page_view: false
-            });
-          } else {
-            window.gtag("config", this.measurementId, {
-              user_id: userId
-            });
-          }
-        }
-
-        logger.debug("in GoogleAnalyticsManager identify");
-      }
-    }, {
-      key: "page",
-      value: function page(rudderElement) {
-        var pageProps = rudderElement.message.properties;
-        if (!pageProps) return;
-        pageProps = flattenJsonPayload(pageProps);
-
-        if (this.extendPageViewParams) {
-          window.gtag("event", "page_view", _objectSpread2(_objectSpread2({}, pageProps), getPageViewProperty(pageProps)));
-        } else {
-          window.gtag("event", "page_view", getPageViewProperty(pageProps));
-        }
-      }
-    }]);
-
-    return GA4;
-  }();
-
-  var traitsMap = {
-    firstName: "first_name",
-    lastName: "last_name",
-    firstname: "first_name",
-    lastname: "last_name",
-    email: "email",
-    phone: "mobile",
-    name: "user_name",
-    username: "user_name",
-    userName: "user_name",
-    gender: "gender",
-    birthday: "birthday",
-    id: null
-  };
-
-  var MoEngage = /*#__PURE__*/function () {
-    function MoEngage(config, analyticsinstance) {
-      _classCallCheck(this, MoEngage);
-
-      this.isLoaded = function () {
-        logger.debug("in MoEngage isLoaded");
-        return !!window.moeBannerText;
-      };
-
-      this.isReady = function () {
-        logger.debug("in MoEngage isReady");
-        return !!window.moeBannerText;
-      };
-
-      this.apiId = config.apiId;
-      this.debug = config.debug;
-      this.region = config.region;
-      this.name = "MoEngage";
-      this.analyticsinstance = analyticsinstance;
-    }
-
-    _createClass(MoEngage, [{
-      key: "init",
-      value: function init() {
-        var self = this;
-        logger.debug("===in init MoEnagage==="); // loading the script for moengage web sdk
-
-        /* eslint-disable */
-
-        (function (i, s, o, g, r, a, m, n) {
-          i.moengage_object = r;
-          var t = {};
-
-          var q = function q(f) {
-            return function () {
-              (i.moengage_q = i.moengage_q || []).push({
-                f: f,
-                a: arguments
-              });
-            };
-          };
-
-          var f = ["track_event", "add_user_attribute", "add_first_name", "add_last_name", "add_email", "add_mobile", "add_user_name", "add_gender", "add_birthday", "destroy_session", "add_unique_user_id", "moe_events", "call_web_push", "track", "location_type_attribute"];
-          var h = {
-            onsite: ["getData", "registerCallback"]
-          };
-
-          for (var k in f) {
-            t[f[k]] = q(f[k]);
-          }
-
-          for (var k in h) {
-            for (var l in h[k]) {
-              null == t[k] && (t[k] = {}), t[k][h[k][l]] = q(k + "." + h[k][l]);
-            }
-          }
-
-          a = s.createElement(o);
-          m = s.getElementsByTagName(o)[0];
-          a.async = 1;
-          a.src = g;
-          m.parentNode.insertBefore(a, m);
-
-          i.moe = i.moe || function () {
-            n = arguments[0];
-            return t;
-          };
-
-          a.onload = function () {
-            if (n) {
-              i[r] = moe(n);
-            }
-          };
-        })(window, document, "script", document.location.protocol === "https:" ? "https://cdn.moengage.com/webpush/moe_webSdk.min.latest.js" : "http://cdn.moengage.com/webpush/moe_webSdk.min.latest.js", "Moengage");
-        /* eslint-enable */
-        // setting the region if us then not needed.
-
-
-        if (this.region !== "US") {
-          self.moeClient = window.moe({
-            app_id: this.apiId,
-            debug_logs: this.debug ? 1 : 0,
-            cluster: this.region === "EU" ? "eu" : "in"
-          });
-        } else {
-          self.moeClient = window.moe({
-            app_id: this.apiId,
-            debug_logs: this.debug ? 1 : 0
-          });
-        }
-
-        this.initialUserId = this.analyticsinstance.userId;
-      }
-    }, {
-      key: "track",
-      value: function track(rudderElement) {
-        logger.debug("inside track"); // Check if the user id is same as previous session if not a new session will start
-
-        if (!rudderElement.message) {
-          logger.error("Payload not correct");
-          return;
-        }
-
-        var _rudderElement$messag = rudderElement.message,
-            event = _rudderElement$messag.event,
-            properties = _rudderElement$messag.properties,
-            userId = _rudderElement$messag.userId;
-
-        if (userId) {
-          if (this.initialUserId !== userId) {
-            this.reset();
-          }
-        } // track event : https://docs.moengage.com/docs/tracking-events
-
-
-        if (!event) {
-          logger.error("Event name not present");
-          return;
-        }
-
-        if (properties) {
-          this.moeClient.track_event(event, properties);
-        } else {
-          this.moeClient.track_event(event);
-        }
-      }
-    }, {
-      key: "reset",
-      value: function reset() {
-        logger.debug("inside reset"); // reset the user id
-
-        this.initialUserId = this.analyticsinstance.userId;
-        this.moeClient.destroy_session();
-      }
-    }, {
-      key: "identify",
-      value: function identify(rudderElement) {
-        var self = this;
-        var userId = rudderElement.message.userId;
-        var traits = null;
-
-        if (rudderElement.message.context) {
-          traits = rudderElement.message.context.traits;
-        } // check if user id is same or not
-
-
-        if (this.initialUserId !== userId) {
-          this.reset();
-        } // if user is present map
-
-
-        if (userId) {
-          this.moeClient.add_unique_user_id(userId);
-        } // track user attributes : https://docs.moengage.com/docs/tracking-web-user-attributes
-
-
-        if (traits) {
-          each_1(function add(value, key) {
-            // check if name is present
-            if (key === "name") {
-              self.moeClient.add_user_name(value);
-            }
-
-            if (Object.prototype.hasOwnProperty.call(traitsMap, key)) {
-              var method = "add_".concat(traitsMap[key]);
-              self.moeClient[method](value);
-            } else {
-              self.moeClient.add_user_attribute(key, value);
-            }
-          }, traits);
-        }
-      }
-    }]);
-
-    return MoEngage;
-  }();
-
-  var Amplitude = /*#__PURE__*/function () {
-    function Amplitude(config, analytics) {
-      var _this = this;
-
-      _classCallCheck(this, Amplitude);
-
-      this.name = "AM";
-      this.analytics = analytics;
-      this.apiKey = config.apiKey;
-      this.trackAllPages = config.trackAllPages || false;
-      this.trackNamedPages = config.trackNamedPages || false;
-      this.trackCategorizedPages = config.trackCategorizedPages || false;
-      this.trackUtmProperties = config.trackUtmProperties || false;
-      this.trackReferrer = config.trackReferrer || false;
-      this.batchEvents = config.batchEvents || false;
-      this.eventUploadThreshold = +config.eventUploadThreshold || 30;
-      this.eventUploadPeriodMillis = +config.eventUploadPeriodMillis || 30000;
-      this.forceHttps = config.forceHttps || false;
-      this.trackGclid = config.trackGclid || false;
-      this.saveParamsReferrerOncePerSession = config.saveParamsReferrerOncePerSession || false;
-      this.deviceIdFromUrlParam = config.deviceIdFromUrlParam || false; // this.mapQueryParams = config.mapQueryParams;
-
-      this.trackRevenuePerProduct = config.trackRevenuePerProduct || false;
-      this.preferAnonymousIdForDeviceId = config.preferAnonymousIdForDeviceId || false;
-      this.traitsToSetOnce = [];
-      this.traitsToIncrement = [];
-      this.appendFieldsToEventProps = config.appendFieldsToEventProps || false;
-      this.unsetParamsReferrerOnNewSession = config.unsetParamsReferrerOnNewSession || false;
-      this.trackProductsOnce = config.trackProductsOnce || false;
-      this.versionName = config.versionName;
-
-      if (config.traitsToSetOnce && config.traitsToSetOnce.length > 0) {
-        config.traitsToSetOnce.forEach(function (element) {
-          if (element && element.traits && element.traits !== "") {
-            _this.traitsToSetOnce.push(element.traits);
-          }
-        });
-      }
-
-      if (config.traitsToIncrement && config.traitsToIncrement.length > 0) {
-        config.traitsToIncrement.forEach(function (element) {
-          if (element && element.traits && element.traits !== "") {
-            _this.traitsToIncrement.push(element.traits);
-          }
-        });
-      }
-    }
-
-    _createClass(Amplitude, [{
-      key: "init",
-      value: function init() {
-        if (this.analytics.loadIntegration) {
-          (function (e, t) {
-            var n = e.amplitude || {
-              _q: [],
-              _iq: {}
-            };
-            var r = t.createElement("script");
-            r.type = "text/javascript";
-            r.integrity = "sha384-girahbTbYZ9tT03PWWj0mEVgyxtZoyDF9KVZdL+R53PP5wCY0PiVUKq0jeRlMx9M";
-            r.crossOrigin = "anonymous";
-            r.async = true;
-            r.src = "https://cdn.amplitude.com/libs/amplitude-7.2.1-min.gz.js";
-
-            r.onload = function () {
-              if (!e.amplitude.runQueuedFunctions) {
-                console.log("[Amplitude] Error: could not load SDK");
-              }
-            };
-
-            var i = t.getElementsByTagName("script")[0];
-            i.parentNode.insertBefore(r, i);
-
-            function s(e, t) {
-              e.prototype[t] = function () {
-                this._q.push([t].concat(Array.prototype.slice.call(arguments, 0)));
-
-                return this;
-              };
-            }
-
-            var o = function o() {
-              this._q = [];
-              return this;
-            };
-
-            var a = ["add", "append", "clearAll", "prepend", "set", "setOnce", "unset"];
-
-            for (var c = 0; c < a.length; c++) {
-              s(o, a[c]);
-            }
-
-            n.Identify = o;
-
-            var u = function u() {
-              this._q = [];
-              return this;
-            };
-
-            var l = ["setProductId", "setQuantity", "setPrice", "setRevenueType", "setEventProperties"];
-
-            for (var p = 0; p < l.length; p++) {
-              s(u, l[p]);
-            }
-
-            n.Revenue = u;
-            var d = ["init", "logEvent", "logRevenue", "setUserId", "setUserProperties", "setOptOut", "setVersionName", "setDomain", "setDeviceId", "enableTracking", "setGlobalUserProperties", "identify", "clearUserProperties", "setGroup", "logRevenueV2", "regenerateDeviceId", "groupIdentify", "onInit", "logEventWithTimestamp", "logEventWithGroups", "setSessionId", "resetSessionId"];
-
-            function v(e) {
-              function t(t) {
-                e[t] = function () {
-                  e._q.push([t].concat(Array.prototype.slice.call(arguments, 0)));
-                };
-              }
-
-              for (var _n = 0; _n < d.length; _n++) {
-                t(d[_n]);
-              }
-            }
-
-            v(n);
-
-            n.getInstance = function (e) {
-              e = (!e || e.length === 0 ? "$default_instance" : e).toLowerCase();
-
-              if (!n._iq.hasOwnProperty(e)) {
-                n._iq[e] = {
-                  _q: []
-                };
-                v(n._iq[e]);
-              }
-
-              return n._iq[e];
-            };
-
-            e.amplitude = n;
-          })(window, document);
-        }
-
-        var initOptions = {
-          includeUtm: this.trackUtmProperties,
-          batchEvents: this.batchEvents,
-          eventUploadThreshold: this.eventUploadThreshold,
-          eventUploadPeriodMillis: this.eventUploadPeriodMillis,
-          forceHttps: this.forceHttps,
-          includeGclid: this.trackGclid,
-          includeReferrer: this.trackReferrer,
-          saveParamsReferrerOncePerSession: this.saveParamsReferrerOncePerSession,
-          deviceIdFromUrlParam: this.deviceIdFromUrlParam,
-          unsetParamsReferrerOnNewSession: this.unsetParamsReferrerOnNewSession,
-          deviceId: this.preferAnonymousIdForDeviceId && this.analytics && this.analytics.getAnonymousId()
-        };
-        window.amplitude.getInstance().init(this.apiKey, null, initOptions);
-
-        if (this.versionName) {
-          window.amplitude.getInstance().setVersionName(this.versionName);
-        }
-      }
-    }, {
-      key: "identify",
-      value: function identify(rudderElement) {
-        logger.debug("in Amplitude identify");
-        this.setDeviceId(rudderElement); // rudderElement.message.context will always be present as part of identify event payload.
-
-        var traits = rudderElement.message.context.traits;
-        var userId = rudderElement.message.userId;
-
-        if (userId) {
-          window.amplitude.getInstance().setUserId(userId);
-        }
-
-        if (traits) {
-          var amplitudeIdentify = new window.amplitude.Identify();
-
-          for (var trait in traits) {
-            if (!traits.hasOwnProperty(trait)) {
-              continue;
-            }
-
-            var shouldIncrement = this.traitsToIncrement.indexOf(trait) >= 0;
-            var shouldSetOnce = this.traitsToSetOnce.indexOf(trait) >= 0;
-
-            if (shouldIncrement) {
-              amplitudeIdentify.add(trait, traits[trait]);
-            }
-
-            if (shouldSetOnce) {
-              amplitudeIdentify.setOnce(trait, traits[trait]);
-            }
-
-            if (!shouldIncrement && !shouldSetOnce) {
-              amplitudeIdentify.set(trait, traits[trait]);
-            }
-          }
-
-          window.amplitude.identify(amplitudeIdentify);
-        }
-      }
-    }, {
-      key: "track",
-      value: function track(rudderElement) {
-        logger.debug("in Amplitude track");
-        this.setDeviceId(rudderElement);
-        var properties = rudderElement.message.properties; // message.properties will always be present as part of track event.
-
-        var products = properties.products;
-        var clonedTrackEvent = {};
-
-        _extends(clonedTrackEvent, rudderElement.message); // For track products once, we will send the products in a single call.
-
-
-        if (this.trackProductsOnce) {
-          if (products && type(products) == "array") {
-            // track all the products in a single event.
-            var allProducts = [];
-            var productKeys = Object.keys(products);
-
-            for (var index = 0; index < productKeys.length; index++) {
-              var product = {};
-              product = this.getProductAttributes(products[index]);
-              allProducts.push(product);
-            }
-
-            clonedTrackEvent.properties.products = allProducts;
-            this.logEventAndCorrespondingRevenue(clonedTrackEvent, this.trackRevenuePerProduct); // we do not want to track revenue as a whole if trackRevenuePerProduct is enabled.
-            // If trackRevenuePerProduct is enabled, track revenues per product.
-
-            if (this.trackRevenuePerProduct) {
-              var trackEventMessage = {};
-
-              _extends(trackEventMessage, clonedTrackEvent);
-
-              this.trackingEventAndRevenuePerProduct(trackEventMessage, products, false); // also track revenue only and not event per product.
-            }
-          } else {
-            // track event and revenue as a whole as products array is not available.
-            this.logEventAndCorrespondingRevenue(clonedTrackEvent, false);
-          }
-
-          return;
-        }
-
-        if (products && type(products) == "array") {
-          // track events iterating over product array individually.
-          // Log the actuall event without products array. We will subsequently track each product with 'Product Purchased' event.
-          delete clonedTrackEvent.properties.products;
-          this.logEventAndCorrespondingRevenue(clonedTrackEvent, this.trackRevenuePerProduct);
-          var _trackEventMessage = {};
-
-          _extends(_trackEventMessage, clonedTrackEvent); // track products and revenue per product basis.
-
-
-          this.trackingEventAndRevenuePerProduct(_trackEventMessage, products, true); // track both event and revenue on per product basis.
-        } else {
-          // track event and revenue as a whole as no product array is present.
-          this.logEventAndCorrespondingRevenue(clonedTrackEvent, false);
-        }
-      }
-    }, {
-      key: "trackingEventAndRevenuePerProduct",
-      value: function trackingEventAndRevenuePerProduct(trackEventMessage, products, shouldTrackEventPerProduct) {
-        var _trackEventMessage$pr = trackEventMessage.properties,
-            revenue = _trackEventMessage$pr.revenue,
-            revenueType = _trackEventMessage$pr.revenueType,
-            revenue_type = _trackEventMessage$pr.revenue_type;
-        revenueType = revenueType || revenue_type;
-
-        for (var index = 0; index < products.length; index++) {
-          var product = products[index];
-          trackEventMessage.properties = product;
-          trackEventMessage.event = "Product Purchased";
-
-          if (this.trackRevenuePerProduct) {
-            if (revenueType) {
-              trackEventMessage.properties.revenueType = revenueType;
-            }
-
-            if (revenue) {
-              trackEventMessage.properties.revenue = revenue;
-            }
-
-            this.trackRevenue(trackEventMessage);
-          }
-
-          if (shouldTrackEventPerProduct) {
-            this.logEventAndCorrespondingRevenue(trackEventMessage, true);
-          }
-        }
-      } // Always to be called for general and top level events (and not product level)
-      // For these events we expect top level revenue property.
-
-    }, {
-      key: "logEventAndCorrespondingRevenue",
-      value: function logEventAndCorrespondingRevenue(rudderMessage, dontTrackRevenue) {
-        var properties = rudderMessage.properties,
-            event = rudderMessage.event;
-        window.amplitude.getInstance().logEvent(event, properties);
-
-        if (properties.revenue && !dontTrackRevenue) {
-          this.trackRevenue(rudderMessage);
-        }
-      }
-      /**
-       * track page events base on destination settings. If more than one settings is enabled, multiple events may be logged for a single page event.
-       * For example, if category of a page is present, and both trackAllPages and trackCategorizedPages are enabled, then 2 events will be tracked for
-       * a single pageview - 'Loaded a page' and `Viewed page ${category}`.
-       *
-       * @memberof Amplitude
-       */
-
-    }, {
-      key: "page",
-      value: function page(rudderElement) {
-        logger.debug("in Amplitude page");
-        this.setDeviceId(rudderElement);
-        var _rudderElement$messag = rudderElement.message,
-            properties = _rudderElement$messag.properties,
-            name = _rudderElement$messag.name,
-            category = _rudderElement$messag.category; // all pages
-
-        if (this.trackAllPages) {
-          var event = "Loaded a page";
-          amplitude.getInstance().logEvent(event, properties);
-        } // categorized pages
-
-
-        if (category && this.trackCategorizedPages) {
-          var _event = "Viewed page ".concat(category);
-
-          amplitude.getInstance().logEvent(_event, properties);
-        } // named pages
-
-
-        if (name && this.trackNamedPages) {
-          var _event2 = "Viewed page ".concat(name);
-
-          amplitude.getInstance().logEvent(_event2, properties);
-        }
-      }
-    }, {
-      key: "group",
-      value: function group(rudderElement) {
-        logger.debug("in Amplitude group");
-        this.setDeviceId(rudderElement);
-        var _rudderElement$messag2 = rudderElement.message,
-            groupId = _rudderElement$messag2.groupId,
-            traits = _rudderElement$messag2.traits;
-        var groupTypeTrait = this.groupTypeTrait;
-        var groupValueTrait = this.groupValueTrait;
-
-        if (groupTypeTrait && groupValueTrait && traits) {
-          var groupType = traits[groupTypeTrait];
-          var groupValue = traits[groupValueTrait];
-        }
-
-        if (groupType && groupValue) {
-          window.amplitude.getInstance().setGroup(groupTypeTrait, groupValueTrait);
-        } else if (groupId) {
-          // Similar as segment but not sure whether we need it as our cloud mode supports only the above if block
-          window.amplitude.getInstance().setGroup("[Rudderstack] Group", groupId);
-        } // https://developers.amplitude.com/docs/setting-user-properties#setting-group-properties
-        // no other api for setting group properties for javascript
-
-      }
-    }, {
-      key: "setDeviceId",
-      value: function setDeviceId(rudderElement) {
-        var anonymousId = rudderElement.message.anonymousId;
-
-        if (this.preferAnonymousIdForDeviceId && anonymousId) {
-          window.amplitude.getInstance().setDeviceId(anonymousId);
-        }
-      }
-      /**
-       * Tracks revenue with logRevenueV2() api based on revenue/price present in event payload. If neither of revenue/price present, it returns.
-       * The event payload may contain ruddermessage of an original track event payload (from trackEvent method) or it is derived from a product
-       * array (from trackingRevenuePerProduct) in an e-comm event.
-       *
-       * @param {*} rudderMessage
-       * @returns
-       * @memberof Amplitude
-       */
-
-    }, {
-      key: "trackRevenue",
-      value: function trackRevenue(rudderMessage) {
-        var mapRevenueType = {
-          "order completed": "Purchase",
-          "completed order": "Purchase",
-          "product purchased": "Purchase"
-        };
-        var properties = rudderMessage.properties,
-            event = rudderMessage.event;
-        var price = properties.price,
-            productId = properties.productId,
-            quantity = properties.quantity,
-            revenue = properties.revenue,
-            product_id = properties.product_id;
-        var revenueType = properties.revenueType || properties.revenue_type || mapRevenueType[event.toLowerCase()];
-        productId = productId || product_id; // If neither revenue nor price is present, then return
-        // else send price and quantity from properties to amplitude
-        // If price not present set price as revenue's value and force quantity to be 1.
-        // Ultimately set quantity to 1 if not already present from above logic.
-
-        if (!revenue && !price) {
-          console.debug("revenue or price is not present.");
-          return;
-        }
-
-        if (!price) {
-          price = revenue;
-          quantity = 1;
-        }
-
-        if (!quantity) {
-          quantity = 1;
-        }
-
-        var amplitudeRevenue = new window.amplitude.Revenue().setPrice(price).setQuantity(quantity).setEventProperties(properties);
-
-        if (revenueType) {
-          amplitudeRevenue.setRevenueType(revenueType);
-        }
-
-        if (productId) {
-          amplitudeRevenue.setProductId(productId);
-        }
-
-        window.amplitude.getInstance().logRevenueV2(amplitudeRevenue);
-      }
-    }, {
-      key: "getProductAttributes",
-      value: function getProductAttributes(product) {
-        return {
-          productId: product.productId || product.product_id,
-          sku: product.sku,
-          name: product.name,
-          price: product.price,
-          quantity: product.quantity,
-          category: product.category
-        };
-      }
-    }, {
-      key: "isLoaded",
-      value: function isLoaded() {
-        logger.debug("in Amplitude isLoaded");
-        return !!(window.amplitude && window.amplitude.getInstance().options);
-      }
-    }, {
-      key: "isReady",
-      value: function isReady() {
-        return !!(window.amplitude && window.amplitude.getInstance().options);
-      }
-    }]);
-
-    return Amplitude;
-  }();
-
-  var Pendo = /*#__PURE__*/function () {
-    function Pendo(config, analytics) {
-      _classCallCheck(this, Pendo);
-
-      this.analytics = analytics;
-      this.apiKey = !config.apiKey ? "" : config.apiKey;
-      this.name = "PENDO";
-      logger.debug("Config ", config);
-    }
-
-    _createClass(Pendo, [{
-      key: "init",
-      value: function init() {
-        (function (apiKey) {
-          (function (p, e, n, d, o) {
-            var v, w, x, y, z;
-            o = p[d] = p[d] || {};
-            o._q = [];
-            v = ["initialize", "identify", "updateOptions", "pageLoad", "track"];
-
-            for (w = 0, x = v.length; w < x; ++w) {
-              (function (m) {
-                o[m] = o[m] || function () {
-                  o._q[m === v[0] ? "unshift" : "push"]([m].concat([].slice.call(arguments, 0)));
-                };
-              })(v[w]);
-            }
-
-            y = e.createElement(n);
-            y.async = !0;
-            y.src = "https://cdn.pendo.io/agent/static/".concat(apiKey, "/pendo.js");
-            z = e.getElementsByTagName(n)[0];
-            z.parentNode.insertBefore(y, z);
-          })(window, document, "script", "pendo");
-        })(this.apiKey);
-
-        this.initializeMe();
-        logger.debug("===in init Pendo===");
-      }
-    }, {
-      key: "initializeMe",
-      value: function initializeMe() {
-        var userId = this.analytics.userId || this.constructPendoAnonymousId(this.analytics.anonymousId);
-
-        var accountObj = _objectSpread2({
-          id: this.analytics.groupId
-        }, this.analytics.groupTraits);
-
-        var visitorObj = _objectSpread2({
-          id: userId
-        }, this.analytics.userTraits);
-
-        window.pendo.initialize({
-          account: accountObj,
-          visitor: visitorObj
-        });
-      }
-      /* utility functions ---Start here ---  */
-
-    }, {
-      key: "isLoaded",
-      value: function isLoaded() {
-        return !!(window.pendo && window.pendo.push !== Array.prototype.push);
-      }
-    }, {
-      key: "isReady",
-      value: function isReady() {
-        return !!(window.pendo && window.pendo.push !== Array.prototype.push);
-      }
-    }, {
-      key: "constructPendoAnonymousId",
-      value: function constructPendoAnonymousId(id) {
-        return "_PENDO_T_".concat(id);
-      }
-      /* utility functions --- Ends here ---  */
-
-      /*
-       * PENDO MAPPED FUNCTIONS :: identify, track, group
-       */
-
-      /* Pendo's identify call works intelligently, once u have identified a visitor/user,
-       *or associated a visitor to a group/account then Pendo save this data in local storage and
-       *any further upcoming calls are done taking user info from local.
-       * To track user perndo maps user to Visitor in Pendo.
-       */
-
-    }, {
-      key: "identify",
-      value: function identify(rudderElement) {
-        var visitorObj = {};
-        var accountObj = {};
-        var groupId = this.analytics.groupId;
-        var id = this.analytics.userId || this.constructPendoAnonymousId(this.analytics.anonymousId);
-        visitorObj = _objectSpread2({
-          id: id
-        }, this.analytics.userTraits);
-
-        if (groupId) {
-          accountObj = _objectSpread2({
-            id: groupId
-          }, this.analytics.groupTraits);
-        }
-
-        window.pendo.identify({
-          visitor: visitorObj,
-          account: accountObj
-        });
-      }
-      /*
-       *Group call maps to an account for which visitor belongs.
-       *It is same as identify call but here we send account object.
-       */
-
-    }, {
-      key: "group",
-      value: function group(rudderElement) {
-        var accountObj = {};
-        var visitorObj = {};
-        var _rudderElement$messag = rudderElement.message,
-            userId = _rudderElement$messag.userId,
-            traits = _rudderElement$messag.traits;
-        accountObj.id = this.analytics.groupId || this.analytics.anonymousId;
-        accountObj = _objectSpread2(_objectSpread2({}, accountObj), traits);
-
-        if (userId) {
-          visitorObj = _objectSpread2({
-            id: userId
-          }, rudderElement.message.context && rudderElement.message.context.traits);
-        }
-
-        window.pendo.identify({
-          account: accountObj,
-          visitor: visitorObj
-        });
-      }
-      /* Once user is identified Pendo makes Track call to track user activity.
-       */
-
-    }, {
-      key: "track",
-      value: function track(rudderElement) {
-        var event = rudderElement.message.event;
-
-        if (!event) {
-          throw Error("Cannot call un-named track event");
-        }
-
-        var props = rudderElement.message.properties;
-        window.pendo.track(event, props);
-      }
-    }]);
-
-    return Pendo;
-  }();
-
-  var Lytics = /*#__PURE__*/function () {
-    function Lytics(config) {
-      _classCallCheck(this, Lytics);
-
-      this.accountId = config.accountId;
-      this.stream = config.stream;
-      this.blockload = config.blockload;
-      this.loadid = config.loadid;
-      this.name = "LYTICS";
-    }
-
-    _createClass(Lytics, [{
-      key: "loadLyticsScript",
-      value: function loadLyticsScript() {
-        (function () {
-
-          var o = window.jstag || (window.jstag = {}),
-              r = [];
-
-          function n(e) {
-            o[e] = function () {
-              for (var n = arguments.length, t = new Array(n), i = 0; i < n; i++) {
-                t[i] = arguments[i];
-              }
-
-              r.push([e, t]);
-            };
-          }
-
-          n("send"), n("mock"), n("identify"), n("pageView"), n("unblock"), n("getid"), n("setid"), n("loadEntity"), n("getEntity"), n("on"), n("once"), n("call"), o.loadScript = function (n, t, i) {
-            var e = document.createElement("script");
-            e.async = !0, e.src = n, e.onload = t, e.onerror = i;
-            var o = document.getElementsByTagName("script")[0],
-                r = o && o.parentNode || document.head || document.body,
-                c = o || r.lastChild;
-            return null != c ? r.insertBefore(e, c) : r.appendChild(e), this;
-          }, o.init = function n(t) {
-            return this.config = t, this.loadScript(t.src, function () {
-              if (o.init === n) throw new Error("Load error!"); // eslint-disable-next-line no-unused-expressions
-
-              o.init(o.config), // eslint-disable-next-line func-names
-              function () {
-                for (var n = 0; n < r.length; n++) {
-                  var t = r[n][0],
-                      i = r[n][1];
-                  o[t].apply(o, i);
-                }
-
-                r = void 0;
-              }();
-            }), this;
-          };
-        })(); // Define config and initialize Lytics tracking tag.
-
-
-        window.jstag.init({
-          loadid: this.loadid,
-          blocked: this.blockload,
-          stream: this.stream,
-          sessecs: 1800,
-          src: document.location.protocal === "https:" ? "https://c.lytics.io/api/tag/".concat(this.accountId, "/latest.min.js") : "http://c.lytics.io/api/tag/".concat(this.accountId, "/latest.min.js")
-        });
-      }
-    }, {
-      key: "init",
-      value: function init() {
-        this.loadLyticsScript();
-        logger.debug("===in init Lytics===");
-      }
-    }, {
-      key: "isLoaded",
-      value: function isLoaded() {
-        logger.debug("in Lytics isLoaded");
-        logger.debug(!!(window.jstag && window.jstag.push !== Array.prototype.push));
-        return !!(window.jstag && window.jstag.push !== Array.prototype.push);
-      }
-    }, {
-      key: "isReady",
-      value: function isReady() {
-        logger.debug("in Lytics isReady");
-        return !!(window.jstag && window.jstag.push !== Array.prototype.push);
-      }
-    }, {
-      key: "identify",
-      value: function identify(rudderElement) {
-        logger.debug("in Lytics identify"); // eslint-disable-next-line camelcase
-
-        var user_id = rudderElement.message.userId || rudderElement.message.anonymousId;
-        var traits = rudderElement.message.context.traits;
-
-        var payload = _objectSpread2({
-          user_id: user_id
-        }, traits);
-
-        window.jstag.send(this.stream, payload);
-      }
-    }, {
-      key: "page",
-      value: function page(rudderElement) {
-        logger.debug("in Lytics page");
-        var properties = rudderElement.message.properties;
-
-        var payload = _objectSpread2({
-          event: rudderElement.message.name
-        }, properties);
-
-        window.jstag.pageView(this.stream, payload);
-      }
-    }, {
-      key: "track",
-      value: function track(rudderElement) {
-        logger.debug("in Lytics track");
-        var properties = rudderElement.message.properties;
-
-        var payload = _objectSpread2({
-          _e: rudderElement.message.event
-        }, properties);
-
-        window.jstag.send(this.stream, payload);
-      }
-    }]);
-
-    return Lytics;
-  }();
-
-  var Appcues = /*#__PURE__*/function () {
-    function Appcues(config) {
-      _classCallCheck(this, Appcues);
-
-      this.accountId = config.accountId;
-      this.apiKey = config.apiKey;
-      this.name = "APPCUES"; //this.sendToAllDestinations = config.sendToAll;
-    }
-
-    _createClass(Appcues, [{
-      key: "init",
-      value: function init() {
-        logger.debug("===in init Appcues===");
-        ScriptLoader("appcues-id", "https://fast.appcues.com/".concat(this.accountId, ".js"));
-      }
-    }, {
-      key: "isLoaded",
-      value: function isLoaded() {
-        logger.debug("in appcues isLoaded");
-        return !!window.Appcues;
-      }
-    }, {
-      key: "isReady",
-      value: function isReady() {
-        logger.debug("in appcues isReady"); // This block of code enables us to send Appcues Flow events to all the other destinations connected to the same source (we might use it in future)
-        // if (this.sendToAllDestinations && window.Appcues) {
-        //   window.Appcues.on("all", function(eventName, event) {
-        //     window.rudderanalytics.track(eventName, event, {
-        //       integrations: {
-        //         All: true,
-        //         APPCUES: false
-        //       }
-        //     });
-        //   });
-        // }
-
-        return !!window.Appcues;
-      }
-    }, {
-      key: "identify",
-      value: function identify(rudderElement) {
-        var traits = rudderElement.message.context.traits;
-        var userId = rudderElement.message.userId;
-
-        if (userId) {
-          window.Appcues.identify(userId, traits);
-        } else {
-          logger.error("user id is empty");
-        }
-      }
-    }, {
-      key: "track",
-      value: function track(rudderElement) {
-        var eventName = rudderElement.message.event;
-        var properties = rudderElement.message.properties;
-
-        if (eventName) {
-          window.Appcues.track(eventName, properties);
-        } else {
-          logger.error("event name is empty");
-        }
-      }
-    }, {
-      key: "page",
-      value: function page(rudderElement) {
-        var _rudderElement$messag = rudderElement.message,
-            properties = _rudderElement$messag.properties,
-            name = _rudderElement$messag.name;
-        window.Appcues.page(name, properties);
-      } // To be uncommented after adding Reset feature to our SDK
-      // reset() {
-      //   window.Appcues.reset();
-      // }
-
-    }]);
-
-    return Appcues;
-  }();
-
-  var Posthog = /*#__PURE__*/function () {
-    function Posthog(config, analytics) {
-      var _this = this;
-
-      _classCallCheck(this, Posthog);
-
-      this.name = "POSTHOG";
-      this.analytics = analytics;
-      this.teamApiKey = config.teamApiKey;
-      this.yourInstance = config.yourInstance || "https://app.posthog.com";
-      this.autocapture = config.autocapture || false;
-      this.capturePageView = config.capturePageView || false;
-      this.disableSessionRecording = config.disableSessionRecording || false;
-      this.disableCookie = config.disableCookie || false;
-      this.propertyBlackList = [];
-      this.xhrHeaders = {};
-
-      if (config.xhrHeaders && config.xhrHeaders.length > 0) {
-        config.xhrHeaders.forEach(function (header) {
-          if (header && header.key && header.value && header.key.trim() != "" && header.value.trim() != "") {
-            _this.xhrHeaders[header.key] = header.value;
-          }
-        });
-      }
-
-      if (config.propertyBlackList && config.propertyBlackList.length > 0) {
-        config.propertyBlackList.forEach(function (element) {
-          if (element && element.property && element.property.trim() != "") {
-            _this.propertyBlackList.push(element.property);
-          }
-        });
-      }
-    }
-
-    _createClass(Posthog, [{
-      key: "init",
-      value: function init() {
-        !function (t, e) {
-          var o, n, p, r;
-          e.__SV || (window.posthog = e, e._i = [], e.init = function (i, s, a) {
-            function g(t, e) {
-              var o = e.split(".");
-              2 == o.length && (t = t[o[0]], e = o[1]), t[e] = function () {
-                t.push([e].concat(Array.prototype.slice.call(arguments, 0)));
-              };
-            }
-
-            (p = t.createElement("script")).type = "text/javascript", p.async = !0, p.src = s.api_host + "/static/array.js", (r = t.getElementsByTagName("script")[0]).parentNode.insertBefore(p, r);
-            var u = e;
-
-            for (void 0 !== a ? u = e[a] = [] : a = "posthog", u.people = u.people || [], u.toString = function (t) {
-              var e = "posthog";
-              return "posthog" !== a && (e += "." + a), t || (e += " (stub)"), e;
-            }, u.people.toString = function () {
-              return u.toString(1) + ".people (stub)";
-            }, o = "capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags".split(" "), n = 0; n < o.length; n++) {
-              g(u, o[n]);
-            }
-
-            e._i.push([i, s, a]);
-          }, e.__SV = 1);
-        }(document, window.posthog || []);
-        var configObject = {
-          api_host: this.yourInstance,
-          autocapture: this.autocapture,
-          capture_pageview: this.capturePageView,
-          disable_session_recording: this.disableSessionRecording,
-          property_blacklist: this.propertyBlackList,
-          disable_cookie: this.disableCookie
-        };
-
-        if (this.xhrHeaders && Object.keys(this.xhrHeaders).length > 0) {
-          configObject.xhr_headers = this.xhrHeaders;
-        }
-
-        posthog.init(this.teamApiKey, configObject);
-      }
-      /**
-       * superproperties should be part of rudderelement.message.integrations.POSTHOG object.
-       * Once we call the posthog.register api, the corresponding property will be sent along with subsequent capture calls.
-       * To remove the superproperties, we call unregister api.
-       */
-
-    }, {
-      key: "processSuperProperties",
-      value: function processSuperProperties(rudderElement) {
-        var integrations = rudderElement.message.integrations;
-
-        if (integrations && integrations.POSTHOG) {
-          var _integrations$POSTHOG = integrations.POSTHOG,
-              superProperties = _integrations$POSTHOG.superProperties,
-              setOnceProperties = _integrations$POSTHOG.setOnceProperties,
-              unsetProperties = _integrations$POSTHOG.unsetProperties;
-
-          if (superProperties && Object.keys(superProperties).length > 0) {
-            posthog.register(superProperties);
-          }
-
-          if (setOnceProperties && Object.keys(setOnceProperties).length > 0) {
-            posthog.register_once(setOnceProperties);
-          }
-
-          if (unsetProperties && unsetProperties.length > 0) {
-            unsetProperties.forEach(function (property) {
-              if (property && property.trim() != "") {
-                posthog.unregister(property);
-              }
-            });
-          }
-        }
-      }
-    }, {
-      key: "identify",
-      value: function identify(rudderElement) {
-        logger.debug("in Posthog identify"); // rudderElement.message.context will always be present as part of identify event payload.
-
-        var traits = rudderElement.message.context.traits;
-        var userId = rudderElement.message.userId;
-
-        if (userId) {
-          posthog.identify(userId, traits);
-        }
-
-        this.processSuperProperties(rudderElement);
-      }
-    }, {
-      key: "track",
-      value: function track(rudderElement) {
-        logger.debug("in Posthog track");
-        var _rudderElement$messag = rudderElement.message,
-            event = _rudderElement$messag.event,
-            properties = _rudderElement$messag.properties;
-        this.processSuperProperties(rudderElement);
-        posthog.capture(event, properties);
-      }
-      /**
-       * 
-       *
-       * @memberof Posthog
-       */
-
-    }, {
-      key: "page",
-      value: function page(rudderElement) {
-        logger.debug("in Posthog page");
-        this.processSuperProperties(rudderElement);
-        posthog.capture('$pageview');
-      }
-    }, {
-      key: "isLoaded",
-      value: function isLoaded() {
-        logger.debug("in Posthog isLoaded");
-        return !!(window.posthog && window.posthog.__loaded);
-      }
-    }, {
-      key: "isReady",
-      value: function isReady() {
-        return !!(window.posthog && window.posthog.__loaded);
-      }
-    }]);
-
-    return Posthog;
-  }();
-
-  var Klaviyo = /*#__PURE__*/function () {
-    function Klaviyo(config) {
-      _classCallCheck(this, Klaviyo);
-
-      this.publicApiKey = config.publicApiKey;
-      this.sendPageAsTrack = config.sendPageAsTrack;
-      this.additionalPageInfo = config.additionalPageInfo;
-      this.enforceEmailAsPrimary = config.enforceEmailAsPrimary;
-      this.name = "KLAVIYO";
-      this.keysToExtract = ["context.traits"];
-      this.exclusionKeys = ["email", "E-mail", "Email", "firstName", "firstname", "first_name", "lastName", "lastname", "last_name", "phone", "Phone", "title", "organization", "city", "City", "region", "country", "Country", "zip", "image", "timezone", "anonymousId", "userId", "properties"];
-    }
-
-    _createClass(Klaviyo, [{
-      key: "init",
-      value: function init() {
-        logger.debug("===in init Klaviyo===");
-        ScriptLoader("klaviyo-integration", "https://static.klaviyo.com/onsite/js/klaviyo.js?company_id=".concat(this.publicApiKey));
-      }
-    }, {
-      key: "isLoaded",
-      value: function isLoaded() {
-        logger.debug("===in isLoaded Klaviyo===");
-        return !!(window._learnq && window._learnq.push !== Array.prototype.push);
-      }
-    }, {
-      key: "isReady",
-      value: function isReady() {
-        logger.debug("===in isReady Klaviyo===");
-        return !!(window._learnq && window._learnq.push !== Array.prototype.push);
-      }
-    }, {
-      key: "identify",
-      value: function identify(rudderElement) {
-        var message = rudderElement.message;
-
-        if (!(message.context && message.context.traits)) {
-          logger.error("user traits not present");
-          return;
-        }
-
-        var _getDefinedTraits = getDefinedTraits(message),
-            userId = _getDefinedTraits.userId,
-            email = _getDefinedTraits.email,
-            phone = _getDefinedTraits.phone,
-            firstName = _getDefinedTraits.firstName,
-            lastName = _getDefinedTraits.lastName,
-            city = _getDefinedTraits.city,
-            country = _getDefinedTraits.country;
-
-        var payload = {
-          $id: userId,
-          $email: email,
-          $phone_number: phone,
-          $first_name: firstName,
-          $last_name: lastName,
-          $city: city,
-          $country: country,
-          $organization: getValue(message, "context.traits.organization"),
-          $title: getValue(message, "context.traits.title"),
-          $region: getValue(message, "context.traits.region"),
-          $zip: getValue(message, "context.traits.zip")
-        };
-
-        if (!payload.$email && !payload.$phone_number && !payload.$id) {
-          logger.error("user id, phone or email not present");
-          return;
-        }
-
-        if (this.enforceEmailAsPrimary) {
-          delete payload.$id;
-          payload._id = userId;
-        } // Extract other K-V property from traits about user custom properties
-
-
-        try {
-          payload = extractCustomFields(message, payload, this.keysToExtract, this.exclusionKeys);
-        } catch (err) {
-          logger.debug("Error occured at extractCustomFields ".concat(err));
-        }
-
-        window._learnq.push(["identify", payload]);
-      }
-    }, {
-      key: "track",
-      value: function track(rudderElement) {
-        var message = rudderElement.message;
-
-        if (message.properties) {
-          var propsPayload = message.properties;
-
-          if (propsPayload.revenue) {
-            propsPayload.$value = propsPayload.revenue;
-            delete propsPayload.revenue;
-          }
-
-          window._learnq.push(["track", message.event, propsPayload]);
-        } else window._learnq.push(["track", message.event]);
-      }
-    }, {
-      key: "page",
-      value: function page(rudderElement) {
-        var message = rudderElement.message;
-
-        if (this.sendPageAsTrack) {
-          var eventName;
-
-          if (message.properties && message.properties.category && message.name) {
-            eventName = "Viewed ".concat(message.properties.category, " ").concat(message.name, " page");
-          } else if (message.name) {
-            eventName = "Viewed ".concat(message.name, " page");
-          } else {
-            eventName = "Viewed a Page";
-          }
-
-          if (this.additionalPageInfo && message.properties) {
-            window._learnq.push(["track", "".concat(eventName), message.properties]);
-          } else {
-            window._learnq.push(["track", "".concat(eventName)]);
-          }
-        } else {
-          window._learnq.push(["track"]);
-        }
-      }
-    }]);
-
-    return Klaviyo;
-  }();
-
-  var Clevertap = /*#__PURE__*/function () {
-    function Clevertap(config) {
-      _classCallCheck(this, Clevertap);
-
-      this.accountId = config.accountId;
-      this.apiKey = config.passcode;
-      this.name = "CLEVERTAP";
-      this.region = config.region;
-      this.keysToExtract = ["context.traits"];
-      this.exclusionKeys = ["email", "E-mail", "Email", "phone", "Phone", "name", "Name", "gender", "Gender", "birthday", "Birthday", "anonymousId", "userId", "lastName", "lastname", "last_name", "firstName", "firstname", "first_name", "employed", "education", "married", "customerType"];
-    }
-
-    _createClass(Clevertap, [{
-      key: "init",
-      value: function init() {
-        logger.debug("===in init Clevertap===");
-        var sourceUrl = document.location.protocol == "https:" ? "https://d2r1yp2w7bby2u.cloudfront.net/js/a.js" : "http://static.clevertap.com/js/a.js";
-        window.clevertap = {
-          event: [],
-          profile: [],
-          account: [],
-          onUserLogin: [],
-          notifications: []
-        };
-        window.clevertap.enablePersonalization = true;
-        window.clevertap.account.push({
-          id: this.accountId
-        });
-
-        if (this.region && this.region !== "none") {
-          window.clevertap.region.push(this.region);
-        }
-
-        ScriptLoader("clevertap-integration", sourceUrl);
-      }
-    }, {
-      key: "isLoaded",
-      value: function isLoaded() {
-        logger.debug("in clevertap isLoaded");
-        return !!window.clevertap && window.clevertap.logout !== undefined;
-      }
-    }, {
-      key: "isReady",
-      value: function isReady() {
-        logger.debug("in clevertap isReady");
-        return !!window.clevertap && window.clevertap.logout !== undefined;
-      }
-    }, {
-      key: "identify",
-      value: function identify(rudderElement) {
-        logger.debug("in clevertap identify");
-        var message = rudderElement.message;
-
-        if (!(message.context && message.context.traits)) {
-          logger.error("user traits not present");
-          return;
-        }
-
-        var _getDefinedTraits = getDefinedTraits(message),
-            userId = _getDefinedTraits.userId,
-            email = _getDefinedTraits.email,
-            phone = _getDefinedTraits.phone,
-            name = _getDefinedTraits.name;
-
-        var payload = {
-          Name: name,
-          Identity: userId,
-          Email: email,
-          Phone: phone,
-          Gender: getValue(message, "context.traits.gender"),
-          DOB: getValue(message, "context.traits.birthday"),
-          Photo: getValue(message, "context.traits.avatar"),
-          Employed: getValue(message, "context.traits.employed"),
-          Education: getValue(message, "context.traits.education"),
-          Married: getValue(message, "context.traits.married"),
-          "Customer Type": getValue(message, "context.traits.customerType")
-        }; // Extract other K-V property from traits about user custom properties
-
-        try {
-          payload = extractCustomFields(message, payload, this.keysToExtract, this.exclusionKeys);
-        } catch (err) {
-          logger.debug("Error occured at extractCustomFields ".concat(err));
-        }
-
-        Object.keys(payload).map(function (key) {
-          if (isObject$2(payload[key])) {
-            logger.debug("cannot process, unsupported traits");
-            return;
-          }
-        });
-        window.clevertap.onUserLogin.push({
-          Site: payload
-        });
-      }
-    }, {
-      key: "track",
-      value: function track(rudderElement) {
-        logger.debug("in clevertap track");
-        var _rudderElement$messag = rudderElement.message,
-            event = _rudderElement$messag.event,
-            properties = _rudderElement$messag.properties;
-
-        if (properties) {
-          if (event === "Order Completed") {
-            var ecomProperties = {
-              "Charged ID": properties.checkout_id,
-              Amount: properties.revenue,
-              Items: properties.products
-            }; // Extract other K-V property from traits about user custom properties
-
-            try {
-              ecomProperties = extractCustomFields(rudderElement.message, ecomProperties, ["properties"], ["checkout_id", "revenue", "products"]);
-            } catch (err) {
-              logger.debug("Error occured at extractCustomFields ".concat(err));
-            }
-
-            window.clevertap.event.push("Charged", ecomProperties);
-          } else {
-            Object.keys(properties).map(function (key) {
-              if (isObject$2(properties[key]) || isArray$1(properties[key])) {
-                logger.debug("cannot process, unsupported event");
-                return;
-              }
-            });
-            window.clevertap.event.push(event, properties);
-          }
-        } else if (event === "Order Completed") {
-          window.clevertap.event.push("Charged");
-        } else {
-          window.clevertap.event.push(event);
-        }
-      }
-    }, {
-      key: "page",
-      value: function page(rudderElement) {
-        logger.debug("in clevertap page");
-        var _rudderElement$messag2 = rudderElement.message,
-            name = _rudderElement$messag2.name,
-            properties = _rudderElement$messag2.properties;
-        var eventName;
-
-        if (properties && properties.category && name) {
-          eventName = "WebPage Viewed ".concat(name, " ").concat(properties.category);
-        } else if (name) {
-          eventName = "WebPage Viewed ".concat(name);
-        } else {
-          eventName = "WebPage Viewed";
-        }
-
-        if (properties) {
-          Object.keys(properties).map(function (key) {
-            if (isObject$2(properties[key]) || isArray$1(properties[key])) {
-              logger.debug("cannot process, unsupported event");
-              return;
-            }
-          });
-          window.clevertap.event.push(eventName, properties);
-        } else {
-          window.clevertap.event.push(eventName);
-        }
-      }
-    }]);
-
-    return Clevertap;
-  }();
-
-  var BingAds = function BingAds(config) {
-    var _this = this;
-
-    _classCallCheck(this, BingAds);
-
-    this.loadBingadsScript = function () {
-      (function (w, d, t, r, u) {
-        var f, n, i;
-        w[u] = w[u] || [], f = function f() {
-          var o = {
-            ti: _this.tagID
-          };
-          o.q = w[u], w[u] = new UET(o);
-        }, n = d.createElement(t), n.src = r, n.async = 1, n.onload = n.onreadystatechange = function () {
-          var s = this.readyState;
-          s && s !== "loaded" && s !== "complete" || (f(), n.onload = n.onreadystatechange = null);
-        }, i = d.getElementsByTagName(t)[0], i.parentNode.insertBefore(n, i);
-      })(window, document, "script", "https://bat.bing.com/bat.js", "uetq");
-    };
-
-    this.init = function () {
-      _this.loadBingadsScript();
-
-      logger.debug("===in init BingAds===");
-    };
-
-    this.isLoaded = function () {
-      logger.debug("in BingAds isLoaded");
-      return !!window.uetq && window.uetq.push !== Array.prototype.push;
-    };
-
-    this.isReady = function () {
-      logger.debug("in BingAds isReady");
-      return !!(window.uetq && window.uetq.push !== Array.prototype.push);
-    };
-
-    this.track = function (rudderElement) {
-      var _rudderElement$messag = rudderElement.message,
-          type = _rudderElement$messag.type,
-          properties = _rudderElement$messag.properties,
-          event = _rudderElement$messag.event;
-      var category = properties.category,
-          currency = properties.currency,
-          value = properties.value,
-          revenue = properties.revenue,
-          total = properties.total;
-      var payload = {
-        ea: type,
-        el: event
-      };
-
-      if (category) {
-        payload.ec = category;
-      }
-
-      if (currency) {
-        payload.gc = currency;
-      }
-
-      if (value) {
-        payload.gv = value;
-      }
-
-      if (revenue) {
-        payload.gv = revenue;
-      }
-
-      if (total) {
-        payload.gv = total;
-      }
-
-      window.uetq.push(payload);
-    };
-
-    this.page = function () {
-      window.uetq.push('pageLoad');
-    };
-
-    this.tagID = config.tagID;
-    this.name = "BINGADS";
-  };
-
-  var eventMapping = [{
-    src: ["checkout step completed", "order completed"],
-    dest: "Checkout"
-  }, {
-    src: ["product added"],
-    dest: "AddToCart",
-    hasEmptyProducts: true
-  }, {
-    src: ["products searched", "product list filtered"],
-    dest: "Search"
-  }];
-  var searchPropertyMapping = {
-    src: "query",
-    dest: "search_query"
-  };
-  var productPropertyMapping = [{
-    src: ["product_id", "sku"],
-    dest: "product_id"
-  }, {
-    src: "name",
-    dest: "product_name"
-  }, {
-    src: "price",
-    dest: "product_price"
-  }, {
-    src: "category",
-    dest: "product_category"
-  }, {
-    src: "variant",
-    dest: "product_variant"
-  }, {
-    src: "quantity",
-    dest: "product_quantity"
-  }, {
-    src: "brand",
-    dest: "product_brand"
-  }];
-  var pinterestPropertySupport = ["value", "order_quantity", "currency", "order_id", "product_name", "product_id", "product_category", "product_variant", "product_variant_id", "product_price", "product_quantity", "product_brand", "promo_code", "property", "video_title", "lead_type", "coupon"];
-
-  var PinterestTag = /*#__PURE__*/function () {
-    function PinterestTag(config, analytics) {
-      _classCallCheck(this, PinterestTag);
-
-      this.analytics = analytics;
-      this.tagId = !config.tagId ? "" : config.tagId;
-      this.enhancedMatch = config.enhancedMatch || false;
-      this.customProperties = config.customProperties || [];
-      this.userDefinedEventsMapping = config.eventsMapping || [];
-      this.name = "PINTEREST_TAG";
-      logger.debug("config", config);
-    }
-
-    _createClass(PinterestTag, [{
-      key: "loadScript",
-      value: function loadScript() {
-        !function (e) {
-          if (!window.pintrk) {
-            window.pintrk = function () {
-              window.pintrk.queue.push(Array.prototype.slice.call(arguments));
-            };
-
-            var n = window.pintrk;
-            n.queue = [], n.version = "3.0";
-            var t = document.createElement("script");
-            t.async = !0, t.src = e;
-            var r = document.getElementsByTagName("script")[0];
-            r.parentNode.insertBefore(t, r);
-          }
-        }("https://s.pinimg.com/ct/core.js");
-      }
-    }, {
-      key: "handleEnhancedMatch",
-      value: function handleEnhancedMatch() {
-        var email = this.analytics.userTraits && this.analytics.userTraits.email;
-
-        if (email && this.enhancedMatch) {
-          window.pintrk("load", this.tagId, {
-            em: email
-          });
-        } else {
-          window.pintrk("load", this.tagId);
-        }
-
-        window.pintrk("page");
-      }
-    }, {
-      key: "init",
-      value: function init() {
-        logger.debug("===in init Pinterest Tag===");
-        this.loadScript();
-        this.handleEnhancedMatch();
-      }
-      /* utility functions ---Start here ---  */
-
-    }, {
-      key: "isLoaded",
-      value: function isLoaded() {
-        logger.debug("===in isLoaded Pinterest Tag===");
-        return !!(window.pintrk && window.pintrk.push !== Array.prototype.push);
-      }
-    }, {
-      key: "isReady",
-      value: function isReady() {
-        logger.debug("===in isReady Pinterest Tag===");
-        return !!(window.pintrk && window.pintrk.push !== Array.prototype.push);
-      }
-      /* utility functions --- Ends here ---  */
-
-    }, {
-      key: "sendPinterestTrack",
-      value: function sendPinterestTrack(eventName, pinterestObject) {
-        window.pintrk("track", eventName, pinterestObject);
-      }
-      /**
-       * Send rudder property and mappings array. This function will return data mapping destination property
-       * @param {*} properties
-       * @param {*} mappings
-       * @returns Pinterest Products
-       */
-
-    }, {
-      key: "getMappingObject",
-      value: function getMappingObject(properties, mappings) {
-        var pinterestObject = {};
-        mappings.forEach(function (mapping) {
-          Object.keys(properties).forEach(function (p) {
-            pinterestObject = _objectSpread2(_objectSpread2({}, getDataFromSource(mapping.src, mapping.dest, p, properties)), pinterestObject);
-          });
-        });
-        return pinterestObject;
-      }
-      /**
-       * This function  simply copies data from rudder payload to new object provided all
-       * the key in properties is present in pinterestPropertySupport
-       * @param {rudder properties} properties
-       * @returns
-       */
-
-    }, {
-      key: "getRawPayload",
-      value: function getRawPayload(properties) {
-        var data = {};
-        Object.keys(properties).forEach(function (p) {
-          if (pinterestPropertySupport.includes(p)) {
-            data[p] = properties[p];
-          }
-        }); // This logic maps rudder query to search_query for Products Searched events
-
-        if (isDefinedAndNotNull(properties[searchPropertyMapping.src])) {
-          data[searchPropertyMapping.dest] = properties[searchPropertyMapping.src];
-        }
-
-        return data;
-      }
-      /**
-       * This function will generate required pinterest object to be sent.
-       * getRawPayload() will generate all the destination property excepts lineItems
-       * If rudder payload has products array then line_items is generated
-       * In case if the call is for event which has flag hasEmptyProducts to true, it will generate all
-       * properties including lineItems even if it does not have products array in it ex: Product Added
-       *
-       * @param {rudder payload} properties
-       * @param {*} hasEmptyProducts
-       * @returns
-       */
-
-    }, {
-      key: "generatePinterestObject",
-      value: function generatePinterestObject(properties) {
-        var _this = this;
-
-        var hasEmptyProducts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-        var pinterestObject = this.getRawPayload(properties);
-        var products = properties.products;
-
-        if (hasEmptyProducts && !products) {
-          products = [properties];
-        }
-
-        if (products) {
-          var lineItems = [];
-          products.forEach(function (p) {
-            var product = _this.getMappingObject(p, productPropertyMapping);
-
-            lineItems.push(product);
-          });
-          pinterestObject.line_items = lineItems;
-        }
-
-        if (this.customProperties.length > 0 && Object.keys(properties).length > 0) {
-          var flattenPayload = flattenJsonPayload(properties);
-          this.customProperties.forEach(function (custom) {
-            // This check fails if user is sending boolean value as false
-            // Adding toString because if the property value is boolean then it never gets reflected in destination
-            if (isDefinedAndNotNull(flattenPayload[custom.properties])) {
-              pinterestObject[custom.properties] = flattenPayload[custom.properties].toString();
-            }
-          });
-        }
-
-        return pinterestObject;
-      }
-      /**
-       * This gives destination events .
-       * Logics: If our eventMapping is not able to map the event that is sent by user payload then it will look into
-       * userDefinedEventsMapping array. In case if it is not found there as well, it will return undefined.
-       * @param {rudder event name} event
-       * @returns
-       */
-
-    }, {
-      key: "getDestinationEventName",
-      value: function getDestinationEventName(event) {
-        var destinationEvent = eventMapping.find(function (p) {
-          return p.src.includes(event.toLowerCase());
-        });
-
-        if (!destinationEvent && this.userDefinedEventsMapping.length > 0) {
-          var userDefinedEvent = this.userDefinedEventsMapping.find(function (e) {
-            return e.from.toLowerCase() === event.toLowerCase();
-          });
-
-          if (userDefinedEvent && userDefinedEvent.to) {
-            return {
-              dest: userDefinedEvent.to,
-              isUserDefinedEvent: true
-            };
-          }
-        }
-
-        return destinationEvent;
-      }
-    }, {
-      key: "track",
-      value: function track(rudderElement) {
-        if (!rudderElement.message || !rudderElement.message.event) {
-          return;
-        }
-
-        var _rudderElement$messag = rudderElement.message,
-            properties = _rudderElement$messag.properties,
-            event = _rudderElement$messag.event;
-        var eventName = event;
-        var destEvent = this.getDestinationEventName(event);
-
-        if (isDefinedAndNotNull(destEvent)) {
-          eventName = destEvent.dest;
-        }
-
-        var pinterestObject = this.generatePinterestObject(properties, destEvent === null || destEvent === void 0 ? void 0 : destEvent.hasEmptyProducts, destEvent === null || destEvent === void 0 ? void 0 : destEvent.isUserDefinedEvent);
-        this.sendPinterestTrack(eventName, pinterestObject);
-      }
-    }, {
-      key: "page",
-      value: function page(rudderElement) {
-        var _rudderElement$messag2 = rudderElement.message,
-            category = _rudderElement$messag2.category,
-            name = _rudderElement$messag2.name;
-        var pageObject = {
-          name: name || ""
-        };
-        var event = "PageVisit";
-
-        if (category) {
-          pageObject.category = category;
-          event = "ViewCategory";
-        }
-
-        window.pintrk("track", event, pageObject);
-      }
-    }, {
-      key: "identify",
-      value: function identify() {
-        var email = this.analytics.userTraits && this.analytics.userTraits.email;
-
-        if (email) {
-          window.pintrk("set", {
-            em: email
-          });
-        }
-      }
-    }]);
-
-    return PinterestTag;
-  }();
-
   var dynamicKeys = [];
 
   var setDynamicKeys = function setDynamicKeys(dk) {
@@ -28996,8 +28949,6 @@ var rudderanalytics = (function (exports) {
       this.timestampOption = config.timestampOption;
       this.preferVisitorId = config.preferVisitorId;
       this.rudderEventsToAdobeEvents = config.rudderEventsToAdobeEvents || [];
-      this.proxyNormalUrl = config.proxyNormalUrl;
-      this.proxyHeartbeatUrl = config.proxyHeartbeatUrl;
       this.pageName = "";
       this.name = "ADOBE_ANALYTICS";
       setConfig(config);
@@ -29011,14 +28962,11 @@ var rudderanalytics = (function (exports) {
 
         window.rudderHBPlayheads = {}; // load separately as heartbeat sdk is large and need not be required if this is off.
 
-        var heartbeatUrl = this.proxyHeartbeatUrl || "https://cdn.rudderlabs.com/adobe-analytics-js/adobe-analytics-js-heartbeat.js";
-        var normalUrl = this.proxyNormalUrl || "https://cdn.rudderlabs.com/adobe-analytics-js/adobe-analytics-js.js";
-
         if (this.heartbeatTrackingServerUrl) {
-          ScriptLoader("adobe-analytics-heartbeat", heartbeatUrl);
+          ScriptLoader("adobe-analytics-heartbeat", "https://cdn.rudderlabs.com/adobe-analytics-js/adobe-analytics-js-heartbeat.js");
           this.setIntervalHandler = setInterval(this.initAdobeAnalyticsClient.bind(this), 1000);
         } else {
-          ScriptLoader("adobe-analytics-heartbeat", normalUrl);
+          ScriptLoader("adobe-analytics-heartbeat", "https://cdn.rudderlabs.com/adobe-analytics-js/adobe-analytics-js.js");
           this.setIntervalHandler = setInterval(this.initAdobeAnalyticsClient.bind(this), 1000);
         }
       }
@@ -29275,37 +29223,37 @@ var rudderanalytics = (function (exports) {
     return AdobeAnalytics;
   }();
 
-  var LinkedInPixel = /*#__PURE__*/function () {
-    function LinkedInPixel(config) {
-      _classCallCheck(this, LinkedInPixel);
+  var LinkedInInsightTag = /*#__PURE__*/function () {
+    function LinkedInInsightTag(config) {
+      _classCallCheck(this, LinkedInInsightTag);
 
-      this.name = "LINKEDIN_PIXEL";
+      this.name = "LINKEDIN_INSIGHT_TAG";
       this.partnerId = config.partnerId;
     }
 
-    _createClass(LinkedInPixel, [{
+    _createClass(LinkedInInsightTag, [{
       key: "init",
       value: function init() {
-        logger.debug("===in init LinkedIn Pixel===");
-        ScriptLoader("LinkedIn Pixel", 'https://snap.licdn.com/li.lms-analytics/insight.min.js');
+        logger.debug("===in init LinkedIn Insight Tag===");
+        ScriptLoader("LinkedIn Insight Tag", 'https://snap.licdn.com/li.lms-analytics/insight.min.js');
         if (!this.partnerId) return;
         window._linkedin_data_partner_id = this.partnerId;
       }
     }, {
       key: "isLoaded",
       value: function isLoaded() {
-        logger.debug("=== in isLoaded LinkedIn Pixel===");
+        logger.debug("=== in isLoaded LinkedIn Insight Tag===");
         return !!window._linkedin_data_partner_id;
       }
     }, {
       key: "isReady",
       value: function isReady() {
-        logger.debug("=== in isReady LinkedIn Pixel===");
+        logger.debug("=== in isReady LinkedIn Insight Tag===");
         return !!window._linkedin_data_partner_id;
       }
     }]);
 
-    return LinkedInPixel;
+    return LinkedInInsightTag;
   }();
 
   // (config-plan name, native destination.name , exported integration name(this one below))
@@ -29342,7 +29290,7 @@ var rudderanalytics = (function (exports) {
     BINGADS: BingAds,
     PINTEREST_TAG: PinterestTag,
     ADOBE_ANALYTICS: AdobeAnalytics,
-    LINKEDIN_PIXEL: LinkedInPixel
+    LINKEDIN_INSIGHT_TAG: LinkedInInsightTag
   };
 
   // Application class
